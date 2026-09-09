@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './components/navbar/navbar';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, NavbarComponent],
   selector: 'app-root',
   styleUrl: './app.css',
-  templateUrl: './app.html',
+  template: `
+    <app-navbar />
+    <router-outlet />
+  `,
 })
-export class App {
-  protected readonly title = signal('AyudaYa-Frontend');
-}
+export class App {}

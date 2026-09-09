@@ -1,0 +1,19 @@
+<nav class="bg-brand-orange text-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a routerLink="/" class="text-xl font-bold tracking-tight">AyudaYa</a>
+    <div class="flex items-center gap-4 text-sm">
+      <a routerLink="/" class="hover:underline">Locales</a>
+      @if (session.isLoggedIn()) {
+        <span class="opacity-80">{{ session.getUser()?.nombreUsuario }}</span>
+        <button (click)="logout()" class="bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
+          Salir
+        </button>
+      } @else {
+        <a routerLink="/login" class="hover:underline">Iniciar sesión</a>
+        <a routerLink="/registro" class="bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
+          Registrarse
+        </a>
+      }
+    </div>
+  </div>
+</nav>

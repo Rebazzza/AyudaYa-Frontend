@@ -1,0 +1,225 @@
+<style>
+  .input-focus-ring:focus {
+    outline: none;
+    border-color: #FF7717;
+    box-shadow: 0 0 0 2px rgba(255, 119, 23, 0.2);
+  }
+</style>
+
+<main class="min-h-screen flex w-full">
+  <!-- Left Side: Ilustración / Brand -->
+  <div class="hidden lg:flex w-1/2 bg-surface-container relative items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 z-0 bg-cover bg-center"
+         style="background-image: url('https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&q=80')">
+    </div>
+    <div class="relative z-10 text-center p-12 max-w-lg bg-surface-container-lowest/80 backdrop-blur-sm rounded-xl border border-outline-variant shadow-sm mx-6">
+      <span class="material-symbols-outlined text-[64px] text-primary-container mb-4" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
+      <h1 class="text-3xl font-bold text-on-surface mb-2">AyudaYa</h1>
+      <p class="text-lg text-on-surface-variant">Conectando corazones generosos con necesidades reales. Únete a nuestra iniciativa de impacto social.</p>
+    </div>
+  </div>
+
+  <!-- Right Side: Formulario de Registro -->
+  <div class="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-8 py-10 bg-surface-bright relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.05)]">
+    <div class="w-full max-w-[480px] bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+
+      <!-- Encabezado -->
+      <div class="text-center mb-6">
+        <h2 class="text-[24px] leading-8 font-semibold text-on-surface">Crear una cuenta</h2>
+        <p class="text-base text-on-surface-variant mt-1">Únete para empezar a generar impacto.</p>
+      </div>
+
+      <!-- Mensaje de error global -->
+      @if (error()) {
+        <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">
+          {{ error() }}
+        </div>
+      }
+
+      <!-- Rol Tabs -->
+      <div class="flex p-1 bg-surface-container rounded-lg mb-6">
+        <button
+          type="button"
+          (click)="rolSeleccionado = 'DONANTE'"
+          class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200"
+          [class]="rolSeleccionado === 'DONANTE'
+            ? 'bg-surface-container-lowest text-on-surface shadow-sm'
+            : 'text-on-surface-variant hover:text-on-surface'">
+          Soy Donante
+        </button>
+        <button
+          type="button"
+          (click)="rolSeleccionado = 'PERSONAL_APOYO'"
+          class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200"
+          [class]="rolSeleccionado === 'PERSONAL_APOYO'
+            ? 'bg-surface-container-lowest text-on-surface shadow-sm'
+            : 'text-on-surface-variant hover:text-on-surface'">
+          Personal de Apoyo
+        </button>
+      </div>
+
+      <!-- Formulario -->
+      <form (ngSubmit)="onSubmit()" class="space-y-4">
+
+        <!-- DNI -->
+        <div>
+          <label class="block text-xs font-medium text-on-surface-variant mb-1" for="dni">DNI</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="material-symbols-outlined text-outline-variant text-[20px]">badge</span>
+            </span>
+            <input
+              [(ngModel)]="form.dniUsuario"
+              id="dni"
+              name="dni"
+              type="text"
+              placeholder="Ingresa tu DNI"
+              required
+              pattern="\d{8}"
+              maxlength="8"
+              class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all" />
+          </div>
+          <p class="text-xs text-on-surface-variant mt-1">8 dígitos numéricos</p>
+        </div>
+
+        <!-- Nombres y Apellidos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nombres">Nombres</label>
+            <input
+              [(ngModel)]="form.nombreUsuario"
+              id="nombres"
+              name="nombres"
+              type="text"
+              placeholder="Ej. María"
+              required
+              class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="apellidos">Apellidos</label>
+            <input
+              [(ngModel)]="form.apellidosUsuario"
+              id="apellidos"
+              name="apellidos"
+              type="text"
+              placeholder="Ej. García Pérez"
+              required
+              class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all" />
+          </div>
+        </div>
+
+        <!-- Correo -->
+        <div>
+          <label class="block text-xs font-medium text-on-surface-variant mb-1" for="correo">Correo Electrónico</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="material-symbols-outlined text-outline-variant text-[20px]">mail</span>
+            </span>
+            <input
+              [(ngModel)]="form.correoUsuario"
+              id="correo"
+              name="correo"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              required
+              class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all" />
+          </div>
+        </div>
+
+        <!-- Teléfono -->
+        <div>
+          <label class="block text-xs font-medium text-on-surface-variant mb-1" for="telefono">Teléfono</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="material-symbols-outlined text-outline-variant text-[20px]">phone</span>
+            </span>
+            <input
+              [(ngModel)]="form.telefonoUsuario"
+              id="telefono"
+              name="telefono"
+              type="tel"
+              placeholder="999 999 999"
+              required
+              pattern="\d{9}"
+              maxlength="9"
+              class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all" />
+          </div>
+          <p class="text-xs text-on-surface-variant mt-1">9 dígitos numéricos</p>
+        </div>
+
+        <!-- Contraseña -->
+        <div>
+          <label class="block text-xs font-medium text-on-surface-variant mb-1" for="contrasena">Contraseña</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="material-symbols-outlined text-outline-variant text-[20px]">lock</span>
+            </span>
+            <input
+              [(ngModel)]="contrasena"
+              id="contrasena"
+              name="contrasena"
+              [type]="showPassword() ? 'text' : 'password'"
+              placeholder="Mínimo 8 caracteres"
+              required
+              minlength="8"
+              class="w-full pl-10 pr-10 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all" />
+            <button
+              type="button"
+              (click)="toggleShowPassword()"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline-variant hover:text-on-surface transition-colors">
+              <span class="material-symbols-outlined text-[20px]">{{ showPassword() ? 'visibility' : 'visibility_off' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirmar Contraseña -->
+        <div>
+          <label class="block text-xs font-medium text-on-surface-variant mb-1" for="contrasenaConfirm">Confirmar Contraseña</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="material-symbols-outlined text-outline-variant text-[20px]">lock</span>
+            </span>
+            <input
+              [(ngModel)]="contrasenaConfirm"
+              id="contrasenaConfirm"
+              name="contrasenaConfirm"
+              [type]="showPasswordConfirm() ? 'text' : 'password'"
+              placeholder="Repite tu contraseña"
+              required
+              minlength="8"
+              class="w-full pl-10 pr-10 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all"
+              [class.border-error]="contrasenaConfirm.length > 0 && !passwordsMatch" />
+            <button
+              type="button"
+              (click)="toggleShowPasswordConfirm()"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline-variant hover:text-on-surface transition-colors">
+              <span class="material-symbols-outlined text-[20px]">{{ showPasswordConfirm() ? 'visibility' : 'visibility_off' }}</span>
+            </button>
+          </div>
+          @if (contrasenaConfirm.length > 0 && !passwordsMatch) {
+            <p class="text-xs text-error mt-1">Las contraseñas no coinciden</p>
+          }
+        </div>
+
+        <!-- Botón Registrar -->
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="w-full mt-6 bg-primary-container text-white py-3 px-6 rounded-xl text-sm font-semibold shadow-sm hover:bg-brand-hover hover:shadow-md active:scale-[0.98] transition-all duration-200 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (loading()) {
+            <span class="material-symbols-outlined text-[20px] animate-spin mr-2">progress_activity</span>
+            Registrando...
+          } @else {
+            <span class="material-symbols-outlined text-[20px] mr-2">person_add</span>
+            Crear Cuenta
+          }
+        </button>
+
+        <p class="text-center text-sm text-on-surface-variant mt-4">
+          ¿Ya tienes una cuenta?
+          <a routerLink="/login" class="text-sm font-semibold text-primary-container hover:text-secondary transition-colors ml-1">Iniciar sesión</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</main>

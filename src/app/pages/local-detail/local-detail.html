@@ -1,0 +1,43 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <a routerLink="/" class="text-brand-orange hover:underline text-sm mb-4 inline-block">&larr; Volver a locales</a>
+
+  @if (loading()) {
+    <div class="text-center py-12 text-gray-500">Cargando...</div>
+  } @else if (error()) {
+    <div class="text-center py-12 text-red-500">{{ error() }}</div>
+  } @else if (local()) {
+    <div class="bg-white rounded-xl shadow-md p-8">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ local()!.nombreLocal }}</h1>
+      <div class="space-y-3 text-gray-600">
+        <p><span class="font-medium text-gray-700">Dirección:</span> {{ local()!.direccionLocal }}</p>
+        <p><span class="font-medium text-gray-700">Teléfono:</span> {{ local()!.telefonoLocal }}</p>
+        <p><span class="font-medium text-gray-700">Capacidad:</span> {{ local()!.capacidadLocalM3 }} m³</p>
+        <p>
+          <span class="font-medium text-gray-700">Estado:</span>
+          @if (local()!.estadoActivo) {
+            <span class="text-green-600 font-medium">Activo</span>
+          } @else {
+            <span class="text-red-500 font-medium">Inactivo</span>
+          }
+        </p>
+      </div>
+
+      <div class="mt-6">
+        <iframe
+          [src]="mapUrl() | safeUrl"
+          class="w-full h-72 lg:h-96 rounded-xl border border-gray-200"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen></iframe>
+        <a
+          [href]="mapsLink()"
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-2 mt-3 text-brand-orange hover:underline text-sm font-medium">
+          <span class="material-symbols-outlined text-lg">location_on</span>
+          Ver en Google Maps
+        </a>
+      </div>
+    </div>
+  }
+</div>
