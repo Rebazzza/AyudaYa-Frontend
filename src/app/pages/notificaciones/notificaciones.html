@@ -1,0 +1,50 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <h1 class="text-3xl font-bold text-on-surface mb-6">Notificaciones</h1>
+
+  @if (error()) {
+    <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-16 text-on-surface-variant">Cargando notificaciones...</div>
+  } @else if (notificaciones().length === 0) {
+    <div class="text-center py-16 text-on-surface-variant">No tienes notificaciones.</div>
+  } @else {
+    <ul class="space-y-3">
+      @for (n of notificaciones(); track n.idNoti) {
+        <li
+          (click)="marcarLeida(n)"
+          [class.bg-surface-container-lowest]="n.leido"
+          [class.bg-surface-container]="!n.leido"
+          class="flex items-start gap-4 rounded-2xl border border-outline-variant shadow-sm p-5 transition cursor-pointer">
+          <span class="w-10 h-10 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">notifications</span>
+          </span>
+          <div class="flex-1 min-w-0">
+            <p [class.font-semibold]="!n.leido" [class.font-normal]="n.leido" class="text-sm text-on-surface">
+              {{ n.mensajeNoti }}
+            </p>
+            <p class="text-xs text-on-surface-variant mt-1">{{ n.fechaEnvio | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          @if (!n.leido) {
+            <span class="shrink-0 w-2.5 h-2.5 rounded-full bg-brand-orange mt-2" title="No leída"></span>
+          }
+          <button
+            (click)="marcarLeida(n); $event.stopPropagation()"
+            class="shrink-0 text-on-surface-variant hover:text-primary-container transition"
+            title="Leída">
+            <span class="material-symbols-outlined text-lg">done</span>
+          </button>
+          <button
+            (click)="eliminar(n.idNoti); $event.stopPropagation()"
+            class="shrink-0 text-on-surface-variant hover:text-error transition"
+            title="Eliminar">
+            <span class="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+</div>

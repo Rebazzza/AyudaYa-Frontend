@@ -13,7 +13,7 @@
          style="background-image: url('https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&q=80')">
     </div>
     <div class="relative z-10 text-center p-12 max-w-lg bg-surface-container-lowest/80 backdrop-blur-sm rounded-xl border border-outline-variant shadow-sm mx-6">
-      <span class="material-symbols-outlined text-[64px] text-primary-container mb-4" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
+      <img src="favicon.png" alt="Logo AyudaYa" class="w-20 h-20 object-contain mx-auto mb-4" />
       <h1 class="text-3xl font-bold text-on-surface mb-2">AyudaYa</h1>
       <p class="text-lg text-on-surface-variant">Conectando corazones generosos con necesidades reales. Únete a nuestra iniciativa de impacto social.</p>
     </div>
@@ -200,6 +200,61 @@
             <p class="text-xs text-error mt-1">Las contraseñas no coinciden</p>
           }
         </div>
+
+        <!-- Fotos del DNI (solo donante) -->
+        @if (rolSeleccionado === 'DONANTE') {
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-medium text-on-surface-variant">Fotos del DNI (frente y reverso) — opcional</p>
+            </div>
+            @if (dniError()) {
+              <div class="bg-error-container text-on-error-container text-xs rounded-lg px-3 py-2 mb-2">{{ dniError() }}</div>
+            }
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <p class="block text-xs text-on-surface-variant mb-1">Frente</p>
+                <label class="relative block aspect-[3/2] rounded-lg border-2 border-dashed border-outline-variant hover:border-primary transition-colors cursor-pointer overflow-hidden bg-surface-container-low flex items-center justify-center">
+                  @if (dniFrontalPreview()) {
+                    <img [src]="dniFrontalPreview()" alt="DNI frente" class="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      (click)="quitarDni('frontal')"
+                      class="absolute top-1 right-1 w-6 h-6 rounded-full bg-error text-on-error flex items-center justify-center shadow hover:scale-110 transition">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  } @else {
+                    <span class="text-on-surface-variant flex flex-col items-center gap-1">
+                      <span class="material-symbols-outlined text-2xl">add_a_photo</span>
+                    </span>
+                  }
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden"
+                         (change)="onSeleccionarDni($event, 'frontal')" />
+                </label>
+              </div>
+              <div>
+                <p class="block text-xs text-on-surface-variant mb-1">Reverso</p>
+                <label class="relative block aspect-[3/2] rounded-lg border-2 border-dashed border-outline-variant hover:border-primary transition-colors cursor-pointer overflow-hidden bg-surface-container-low flex items-center justify-center">
+                  @if (dniPosteriorPreview()) {
+                    <img [src]="dniPosteriorPreview()" alt="DNI reverso" class="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      (click)="quitarDni('posterior')"
+                      class="absolute top-1 right-1 w-6 h-6 rounded-full bg-error text-on-error flex items-center justify-center shadow hover:scale-110 transition">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  } @else {
+                    <span class="text-on-surface-variant flex flex-col items-center gap-1">
+                      <span class="material-symbols-outlined text-2xl">add_a_photo</span>
+                    </span>
+                  }
+                  <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden"
+                         (change)="onSeleccionarDni($event, 'posterior')" />
+                </label>
+              </div>
+            </div>
+            <p class="text-xs text-on-surface-variant mt-1">JPG, PNG o WebP (máx. 10 MB)</p>
+          </div>
+        }
 
         <!-- Botón Registrar -->
         <button

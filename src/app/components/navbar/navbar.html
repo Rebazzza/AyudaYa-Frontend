@@ -1,10 +1,32 @@
 <nav class="bg-brand-orange text-white shadow-md">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-    <a routerLink="/" class="text-xl font-bold tracking-tight">AyudaYa</a>
-    <div class="flex items-center gap-4 text-sm">
-      <a routerLink="/" class="hover:underline">Locales</a>
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+    <a routerLink="/" class="flex items-center shrink-0" title="AyudaYa">
+      <img src="icono2.ico" alt="AyudaYa" class="h-12 w-auto" />
+    </a>
+
+    @if (session.isLoggedIn()) {
+      <div class="hidden md:flex items-center gap-5 text-sm">
+        <a routerLink="/" class="hover:underline">Inicio</a>
+        <a routerLink="/locales" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Locales</a>
+        <a routerLink="/donaciones" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Donaciones</a>
+        @if (session.esAdmin() || session.getUser()?.nombreRol === 'Personal de Apoyo') {
+          <a routerLink="/almacen/verificar" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Verificar</a>
+          <a routerLink="/almacen/inventario" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Inventario</a>
+          <a routerLink="/almacen/etiquetas" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Etiquetas</a>
+        }
+        <a routerLink="/categorias" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Categorías</a>
+        @if (session.esAdmin()) {
+          <a routerLink="/trabajadores" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Trabajadores</a>
+        }
+        <a routerLink="/notificaciones" routerLinkActive="font-bold underline underline-offset-4" class="inline-flex items-center gap-1 hover:underline">
+          <span class="material-symbols-outlined text-base">notifications</span>
+        </a>
+      </div>
+    }
+
+    <div class="flex items-center gap-4 text-sm ml-auto">
       @if (session.isLoggedIn()) {
-        <span class="opacity-80">{{ session.getUser()?.nombreUsuario }}</span>
+        <span class="opacity-80 truncate max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
         <button (click)="logout()" class="bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
           Salir
         </button>

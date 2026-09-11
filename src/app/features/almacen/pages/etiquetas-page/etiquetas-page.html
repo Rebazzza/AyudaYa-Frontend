@@ -1,0 +1,171 @@
+<section class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-orange">qr_code_2</span>
+        Etiquetas QR
+      </h1>
+      <p class="text-sm text-on-surface-variant">Genera etiquetas con QR para las donaciones almacenadas (hoja A4 recortable 3x4).</p>
+    </div>
+  </div>
+
+  <!-- Lista de donaciones en almacén -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <h2 class="font-semibold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-orange">inventory_2</span>
+        Donaciones en almacén ({{ donaciones().length }})
+      </h2>
+      <span class="text-sm font-semibold {{ seleccionadasCount() > 0 ? 'text-brand-orange' : 'text-on-surface-variant' }}">
+        {{ seleccionadasCount() }} seleccionadas
+      </span>
+    </div>
+
+    @if (loading()) {
+      <p class="text-sm text-on-surface-variant">Cargando donaciones...</p>
+    }
+    @if (error()) {
+      <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">error_outline</span>{{ error() }}
+      </div>
+    }
+
+    @if (donaciones().length > 0) {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-surface-container text-on-surface-variant text-left">
+              <th class="px-4 py-3 font-semibold w-10">
+                <input
+                  type="checkbox"
+                  [checked]="todasSeleccionadas()"
+                  (change)="toggleTodas($event)"
+                  class="w-4 h-4 accent-brand-orange cursor-pointer"
+                  title="Seleccionar todas"
+                />
+              </th>
+              <th class="px-4 py-3 font-semibold">Código de seguimiento</th>
+              <th class="px-4 py-3 font-semibold">Donante</th>
+              <th class="px-4 py-3 font-semibold">Centro de acopio</th>
+              <th class="px-4 py-3 font-semibold">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/50">
+            @for (d of donaciones(); track d.idDonacion) {
+              <tr class="{{ seleccionadas().includes(d.idDonacion) ? 'bg-brand-orange/5' : '' }}">
+                <td class="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    [checked]="seleccionadas().includes(d.idDonacion)"
+                    (change)="toggle(d)"
+                    class="w-4 h-4 accent-brand-orange cursor-pointer"
+                  />
+                </td>
+                <td class="px-4 py-3 font-mono font-semibold text-on-surface">{{ d.codigoSeguimiento }}</td>
+                <td class="px-4 py-3 text-on-surface">{{ d.nombreDonante }}</td>
+                <td class="px-4 py-3 text-on-surface-variant">{{ d.nombreLocal }}</td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center gap-1 bg-primary-fixed text-on-primary-fixed text-xs font-semibold px-2.5 py-1 rounded-full">
+                    <span class="material-symbols-outlined text-sm">warehouse</span> En almacén
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center justify-end gap-3">
+        @if (impresionError()) {
+          <span class="text-xs text-error flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">error_outline</span>{{ impresionError() }}
+          </span>
+        }
+        @if (impresionExito()) {
+          <span class="text-xs text-current flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">check_circle</span>{{ impresionExito() }}
+          </span>
+        }
+        <button
+          type="button"
+          (click)="imprimir()"
+          [disabled]="seleccionadasCount() === 0 || imprimiendo()"
+          class="inline-flex items-center gap-2 bg-brand-orange text-white px-5 py-2.5 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-40 disabled:cursor-not-allowed">
+          @if (imprimiendo()) {
+            <span class="material-symbols-outlined animate-spin">progress_activity</span>
+            Imprimiendo {{ seleccionadasCount() }} {{ seleccionadasCount() === 1 ? 'etiqueta' : 'etiquetas' }}...
+          } @else {
+            <span class="material-symbols-outlined">print</span>
+            Imprimir {{ seleccionadasCount() }} {{ seleccionadasCount() === 1 ? 'etiqueta' : 'etiquetas' }}
+          }
+        </button>
+      </div>
+    } @else {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 text-center">
+        <span class="material-symbols-outlined text-4xl text-on-surface-variant">inventory_2</span>
+        <p class="text-sm text-on-surface-variant mt-2">No hay donaciones en estado "En almacén" para etiquetar.</p>
+      </section>
+    }
+  </section>
+
+  <!-- Utilidad: notificar-test -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+    <h2 class="font-semibold text-on-surface mb-1 flex items-center gap-2">
+      <span class="material-symbols-outlined text-brand-orange">mail</span>
+      Probar plantilla de correo
+    </h2>
+    <p class="text-xs text-on-surface-variant mb-4">Envía un correo de prueba sin afectar datos reales (POST /documentos/notificar-test).</p>
+
+    <form (ngSubmit)="enviarTest()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="correoDestino">Correo destino</label>
+        <input id="correoDestino" type="email" required [(ngModel)]="testForm.correoDestino" name="correoDestino"
+               placeholder="alguien@gmail.com"
+               class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nombreDonante">Nombre del donante</label>
+        <input id="nombreDonante" type="text" required [(ngModel)]="testForm.nombreDonante" name="nombreDonante"
+               placeholder="Maria Lopez"
+               class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="codigoSeguimiento">Código de seguimiento</label>
+        <input id="codigoSeguimiento" type="text" required [(ngModel)]="testForm.codigoSeguimiento" name="codigoSeguimiento"
+               placeholder="DON-2026-AEA53A"
+               class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nuevoEstado">Nuevo estado</label>
+        <input id="nuevoEstado" type="text" required [(ngModel)]="testForm.nuevoEstado" name="nuevoEstado"
+               placeholder="ENTREGADO"
+               class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nombreLocal">Centro de acopio</label>
+        <input id="nombreLocal" type="text" required [(ngModel)]="testForm.nombreLocal" name="nombreLocal"
+               placeholder="Polideportivo San Borja"
+               class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div class="flex items-end">
+        <button type="submit"
+                [disabled]="enviandoTest()"
+                class="w-full inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-hover transition disabled:opacity-50">
+          <span class="material-symbols-outlined text-lg">{{ enviandoTest() ? 'progress_activity' : 'send' }}</span>
+          {{ enviandoTest() ? 'Enviando...' : 'Enviar correo de prueba' }}
+        </button>
+      </div>
+    </form>
+
+    @if (testMensaje()) {
+      <p class="mt-3 text-sm text-on-surface flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-base text-brand-hover">check_circle</span>{{ testMensaje() }}
+      </p>
+    }
+    @if (testError()) {
+      <p class="mt-3 text-xs text-error flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-sm">error_outline</span>{{ testError() }}
+      </p>
+    }
+  </section>
+</section>

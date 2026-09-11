@@ -1,12 +1,14 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Locales de donación</h1>
-    <a
-      routerLink="/locales/nuevo"
-      class="bg-brand-orange text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-hover transition text-sm"
-    >
-      + Registrar local
-    </a>
+    @if (esAdmin) {
+      <a
+        routerLink="/locales/nuevo"
+        class="bg-brand-orange text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-hover transition text-sm"
+      >
+        + Registrar local
+      </a>
+    }
   </div>
 
   @if (loading()) {

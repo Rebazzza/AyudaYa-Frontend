@@ -1,0 +1,178 @@
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <a routerLink="/donaciones" class="inline-flex items-center gap-1 text-primary-container hover:underline text-sm mb-4">
+    <span class="material-symbols-outlined text-base">arrow_back</span>
+    Volver a donaciones
+  </a>
+
+  @if (creada()) {
+    <!-- Éxito -->
+    <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-8 text-center max-w-xl mx-auto">
+      <span class="inline-flex w-14 h-14 rounded-full bg-primary-container/15 text-primary-container items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>
+      </span>
+      <h1 class="text-2xl font-bold text-on-surface mb-2">Donación registrada</h1>
+      <p class="text-sm text-on-surface-variant mb-1">Tu código de seguimiento generado es:</p>
+      <p class="text-3xl font-bold text-brand-orange tracking-tight mb-6">{{ creada()!.codigoSeguimiento }}</p>
+      <div class="flex flex-col sm:flex-row justify-center gap-3">
+        <a routerLink="/donaciones/{{ creada()!.idDonacion }}" class="bg-brand-orange text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition">
+          Ver detalle
+        </a>
+        <button (click)="registrarOtra()" class="px-6 py-2.5 rounded-xl font-semibold text-primary-container border border-outline-variant hover:bg-surface-container transition">
+          Registrar otra donación
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 sm:p-8">
+      <h1 class="text-3xl font-bold text-on-surface mb-2">Nueva donación</h1>
+      <p class="text-sm text-on-surface-variant mb-6">Registra una donación con su local de recepción y los insumos que la componen. El código de seguimiento se genera automáticamente.</p>
+
+      @if (error()) {
+        <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ error() }}</div>
+      }
+
+      <form (ngSubmit)="onSubmit()" class="space-y-6">
+
+        <!-- Cabecera -->
+        <fieldset class="border border-outline-variant rounded-xl p-5">
+          <legend class="text-sm font-semibold text-primary-container px-1">Datos de la donación</legend>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1" for="local">Local de recepción *</label>
+              <select
+                id="local"
+                [(ngModel)]="form.idLocalRecepcion"
+                name="local"
+                required
+                class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                <option [ngValue]="0" disabled>Seleccione un local</option>
+                @for (l of locales(); track l.idLocal) {
+                  <option [ngValue]="l.idLocal">{{ l.nombreLocal }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1">Donante *</label>
+              @if (esDonante) {
+                <input
+                  type="text"
+                  [value]="user?.nombreUsuario + ' ' + (user?.apellidosUsuario ?? '')"
+                  disabled
+                  class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container text-on-surface-variant cursor-not-allowed" />
+              } @else {
+                <div class="flex gap-2">
+                  <select
+                    [(ngModel)]="form.idUsuario"
+                    name="donante"
+                    required
+                    class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                    <option [ngValue]="0" disabled>Seleccione donante</option>
+                    @for (d of donantes(); track d.idUsuario) {
+                      <option [ngValue]="d.idUsuario">{{ d.nombreUsuario }} {{ d.apellidosUsuario }} — DNI {{ d.dniUsuario }}</option>
+                    }
+                  </select>
+                  <a
+                    routerLink="/registro"
+                    class="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold text-primary-container border border-outline-variant hover:bg-surface-container transition">
+                    <span class="material-symbols-outlined text-lg">person_add</span>
+                    Nuevo donante
+                  </a>
+                </div>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Detalles -->
+        <fieldset class="border border-outline-variant rounded-xl p-5">
+          <legend class="text-sm font-semibold text-primary-container px-1">Detalles de insumos</legend>
+
+          <div class="space-y-4">
+            @for (fila of detalles(); track $index) {
+              <div class="grid grid-cols-12 gap-3 items-end">
+                <div class="col-span-12 md:col-span-4">
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Categoría *</label>
+                  <select
+                    [(ngModel)]="fila.idCategoria"
+                    [name]="'cat' + $index"
+                    required
+                    class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                    <option [ngValue]="0" disabled>Seleccione</option>
+                    @for (c of categorias(); track c.idCategoria) {
+                      <option [ngValue]="c.idCategoria">{{ c.nombreCategoria }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-span-12 md:col-span-3">
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Descripción</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="fila.descripcionDetalle"
+                    [name]="'desc' + $index"
+                    maxlength="200"
+                    placeholder="Ej. Arroz Costeño 5kg"
+                    class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+                </div>
+                <div class="col-span-6 md:col-span-3">
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Cantidad declarada *</label>
+                  <div class="relative">
+                    <input
+                      type="number"
+                      [(ngModel)]="fila.cantidadDeclarada"
+                      [name]="'cant' + $index"
+                      required
+                      min="0.01"
+                      step="0.01"
+                      class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface pr-16 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+                    @if (unidadDe(fila)) {
+                      <span class="absolute inset-y-0 right-3 flex items-center text-xs font-medium text-on-surface-variant">{{ unidadDe(fila) }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="col-span-4 md:col-span-1">
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Vence</label>
+                  <input
+                    type="date"
+                    [(ngModel)]="fila.fechaVencimiento"
+                    [name]="'venc' + $index"
+                    class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+                </div>
+                <div class="col-span-2 md:col-span-1 flex md:justify-end">
+                  @if (detalles().length > 1) {
+                    <button
+                      type="button"
+                      (click)="quitarDetalle($index)"
+                      class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/40 transition"
+                      title="Quitar detalle">
+                      <span class="material-symbols-outlined text-xl">delete</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <button
+            type="button"
+            (click)="agregarDetalle()"
+            class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-container hover:underline">
+            <span class="material-symbols-outlined text-lg">add</span>
+            Agregar detalle
+          </button>
+        </fieldset>
+
+        @if (detalles().length > 0 && !detallesValidos()) {
+          <p class="text-xs text-error">Algún detalle está incompleto: la categoría y la cantidad declarada (mayor a 0) son obligatorias.</p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="w-full bg-brand-orange text-white py-3 px-6 rounded-xl font-semibold shadow-sm hover:bg-brand-hover transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ loading() ? 'Registrando...' : 'Registrar donación' }}
+        </button>
+      </form>
+    </div>
+  }
+</div>

@@ -1,0 +1,115 @@
+<section class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-orange">warehouse</span>
+        Inventario de Almacén
+      </h1>
+      <p class="text-sm text-on-surface-variant">Stock real verificado por categoría de insumo y alertas de caducidad.</p>
+    </div>
+  </div>
+
+  <!-- Filtro por centro de acopio -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+    <label class="block text-xs font-medium text-on-surface-variant mb-1" for="localFiltro">Centro de acopio</label>
+    <select
+      id="localFiltro"
+      [value]="localSel() ?? ''"
+      (change)="seleccionarLocal($event)"
+      class="w-full md:w-96 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
+    >
+      @for (l of locales(); track l.idLocal) {
+        <option [value]="l.idLocal">{{ l.nombreLocal }}</option>
+      }
+    </select>
+  </section>
+
+  @if (loading()) {
+    <p class="text-sm text-on-surface-variant">Cargando inventario...</p>
+  }
+
+  @if (error()) {
+    <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">error_outline</span>{{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !error() && localSel()) {
+    <!-- Banner de alerta de caducidad (RF44) -->
+    @if (alertas().length > 0) {
+      <section class="rounded-2xl border-2 px-5 py-4 {{ alertas().some((a) => urgencia(a) === 'critica') ? 'bg-error-container border-error text-on-error-container' : 'bg-orange-100 border-orange-400 text-orange-900' }}">
+        <h2 class="font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined">warning</span>
+          {{ alertas().length }} {{ alertas().length === 1 ? 'insumo está' : 'insumos están' }} próximo(s) a vencer (menos de 15 días)
+        </h2>
+        <ul class="mt-3 space-y-2">
+          @for (a of alertas(); track a.idDetalle) {
+            <li class="flex flex-wrap items-center gap-2 text-sm">
+              <span class="material-symbols-outlined text-base">{{ urgencia(a) === 'critica' ? 'local_fire_department' : 'schedule' }}</span>
+              <span class="font-medium">{{ a.nombreCategoria }}</span>
+              <span class="text-xs opacity-80">({{ a.descripcionDetalle }})</span>
+              <span class="text-xs opacity-80">· {{ a.cantidad }} unid.</span>
+              <span class="text-xs opacity-80">· Vence: {{ a.fechaVencimiento | date:'dd MMM yyyy' }}</span>
+              <span class="inline-flex items-center {{ urgencia(a) === 'critica' ? 'bg-error text-on-error' : 'bg-orange-500 text-white' }} text-xs font-bold px-2 py-0.5 rounded-full">
+                {{ diasTexto(a) }}
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    } @else {
+      <section class="rounded-2xl bg-surface-container-high border border-outline-variant/60 px-5 py-4 flex items-center gap-2 text-sm text-on-surface-variant">
+        <span class="material-symbols-outlined text-base">check_circle</span>
+        Sin alertas de caducidad próximas en este centro de acopio.
+      </section>
+    }
+
+    <!-- Cuadrícula de stock -->
+    <header class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="font-semibold text-on-surface">Stock verificado por categoría</h2>
+      <span class="text-sm text-on-surface-variant">{{ stockTotal() }} unidades en total</span>
+    </header>
+
+    @if (inventario().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (item of inventario(); track item.idCategoria) {
+          <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5 hover:shadow-md hover:border-brand-orange/40 transition">
+            <div class="flex items-start justify-between">
+              <div class="w-11 h-11 rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center">
+                <span class="material-symbols-outlined">{{ item.requiereRefrigeracion ? 'ac_unit' : 'category' }}</span>
+              </div>
+              <span class="text-2xl font-bold text-brand-orange">{{ item.stockTotalVerificado }}</span>
+            </div>
+            <h3 class="font-semibold text-on-surface mt-3">{{ item.nombreCategoria }}</h3>
+            <div class="mt-2 space-y-1 text-xs text-on-surface-variant">
+              @if (item.unidadMedida) {
+                <p>Unidad: <b class="text-on-surface">{{ item.unidadMedida }}</b></p>
+              }
+              <p class="flex flex-wrap items-center gap-2">
+                @if (item.requiereRefrigeracion) {
+                  <span class="inline-flex items-center gap-1 bg-primary-fixed text-on-primary-fixed text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                    <span class="material-symbols-outlined text-xs">ac_unit</span> Refrigeración
+                  </span>
+                }
+                @if (item.totalItemsIncidencia > 0) {
+                  <span class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                    <span class="material-symbols-outlined text-xs">report</span> {{ item.totalItemsIncidencia }} con incidencia
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant text-[11px] font-medium px-2 py-0.5 rounded-full">
+                    <span class="material-symbols-outlined text-xs">verified</span> Sin incidencias
+                  </span>
+                }
+              </p>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 text-center">
+        <span class="material-symbols-outlined text-4xl text-on-surface-variant">inventory_2</span>
+        <p class="text-sm text-on-surface-variant mt-2">No hay insumos registrados en este centro de acopio.</p>
+      </section>
+    }
+  }
+</section>

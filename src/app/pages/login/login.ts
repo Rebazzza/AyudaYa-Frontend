@@ -20,6 +20,7 @@ export class LoginComponent {
   contrasena = '';
   rememberMe = true;
   perfilSeleccionado: RolRegistrable = 'DONANTE';
+  perfil = signal<'donante' | 'acopio'>('donante');
 
   loading = signal(false);
   error = signal('');
@@ -27,6 +28,14 @@ export class LoginComponent {
 
   toggleShowPassword() {
     this.showPassword.update((v) => !v);
+  }
+
+  seleccionarPerfil(perfil: 'donante' | 'acopio') {
+    this.perfil.set(perfil);
+  }
+
+  dniLogin() {
+    alert('Inicio de sesión con DNIe / Clave Digital próximamente.');
   }
 
   private redirectAfterLogin() {
@@ -38,8 +47,14 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    this.loading.set(true);
     this.error.set('');
+
+    if (!this.correoUsuario.trim() || !this.contrasena) {
+      this.error.set('Ingresa tu correo o DNI y tu contraseña.');
+      return;
+    }
+
+    this.loading.set(true);
 
     this.auth.login({ correoUsuario: this.correoUsuario, 'contraseña': this.contrasena }).subscribe({
       next: (user) => {

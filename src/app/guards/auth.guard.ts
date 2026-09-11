@@ -14,6 +14,17 @@ export const authGuard: CanActivateFn = (route): boolean | UrlTree => {
   return router.createUrlTree(['/login'], { queryParams: { redirect: path } });
 };
 
+export const adminGuard: CanActivateFn = (): boolean | UrlTree => {
+  const session = inject(SessionService);
+  const router = inject(Router);
+
+  if (session.isLoggedIn() && session.esAdmin()) {
+    return true;
+  }
+
+  return router.createUrlTree(['/']);
+};
+
 export const guestGuard: CanActivateFn = (): boolean | UrlTree => {
   const session = inject(SessionService);
   const router = inject(Router);

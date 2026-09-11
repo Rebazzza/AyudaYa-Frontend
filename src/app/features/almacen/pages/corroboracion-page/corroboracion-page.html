@@ -1,0 +1,254 @@
+<section class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-orange">inventory_2</span>
+        Corroboración en Almacén
+      </h1>
+      <p class="text-sm text-on-surface-variant">Valida física y cantidad los paquetes recibidos en el centro de acopio.</p>
+    </div>
+  </div>
+
+  <!-- Búsqueda / Escaneo -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="codigoSeguimiento">Buscar por código de seguimiento</label>
+        <div class="flex gap-2">
+          <input
+            id="codigoSeguimiento"
+            type="text"
+            placeholder="Ej. AYU-8F3K2M1Q9X7C4A"
+            [value]="codigoInput()"
+            (input)="onCodigoChange($event)"
+            (keydown.enter)="buscarPorCodigo()"
+            class="flex-1 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 uppercase focus:outline-none focus:ring-2 focus:ring-brand-orange"
+          />
+          <button
+            type="button"
+            (click)="buscarPorCodigo()"
+            [disabled]="cargandoPendientes()"
+            class="inline-flex items-center gap-1.5 bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-hover transition disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">scan</span>
+            Buscar
+          </button>
+        </div>
+        @if (codigoError()) {
+          <p class="text-xs text-error mt-1">{{ codigoError() }}</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="pendientes">Donaciones por corroborar ({{ pendientes().length }})</label>
+        <select
+          id="pendientes"
+          (change)="seleccionarPendiente($event)"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
+        >
+          <option value="" [selected]="!seleccion()">— Selecciona una donación —</option>
+          @for (d of pendientes(); track d.idDonacion) {
+            <option [value]="d.idDonacion">{{ d.codigoSeguimiento }} · {{ d.nombreDonante }} ({{ d.estadoActual }})</option>
+          }
+        </select>
+        @if (cargandoPendientes()) {
+          <p class="text-xs text-on-surface-variant mt-1">Cargando donaciones...</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Panel de Resumen en Tiempo Real (RF30) -->
+  @if (seleccion()) {
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
+        <p class="text-xs font-medium text-on-surface-variant uppercase">Total ítems</p>
+        <p class="text-3xl font-bold text-on-surface mt-1">{{ totalItems() }}</p>
+        <p class="text-xs text-on-surface-variant mt-1">{{ filas().length }} insumos declarados</p>
+      </article>
+      <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
+        <p class="text-xs font-medium text-on-surface-variant uppercase">Con incidencias</p>
+        <p class="text-3xl font-bold mt-1 {{ conIncidencias() > 0 ? 'text-error' : 'text-on-surface' }}">{{ conIncidencias() }}</p>
+        <p class="text-xs text-on-surface-variant mt-1">Real ≠ Prometido</p>
+      </article>
+      <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
+        <p class="text-xs font-medium text-on-surface-variant uppercase">Evidencia adjunta</p>
+        <p class="text-3xl font-bold text-on-surface mt-1">{{ evidencias().length }}<span class="text-base text-on-surface-variant">/{{ maxEvidencias }}</span></p>
+        <p class="text-xs mt-1 {{ gpsError() ? 'text-error' : 'text-on-surface-variant' }}">
+          @if (lat() != null) { GPS: {{ lat() | number:'1.5-5' }}, {{ lon() | number:'1.5-5' }} }
+          @else if (gpsNavegando()) { Obteniendo GPS... }
+          @else if (gpsError()) { {{ gpsError() }} }
+          @else { Sin GPS registrado }
+        </p>
+      </article>
+    </section>
+
+    <!-- Tabla interactiva de insumos (RF33) -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+      <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/60 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="font-semibold text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-brand-orange">rule</span>
+          Insumos de {{ seleccion()!.codigoSeguimiento }}
+        </h2>
+        <span class="text-xs text-on-surface-variant">Donante: {{ seleccion()!.nombreDonante }} · Local: {{ seleccion()!.nombreLocal }}</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-surface-container text-on-surface-variant text-left">
+              <th class="px-4 py-3 font-semibold">Categoría</th>
+              <th class="px-4 py-3 font-semibold text-right">Prometido</th>
+              <th class="px-4 py-3 font-semibold">Recibido (Real)</th>
+              <th class="px-4 py-3 font-semibold">Fecha Vencimiento</th>
+              <th class="px-4 py-3 font-semibold">Incidencia</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/50">
+            @for (fila of filas(); track fila.idDetalle) {
+              <tr>
+                <td class="px-4 py-3">
+                  <p class="font-medium text-on-surface">{{ fila.categoria }}</p>
+                  <p class="text-xs text-on-surface-variant">{{ fila.descripcion }}</p>
+                </td>
+                <td class="px-4 py-3 text-right font-semibold text-on-surface">{{ fila.prometido }}</td>
+                <td class="px-4 py-3">
+                  <input
+                    type="number"
+                    min="0"
+                    [value]="fila.recibido ?? ''"
+                    (input)="onRecibidoChange(fila, $event)"
+                    placeholder="0"
+                    class="w-28 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                  />
+                </td>
+                <td class="px-4 py-3 text-on-surface-variant">
+                  @if (fila.fechaVencimiento) {
+                    {{ fila.fechaVencimiento | date:'dd MMM yyyy' }}
+                  } @else {
+                    —
+                  }
+                </td>
+                <td class="px-4 py-3">
+                  @switch (incidenciaOf(fila)) {
+                    @case ('EXCEDENTE') {
+                      <span class="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-sm">trending_up</span> Excedente
+                      </span>
+                    }
+                    @case ('FALTANTE') {
+                      <span class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-xs font-semibold px-2.5 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-sm">trending_down</span> Faltante
+                      </span>
+                    }
+                    @default {
+                      <span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant text-xs font-medium px-2.5 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-sm">check</span> Correcto
+                      </span>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Evidencia fotográfica (RF32 / RF34) -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+      <h2 class="font-semibold text-on-surface mb-3 flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-orange">photo_camera</span>
+        Evidencia de recepción
+        <span class="text-xs font-medium text-on-surface-variant">({{ evidencias().length }}/{{ maxEvidencias }})</span>
+      </h2>
+      @if (evidenciaError()) {
+        <p class="text-xs text-error mb-3">{{ evidenciaError() }}</p>
+      }
+      <div class="flex flex-wrap gap-3">
+        @if (huecosEvidencia() > 0) {
+          <label
+            class="w-32 aspect-square rounded-xl border-2 border-dashed border-outline-variant hover:border-brand-orange cursor-pointer flex flex-col items-center justify-center gap-1 text-on-surface-variant transition"
+          >
+            <span class="material-symbols-outlined text-2xl">add_a_photo</span>
+            <span class="text-[11px]">Agregar foto</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden"
+                   (change)="onSeleccionarEvidencias($event)" />
+          </label>
+        }
+        @for (url of previews(); track url; let i = $index) {
+          <div class="relative w-32 aspect-square rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low">
+            <img [src]="url" alt="Evidencia {{ i + 1 }}" class="w-full h-full object-cover" />
+            <button
+              type="button"
+              (click)="quitarEvidencia(i)"
+              class="absolute top-1 right-1 w-6 h-6 rounded-full bg-error text-on-error flex items-center justify-center shadow hover:scale-110 transition">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+        }
+      </div>
+      <p class="text-xs text-on-surface-variant mt-2">JPG, PNG o WebP (máx. 10 MB). Hasta {{ maxEvidencias }} fotos.</p>
+    </section>
+
+    <!-- Validación y confirmación (RF31 / RF41) -->
+    @if (error()) {
+      <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">error_outline</span>{{ error() }}
+      </div>
+    }
+    @if (exito()) {
+      <div class="bg-surface-container-high text-on-surface text-sm rounded-lg px-4 py-3 flex items-center gap-2 border border-outline-variant/60">
+        <span class="material-symbols-outlined text-brand-hover">check_circle</span>{{ exito() }}
+      </div>
+    }
+
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="confirmar()"
+        [disabled]="!puedeValidar() || enviando()"
+        class="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-40 disabled:cursor-not-allowed">
+        @if (enviando()) {
+          <span class="material-symbols-outlined animate-spin">progress_activity</span>
+          Confirmando...
+        } @else {
+          <span class="material-symbols-outlined">verified</span>
+          Validar y Confirmar Recepción
+        }
+      </button>
+      @if (!puedeValidar() && filas().length > 0) {
+        <span class="text-xs text-on-surface-variant">Ingresa el monto "Recibido (Real)" en todos los insumos para habilitar la confirmación.</span>
+      }
+    </div>
+  }
+
+  <!-- Modal de incidencias (RF41) -->
+  @if (modalAbierto()) {
+    <div class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" (click)="cerrarModal()">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+        <div class="w-12 h-12 rounded-full bg-error-container text-on-error-container flex items-center justify-center mx-auto mb-4">
+          <span class="material-symbols-outlined text-2xl">warning</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface text-center">Incidencias detectadas</h3>
+        <p class="text-sm text-on-surface-variant text-center mt-2">
+          Atención: Se han detectado discrepancias en <b>{{ conIncidencias() }}</b> insumos. ¿Deseas confirmar la recepción con estas incidencias?
+        </p>
+        <div class="flex flex-col gap-2 mt-6">
+          <button
+            type="button"
+            (click)="confirmarConIncidencias()"
+            [disabled]="enviando()"
+            class="w-full inline-flex items-center justify-center gap-2 bg-brand-orange text-white py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition disabled:opacity-50">
+            <span class="material-symbols-outlined">check</span>
+            Confirmar con incidencias
+          </button>
+          <button
+            type="button"
+            (click)="cerrarModal()"
+            class="w-full py-2.5 rounded-xl font-medium text-on-surface hover:bg-surface-container-low transition">
+            Revisar nuevamente
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

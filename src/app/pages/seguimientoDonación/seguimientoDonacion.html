@@ -1,0 +1,539 @@
+<main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-[1200px] flex flex-col gap-6">
+
+  <!-- Cabecera -->
+  <header class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">Trazabilidad de Donación</h1>
+        <p class="text-sm text-on-surface-variant">Revisa el estado y recorrido de tu aporte solidario.</p>
+      </div>
+      <a routerLink="/donaciones"
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-low transition-all">
+        <span class="material-symbols-outlined text-lg">arrow_back</span>
+        Volver a donaciones
+      </a>
+    </div>
+  </header>
+
+  <!-- Buscador (cuando no se accede por ID) -->
+  @if (!donacion()) {
+    <section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm">
+      <form (ngSubmit)="buscar()" class="flex flex-col md:flex-row gap-3">
+        <label class="flex-1 relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">pin</span>
+          <input
+            name="codigo"
+            [(ngModel)]="codigoInput"
+            placeholder="Ingresa el código de seguimiento de tu donación"
+            class="w-full pl-11 pr-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+          />
+        </label>
+        <button type="submit"
+                class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:bg-primary-fixed hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-60">
+          <span class="material-symbols-outlined text-lg">travel_explore</span>
+          Buscar
+        </button>
+      </form>
+      <p class="text-xs text-on-surface-variant mt-3">El código lo recibiste al registrar tu donación.</p>
+    </section>
+  }
+
+  <!-- Cargando -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-16 text-on-surface-variant text-sm">
+      <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+      Consultando el recorrido de la donación...
+    </div>
+  } @else if (error() && !donacion()) {
+    <div class="flex flex-col items-center gap-3 rounded-xl bg-surface-container-lowest border border-error/30 p-8 text-center">
+      <span class="material-symbols-outlined text-4xl text-error">search_off</span>
+      <p class="text-sm text-on-surface-variant">{{ error() }}</p>
+    </div>
+  } @else if (donacion() || tracking()) {
+
+    <!-- Banner anulada -->
+    @if (esAnulada()) {
+      <div class="flex items-start gap-3 rounded-xl bg-error-container text-on-error-container p-5">
+        <span class="material-symbols-outlined">cancel</span>
+        <div>
+          <p class="font-semibold">Donación anulada</p>
+          <p class="text-sm mt-1">Esta donación fue anulada y no continuará con el proceso de entrega.</p>
+        </div>
+      </div>
+    }
+
+    <!-- Aviso de correo notificado -->
+    @if (correoAviso()) {
+      <div class="flex items-center gap-2 rounded-xl bg-primary-fixed text-on-primary-fixed border border-primary px-4 py-3 text-sm font-medium">
+        <span class="material-symbols-outlined">mail</span>
+        {{ correoAviso() }}
+      </div>
+    }
+
+    <!-- Resumen / Cabecera -->
+    <section class="{{ donacion() ? 'rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6' : 'grid grid-cols-1 lg:grid-cols-2 gap-4' }}">
+      @if (donacion()) {
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-on-surface-variant">Código de seguimiento</p>
+            <h2 class="font-mono text-2xl font-bold text-on-surface mt-1 inline-flex items-center gap-2">
+              {{ donacion()!.codigoSeguimiento }}
+              <button
+                type="button"
+                (click)="descargarComprobante()"
+                [disabled]="generandoComprobante()"
+                title="Descargar comprobante (PDF)"
+                class="text-sm text-on-surface-variant hover:text-brand-orange transition disabled:opacity-40">
+                <span class="material-symbols-outlined">{{ generandoComprobante() ? 'progress_activity' : 'picture_as_pdf' }}</span>
+              </button>
+              <button
+                type="button"
+                (click)="copiarCodigo()"
+                title="Copiar código al portapapeles"
+                class="text-sm text-on-surface-variant hover:text-brand-orange transition">
+                <span class="material-symbols-outlined">{{ codigoCopiado() ? 'check' : 'content_copy' }}</span>
+              </button>
+            </h2>
+            <p class="text-sm text-on-surface-variant mt-1">Registrada el {{ (tracking()?.fechaRegistro ?? donacion()!.fechaRegistro) | date:'dd/M/yyyy HH:mm' }}</p>
+            @if (comprobanteError()) {
+              <p class="text-xs text-error mt-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">error_outline</span>{{ comprobanteError() }}
+              </p>
+            }
+          </div>
+          <span class="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold {{ claseEstado(estadoActual()) }}">
+            <span class="w-2 h-2 rounded-full bg-white/60"></span>
+            {{ etiquetaEstado(estadoActual()) }}
+          </span>
+        </div>
+
+        <dl class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-sm">
+          <div>
+            <dt class="text-on-surface-variant">Donante</dt>
+            <dd class="font-medium text-on-surface">{{ donacion()!.nombreDonante }}</dd>
+            <dd class="text-xs text-on-surface-variant">DNI {{ donacion()!.dniDonante }}</dd>
+          </div>
+          <div>
+            <dt class="text-on-surface-variant">Local de recepción</dt>
+            <dd class="font-medium text-on-surface">{{ donacion()!.nombreLocal }}</dd>
+            @if (donacion()!.direccionLocal) {
+              <dd class="text-xs text-on-surface-variant">{{ donacion()!.direccionLocal }}</dd>
+            }
+          </div>
+          <div>
+            <dt class="text-on-surface-variant">Trabajador</dt>
+            <dd class="font-medium text-on-surface">{{ donacion()!.nombreTrabajador ?? 'Sin asignar' }}</dd>
+          </div>
+          <div>
+            <dt class="text-on-surface-variant">Expira</dt>
+            <dd class="font-medium text-on-surface">{{ (donacion()!.fechaExpiracion | date:'dd/MM/yyyy') ?? '—' }}</dd>
+          </div>
+        </dl>
+      } @else {
+        <!-- Resumen por código -->
+        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-6 shadow-sm flex flex-col gap-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-on-surface-variant">Código de seguimiento</p>
+              <p class="font-mono text-2xl font-bold text-on-surface mt-1 inline-flex items-center gap-2">
+                {{ tracking()!.codigoSeguimiento }}
+                <button
+                  type="button"
+                  (click)="descargarComprobante()"
+                  [disabled]="generandoComprobante()"
+                  title="Descargar comprobante (PDF)"
+                  class="text-sm text-on-surface-variant hover:text-brand-orange transition disabled:opacity-40">
+                  <span class="material-symbols-outlined">{{ generandoComprobante() ? 'progress_activity' : 'picture_as_pdf' }}</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="copiarCodigo()"
+                  title="Copiar código al portapapeles"
+                  class="text-sm text-on-surface-variant hover:text-brand-orange transition">
+                  <span class="material-symbols-outlined">{{ codigoCopiado() ? 'check' : 'content_copy' }}</span>
+                </button>
+              </p>
+              @if (comprobanteError()) {
+                <p class="text-xs text-error mt-1 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">error_outline</span>{{ comprobanteError() }}
+                </p>
+              }
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold {{ claseEstado(tracking()!.estadoActual) }}">
+              <span class="material-symbols-outlined text-sm">verified</span>
+              {{ etiquetaEstado(tracking()!.estadoActual) }}
+            </span>
+          </div>
+          <div class="h-px bg-outline-variant/60 w-full"></div>
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary">calendar_today</span>
+              <div>
+                <p class="text-xs text-on-surface-variant">Fecha de registro</p>
+                <p class="text-sm text-on-surface font-medium">{{ tracking()!.fechaRegistro | date:'dd MMM yyyy, HH:mm' }}</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary">location_city</span>
+              <div>
+                <p class="text-xs text-on-surface-variant">Local de recepción</p>
+                <p class="text-sm text-on-surface font-medium">{{ tracking()!.nombreLocal }}</p>
+                <p class="text-xs text-on-surface-variant">{{ tracking()!.direccionLocal }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Stepper -->
+    <section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-6 shadow-sm">
+      <h2 class="font-semibold text-on-surface mb-6">Estado de la donación</h2>
+      <div class="relative">
+        <div class="absolute top-[15px] left-0 right-0 h-0.5 bg-outline-variant rounded-full"></div>
+        @if (pasoActual() >= 0) {
+          <div class="absolute top-[15px] left-0 h-0.5 rounded-full bg-primary transition-all duration-500"
+               [style.width.%]="pasoActual() === pasos.length - 1 ? 100 : (pasoActual() / (pasos.length - 1)) * 100"></div>
+        }
+        <div class="grid grid-cols-4 relative">
+          @for (paso of pasos; track paso.estado; let i = $index) {
+            <div class="flex flex-col items-center gap-2 text-center">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center
+                          {{ i < pasoActual() ? 'bg-primary text-on-primary shadow-sm'
+                             : i === pasoActual() && pasoActual() >= 0 ? 'bg-primary-container text-on-primary-container ring-4 ring-primary/20'
+                             : 'bg-surface-container-high border-2 border-outline-variant text-on-surface-variant' }}">
+                <span class="material-symbols-outlined text-base">{{ i < pasoActual() ? 'check' : paso.icono }}</span>
+              </div>
+              <div>
+                <p class="text-xs sm:text-sm font-semibold {{ i <= pasoActual() && pasoActual() >= 0 ? 'text-on-surface' : 'text-on-surface-variant' }}">{{ paso.etiqueta }}</p>
+                <p class="text-[11px] text-on-surface-variant">
+                  @if (i < pasoActual()) { Completado }
+                  @else if (i === pasoActual() && pasoActual() >= 0) { En proceso }
+                  @else { Pendiente }
+                </p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Mapa de ubicación -->
+    @if (ubicacion() && (donacion() || tracking())) {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/60 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="font-semibold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">map</span>
+            Mapa de ubicación
+          </h3>
+          <div class="text-xs text-on-surface-variant">
+            @if (ubicacion()!.fechaUltimoEscaneo) {
+              <span>Último escaneo: {{ ubicacion()!.fechaUltimoEscaneo | date:'dd MMM yyyy, HH:mm' }}</span>
+            } @else {
+              <span>Sin escaneos registrados</span>
+            }
+          </div>
+        </div>
+        <div class="p-6 pt-4">
+          @if (mapUrl()) {
+            <iframe
+              [src]="mapUrl() | safeUrl"
+              class="w-full h-72 lg:h-96 rounded-xl border border-outline-variant"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen></iframe>
+            <a
+              [href]="mapsLink()"
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center gap-2 mt-3 text-brand-orange hover:underline text-sm font-medium">
+              <span class="material-symbols-outlined text-lg">location_on</span>
+              Ver en Google Maps
+            </a>
+          } @else {
+            <div class="flex items-center gap-2 rounded-lg bg-surface-container-low text-on-surface-variant text-sm px-4 py-3">
+              <span class="material-symbols-outlined text-base">info</span>
+              Aún no hay coordenadas GPS. El paquete se encuentra en {{ ubicacion()!.nombreLocal }} ({{ ubicacion()!.direccionLocal }}).
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Escaneo GPS del trabajador -->
+    @if (esTrabajador && donacion() && estadosSiguientes().length > 0) {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+        <h3 class="font-semibold text-on-surface mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">gps_fixed</span>
+          Escanear punto (GPS)
+        </h3>
+
+        @if (scanError()) {
+          <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ scanError() }}</div>
+        }
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="estadoEscaneo">Estado a registrar</label>
+            <select
+              id="estadoEscaneo"
+              name="estadoEscaneo"
+              [(ngModel)]="estadoEscaneo"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+              @for (e of estadosSiguientes(); track e) {
+                <option [value]="e">{{ etiquetaEstado(e) }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="observacionEscaneo">Observación (opcional)</label>
+            <textarea
+              id="observacionEscaneo"
+              name="observacionEscaneo"
+              [(ngModel)]="observacionEscaneo"
+              rows="2"
+              placeholder="Ej. Donación recibida en el almacén central"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange"></textarea>
+          </div>
+          <button
+            type="button"
+            (click)="escanear()"
+            [disabled]="escaneando()"
+            class="w-full inline-flex items-center justify-center gap-2 bg-brand-orange text-white py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">{{ escaneando() ? 'progress_activity' : 'location_searching' }}</span>
+            {{ escaneando() ? 'Obteniendo GPS...' : 'Capturar GPS y actualizar estado' }}
+          </button>
+          <p class="text-xs text-on-surface-variant">La posición se captura con la geolocalización del navegador. Acepta el permiso de ubicación cuando lo solicite.</p>
+        </div>
+      </section>
+    }
+
+    <!-- Detalles de insumos (solo con donacion) -->
+    @if (donacion()) {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+        <h2 class="text-lg font-semibold text-on-surface mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">inventory_2</span>
+          Detalles de los insumos
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant text-left">
+                <th class="px-3 py-2.5 font-semibold">Categoría</th>
+                <th class="px-3 py-2.5 font-semibold">Descripción</th>
+                <th class="px-3 py-2.5 font-semibold text-right">Declarado</th>
+                <th class="px-3 py-2.5 font-semibold text-right">Verificado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/50">
+              @for (det of donacion()!.detalles; track det.idDetalle) {
+                <tr>
+                  <td class="px-3 py-3 font-medium text-on-surface">{{ det.nombreCategoria }}</td>
+                  <td class="px-3 py-3 text-on-surface-variant">{{ det.descripcionDetalle }}</td>
+                  <td class="px-3 py-3 text-right text-on-surface">{{ det.cantidadDeclarada }}</td>
+                  <td class="px-3 py-3 text-right text-on-surface-variant">{{ det.cantidadVerificada ?? '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- Evidencias fotográficas -->
+    @if (donacion()) {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 class="text-lg font-semibold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">photo_library</span>
+            Evidencias fotográficas
+            <span class="text-xs font-medium text-on-surface-variant">({{ imagenes().length }}/3)</span>
+          </h2>
+        </div>
+
+        @if (imagenError()) {
+          <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ imagenError() }}</div>
+        }
+
+        @if (imagenes().length === 0 && !esTrabajador) {
+          <p class="text-sm text-on-surface-variant">Sin evidencias registradas.</p>
+        }
+
+        @if (imagenes().length > 0) {
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            @for (img of imagenes(); track img.idImagen) {
+              <figure class="relative rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low group">
+                <button type="button" (click)="abrirPreview(img)" class="block w-full aspect-square" [title]="img.nombreOriginal">
+                  <img
+                    [src]="urlImagen(img)"
+                    [alt]="img.nombreOriginal"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy" />
+                </button>
+                @if (esTrabajador) {
+                  <button
+                    type="button"
+                    (click)="eliminarImagen(img)"
+                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-error text-on-error flex items-center justify-center shadow hover:scale-110 transition"
+                    title="Eliminar imagen">
+                    <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                }
+                <figcaption class="px-2 py-1.5 text-[11px] text-on-surface-variant truncate">{{ img.nombreOriginal }}</figcaption>
+              </figure>
+            }
+          </div>
+        }
+
+        @if (esTrabajador) {
+          <div class="mt-5 flex flex-col gap-3">
+            @if (huecosLibres() <= 0) {
+              <p class="text-sm text-on-surface-variant">Límite alcanzado: máximo 3 imágenes de evidencia por donación.</p>
+            } @else {
+              @if (seleccionadas().length > 0) {
+                <div class="flex flex-wrap gap-2">
+                  @for (f of seleccionadas(); track f.name; let idx = $index) {
+                    <span class="inline-flex items-center gap-2 bg-surface-container-high text-on-surface text-xs px-3 py-1.5 rounded-full">
+                      {{ f.name }}
+                      <button type="button" (click)="quitarSeleccion(idx)" class="text-on-surface-variant hover:text-error font-bold">&times;</button>
+                    </span>
+                  }
+                </div>
+              }
+              <div class="flex flex-col sm:flex-row gap-3">
+                <label class="flex-1 inline-flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant text-sm hover:border-primary hover:text-primary transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined">add_photo_alternate</span>
+                  {{ seleccionadas().length > 0 ? 'Cambiar selección' : 'Seleccionar imágenes' }}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden"
+                         (change)="onSeleccionarArchivos($event)" />
+                </label>
+                @if (seleccionadas().length > 0) {
+                  <button
+                    type="button"
+                    (click)="subirEvidencias()"
+                    [disabled]="subiendo()"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white font-semibold text-sm hover:bg-brand-hover transition disabled:opacity-50">
+                    <span class="material-symbols-outlined text-lg">{{ subiendo() ? 'progress_activity' : 'upload' }}</span>
+                    {{ subiendo() ? 'Subiendo...' : 'Subir evidencias' }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <div class="grid grid-cols-1 gap-4 items-start {{ donacion() ? 'lg:grid-cols-2' : '' }}">
+      <!-- Historial -->
+      <section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/60 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">history</span>
+          <h3 class="font-semibold text-on-surface">Historial de movimientos</h3>
+        </div>
+        <div class="divide-y divide-outline-variant/40">
+          @for (h of historialOrdenado(); track h.fechaCambio; let i = $index) {
+            <div class="px-6 py-4 flex items-start gap-4">
+              <div class="shrink-0 text-right w-28">
+                <p class="text-xs font-medium text-on-surface">{{ h.fechaCambio | date:'dd MMM yyyy' }}</p>
+                <p class="text-xs text-on-surface-variant">{{ h.fechaCambio | date:'HH:mm' }}</p>
+              </div>
+              <div class="w-8 flex-shrink-0 flex justify-center pt-1">
+                <span class="w-2.5 h-2.5 rounded-full {{ claseEstado(h.estado) }}"></span>
+              </div>
+              <div class="flex-grow">
+                <p class="text-sm font-semibold text-on-surface">{{ etiquetaEstado(h.estado) }}</p>
+                @if (h.observacion) {
+                  <p class="text-sm text-on-surface-variant">{{ h.observacion }}</p>
+                }
+                @if (h.nombreLocal) {
+                  <p class="text-xs text-on-surface-variant mt-0.5">{{ h.nombreLocal }}</p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Cambio de estado -->
+      @if (donacion() && (estadosSiguientes().length > 0 || puedeAnular())) {
+        <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">swap_horiz</span>
+            Cambiar estado
+          </h2>
+
+          @if (estadoError()) {
+            <div class="bg-error-container text-on-error-container text-sm rounded-lg px-3 py-2 mb-3">{{ estadoError() }}</div>
+          }
+
+          <div class="space-y-3">
+            @if (estadosSiguientes().length > 0) {
+              <div>
+                <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nuevoEstado">Nuevo estado</label>
+                <select
+                  id="nuevoEstado"
+                  [(ngModel)]="nuevoEstado"
+                  class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                  @for (e of estadosSiguientes(); track e) {
+                    <option [value]="e">{{ etiquetaEstado(e) }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-on-surface-variant mb-1" for="observacion">Observación (opcional)</label>
+                <textarea
+                  id="observacion"
+                  [(ngModel)]="observacion"
+                  rows="2"
+                  placeholder="Ej. Donación ingresada al almacén"
+                  class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange"></textarea>
+              </div>
+              <button
+                (click)="cambiarEstado()"
+                [disabled]="cambiandoEstado()"
+                class="w-full bg-brand-orange text-white py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition disabled:opacity-50">
+                {{ cambiandoEstado() ? 'Guardando...' : 'Actualizar estado' }}
+              </button>
+            }
+
+            @if (puedeAnular()) {
+              <button
+                (click)="anular()"
+                [disabled]="cambiandoEstado()"
+                class="w-full border border-error text-error py-2.5 rounded-xl font-semibold hover:bg-error-container/40 transition disabled:opacity-50">
+                Anular donación
+              </button>
+            }
+
+            @if (estadosSiguientes().length === 0) {
+              <p class="text-sm text-on-surface-variant">Esta donación está en un estado final y no admite más cambios.</p>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>
+</main>
+
+<!-- Lightbox de previsualización -->
+@if (vistaPrevia()) {
+  <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" (click)="cerrarPreview()">
+    <div class="relative max-w-3xl w-full" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        (click)="cerrarPreview()"
+        class="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-surface-container-lowest text-on-surface shadow-md flex items-center justify-center hover:bg-surface-container-low transition"
+        title="Cerrar">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <img
+        [src]="urlImagen(vistaPrevia()!)"
+        [alt]="vistaPrevia()!.nombreOriginal"
+        class="w-full max-h-[80vh] object-contain rounded-xl bg-surface-container-lowest" />
+      <p class="mt-3 text-center text-sm text-white">{{ vistaPrevia()!.nombreOriginal }}</p>
+    </div>
+  </div>
+}
