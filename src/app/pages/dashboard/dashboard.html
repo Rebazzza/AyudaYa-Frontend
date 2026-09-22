@@ -61,6 +61,27 @@
     </div>
   </header>
 
+  <!-- Total recaudado (admin) -->
+  @if (esAdmin && totalFondos() != null) {
+    <section class="rounded-2xl bg-gradient-to-r from-brand-orange to-brand-hover text-white p-6 shadow-md flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-2xl">account_balance</span>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-white/80">Total recaudado</p>
+          <p class="text-3xl font-bold">S/ {{ totalFondos()!.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+          <p class="text-xs text-white/80 mt-0.5">Donaciones monetarias verificadas</p>
+        </div>
+      </div>
+      <a routerLink="/verificar-fondos"
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-primary font-semibold text-sm hover:bg-surface-container-low transition-all">
+        <span class="material-symbols-outlined text-lg">verified_user</span>
+        Verificar fondos
+      </a>
+    </section>
+  }
+
   <!-- KPIs -->
   <section class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 flex flex-col justify-between gap-3">
@@ -154,6 +175,52 @@
           } @else {
             Bandeja al día
           }</p>
+        </div>
+      </a>
+      @if (esDonante) {
+        <a routerLink="/donaciones/monetaria"
+           class="group bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 hover:shadow-md transition-all flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-primary-fixed group-hover:bg-primary-container group-hover:text-on-primary transition-colors flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">payments</span>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-semibold text-on-surface group-hover:text-primary transition-colors">Donación monetaria</h3>
+            <p class="text-xs text-on-surface-variant">Aporta con YAPE, PLIN o transferencia</p>
+          </div>
+        </a>
+      }
+      @if (esTrabajador) {
+        <a routerLink="/almacen/kits"
+           class="group bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 hover:shadow-md transition-all flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-secondary-fixed group-hover:bg-secondary group-hover:text-on-secondary transition-colors flex items-center justify-center text-secondary">
+            <span class="material-symbols-outlined">construction</span>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-semibold text-on-surface group-hover:text-secondary transition-colors">Armar kits</h3>
+            <p class="text-xs text-on-surface-variant">Ensambla kits de ayuda del almacén</p>
+          </div>
+        </a>
+      }
+      @if (esAdmin) {
+        <a routerLink="/verificar-fondos"
+           class="group bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 hover:shadow-md transition-all flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-surface-container-high group-hover:bg-inverse-surface group-hover:text-inverse-on-surface transition-colors flex items-center justify-center text-on-surface">
+            <span class="material-symbols-outlined">verified_user</span>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-semibold text-on-surface group-hover:text-on-surface transition-colors">Verificar fondos</h3>
+            <p class="text-xs text-on-surface-variant">Valida donaciones monetarias pendientes</p>
+          </div>
+        </a>
+      }
+      <a routerLink="/kits/seguimiento"
+         class="group bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 hover:shadow-md transition-all flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-tertiary-fixed group-hover:bg-tertiary group-hover:text-on-tertiary transition-colors flex items-center justify-center text-tertiary">
+          <span class="material-symbols-outlined">qr_code_2</span>
+        </div>
+        <div class="min-w-0">
+          <h3 class="font-semibold text-on-surface group-hover:text-tertiary transition-colors">Seguimiento de kits</h3>
+          <p class="text-xs text-on-surface-variant">Consulta kits por código KIT-...</p>
         </div>
       </a>
       @if (esAdmin) {

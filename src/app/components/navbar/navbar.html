@@ -9,13 +9,19 @@
         <a routerLink="/" class="hover:underline">Inicio</a>
         <a routerLink="/locales" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Locales</a>
         <a routerLink="/donaciones" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Donaciones</a>
+        @if (session.getUser()?.nombreRol === 'Donante') {
+          <a routerLink="/donaciones/monetaria" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Donación monetaria</a>
+        }
         @if (session.esAdmin() || session.getUser()?.nombreRol === 'Personal de Apoyo') {
           <a routerLink="/almacen/verificar" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Verificar</a>
           <a routerLink="/almacen/inventario" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Inventario</a>
           <a routerLink="/almacen/etiquetas" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Etiquetas</a>
+          <a routerLink="/almacen/kits" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Armar kits</a>
         }
+        <a routerLink="/kits/seguimiento" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Kits</a>
         <a routerLink="/categorias" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Categorías</a>
         @if (session.esAdmin()) {
+          <a routerLink="/verificar-fondos" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Fondos</a>
           <a routerLink="/trabajadores" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Trabajadores</a>
         }
         <a routerLink="/notificaciones" routerLinkActive="font-bold underline underline-offset-4" class="inline-flex items-center gap-1 hover:underline">

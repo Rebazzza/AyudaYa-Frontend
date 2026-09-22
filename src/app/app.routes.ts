@@ -51,6 +51,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'donaciones/monetaria',
+    loadComponent: () =>
+      import('./pages/donacion-monetaria/donacion-monetaria').then((m) => m.DonacionMonetariaComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'donaciones/:id',
     loadComponent: () =>
       import('./pages/seguimientoDonación/seguimientoDonacion').then(
@@ -88,6 +94,24 @@ export const routes: Routes = [
       import('./features/almacen/pages/etiquetas-page/etiquetas-page').then(
         (m) => m.EtiquetasPageComponent,
       ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'almacen/kits',
+    loadComponent: () =>
+      import('./features/almacen/pages/armar-kits/armar-kits').then((m) => m.ArmarKitsComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'verificar-fondos',
+    loadComponent: () =>
+      import('./pages/verificar-fondos/verificar-fondos').then((m) => m.VerificarFondosComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
+    path: 'kits/seguimiento',
+    loadComponent: () =>
+      import('./pages/seguimiento-kit/seguimiento-kit').then((m) => m.SeguimientoKitComponent),
     canActivate: [authGuard],
   },
   {

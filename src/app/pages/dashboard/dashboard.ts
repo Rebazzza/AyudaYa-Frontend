@@ -7,6 +7,7 @@ import { NotificacionService } from '../../services/notificacion.service';
 import { LocalService } from '../../services/local.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { TrabajadorService } from '../../services/trabajador.service';
+import { MonetariaService } from '../../services/monetaria.service';
 import { Donacion } from '../../models/donacion.model';
 import { Notificacion } from '../../models/notificacion.model';
 
@@ -23,16 +24,19 @@ export class DashboardComponent implements OnInit {
   private localService = inject(LocalService);
   private categoriaService = inject(CategoriaService);
   private trabajadorService = inject(TrabajadorService);
+  private monetariaService = inject(MonetariaService);
 
   user = this.session.getUser();
   esDonante = this.user?.nombreRol === 'Donante';
   esAdmin = this.session.esAdmin();
+  esTrabajador = this.esAdmin || this.user?.nombreRol === 'Personal de Apoyo';
 
   donaciones = signal<Donacion[]>([]);
   notificaciones = signal<Notificacion[]>([]);
   totalLocales = signal(0);
   totalCategorias = signal(0);
   totalTrabajadores = signal(0);
+  totalFondos = signal<number | null>(null);
 
   loading = signal(true);
 
@@ -130,5 +134,12 @@ export class DashboardComponent implements OnInit {
     this.localService.listar().subscribe((data) => this.totalLocales.set(data.length));
     this.categoriaService.listar().subscribe((data) => this.totalCategorias.set(data.length));
     this.trabajadorService.listar().subscribe((data) => this.totalTrabajadores.set(data.length));
+
+    if (this.esAdmin) {
+      this.monetariaService.getTotalFondos().subscribe({
+        next: (t) => this.totalFondos.set(t.totalRecaudadoPEN ?? 0),
+        error: () => this.totalFondos.set(0),
+      });
+    }
   }
 }

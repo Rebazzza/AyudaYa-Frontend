@@ -1,0 +1,113 @@
+<main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-[820px] flex flex-col gap-6">
+
+  <header>
+    <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">Seguimiento de kits</h1>
+    <p class="text-sm text-on-surface-variant">Consulta un kit de ayuda por su código (KIT-2026-XXXXXX).</p>
+  </header>
+
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant/60 p-6">
+    <form (ngSubmit)="buscar()" class="flex flex-col md:flex-row gap-3">
+      <label class="flex-1 relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">qr_code_2</span>
+        <input
+          name="codigoKit"
+          [(ngModel)]="codigoInput"
+          placeholder="Ingresa el código del kit (ej. KIT-2026-XXXXXX)"
+          class="w-full pl-11 pr-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+        />
+      </label>
+      <button type="submit"
+              class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:bg-primary-fixed hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-60">
+        <span class="material-symbols-outlined text-lg">travel_explore</span>
+        Buscar
+      </button>
+    </form>
+  </section>
+
+  @if (buscando()) {
+    <div class="flex items-center justify-center py-16 text-on-surface-variant text-sm">
+      <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+      Consultando kit...
+    </div>
+  } @else if (error()) {
+    <div class="flex flex-col items-center gap-3 rounded-xl bg-surface-container-lowest border border-error/30 p-8 text-center">
+      <span class="material-symbols-outlined text-4xl text-error">search_off</span>
+      <p class="text-sm text-on-surface-variant">{{ error() }}</p>
+    </div>
+  } @else if (kit()) {
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+      <div class="px-6 py-5 bg-surface-container-low border-b border-outline-variant/60 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">package_2</span>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-on-surface-variant">Código del kit</p>
+            <p class="font-mono text-xl font-bold text-on-surface">{{ kit()!.codigoKit }}</p>
+          </div>
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold {{ claseEstado(kit()!.estado) }}">
+          <span class="w-2 h-2 rounded-full bg-white/60"></span>
+          {{ kit()!.estado }}
+        </span>
+      </div>
+
+      <div class="px-6 py-5 space-y-3 text-sm grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary">construction</span>
+          <div>
+            <p class="text-xs text-on-surface-variant">Nombre del kit</p>
+            <p class="font-medium text-on-surface">{{ kit()!.nombreKit }}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary">warehouse</span>
+          <div>
+            <p class="text-xs text-on-surface-variant">Centro de acopio</p>
+            <p class="font-medium text-on-surface">{{ kit()!.nombreLocal ?? '—' }}</p>
+          </div>
+        </div>
+        @if (kit()!.fechaArmado) {
+          <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-primary">calendar_today</span>
+            <div>
+              <p class="text-xs text-on-surface-variant">Fecha de armado</p>
+              <p class="font-medium text-on-surface">{{ kit()!.fechaArmado | date:'dd MMM yyyy, HH:mm' }}</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="px-6 pb-6">
+        <h3 class="text-sm font-semibold text-on-surface mb-3">Contenido del kit</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant text-left">
+                <th class="px-4 py-3 font-semibold">Categoría</th>
+                <th class="px-4 py-3 font-semibold text-right">Cantidad</th>
+                <th class="px-4 py-3 font-semibold">Unidad</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/50">
+              @for (det of kit()!.detalles; track det.idDetalleKit) {
+                <tr>
+                  <td class="px-4 py-3 font-medium text-on-surface">{{ det.nombreCategoria }}</td>
+                  <td class="px-4 py-3 text-right font-semibold text-on-surface">{{ det.cantidadInsumo }}</td>
+                  <td class="px-4 py-3 text-on-surface-variant">{{ det.unidadMedida ?? '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  } @else if (buscado()) {
+    <div class="flex flex-col items-center gap-3 rounded-xl bg-surface-container-lowest border border-outline-variant/60 p-8 text-center">
+      <span class="material-symbols-outlined text-4xl text-on-surface-variant">qr_code_2</span>
+      <p class="text-sm text-on-surface-variant">Busca un kit por su código para ver su detalle.</p>
+    </div>
+  }
+</div>
+</main>

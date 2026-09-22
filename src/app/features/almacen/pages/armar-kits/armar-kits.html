@@ -1,0 +1,205 @@
+<main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-[1080px] flex flex-col gap-6">
+
+  <header>
+    <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">Armar kits de ayuda</h1>
+    <p class="text-sm text-on-surface-variant">Ensambla kits combinando insumos del inventario verificado del almacén.</p>
+  </header>
+
+  @if (localesError()) {
+    <div class="bg-error-container text-on-error-container text-sm rounded-xl px-4 py-3">{{ localesError() }}</div>
+  }
+
+  <!-- Inventario del local -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <h2 class="font-semibold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">warehouse</span>
+        Inventario disponible
+      </h2>
+      <div>
+        <label class="mr-2 text-xs font-medium text-on-surface-variant" for="idLocal">Centro de acopio</label>
+        <select
+          id="idLocal"
+          (change)="seleccionarLocal($event)"
+          class="border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+          @for (l of locales(); track l.idLocal) {
+            <option [value]="l.idLocal" [selected]="l.idLocal === idLocal()">{{ l.nombreLocal }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (inventarioCargando()) {
+      <p class="text-sm text-on-surface-variant">Cargando inventario...</p>
+    } @else if (inventario().length === 0) {
+      <div class="flex flex-col items-center gap-2 py-10 text-center">
+        <span class="material-symbols-outlined text-4xl text-on-surface-variant">inventory_2</span>
+        <p class="text-sm text-on-surface-variant">Este local no tiene insumos verificados. Corrobora primero la recepción en "Verificar".</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-surface-container text-on-surface-variant text-left">
+              <th class="px-3 py-2.5 font-semibold">Categoría</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Stock verificado</th>
+              <th class="px-3 py-2.5 font-semibold">Unidad</th>
+              <th class="px-3 py-2.5 font-semibold text-center">Refrigeración</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/50">
+            @for (item of inventario(); track item.idCategoria) {
+              <tr>
+                <td class="px-3 py-3 font-medium text-on-surface">{{ item.nombreCategoria }}</td>
+                <td class="px-3 py-3 text-right font-semibold text-on-surface">{{ item.stockTotalVerificado }}</td>
+                <td class="px-3 py-3 text-on-surface-variant">{{ item.unidadMedida ?? '—' }}</td>
+                <td class="px-3 py-3 text-center text-on-surface-variant">{{ item.requiereRefrigeracion ? 'Sí' : 'No' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-xs text-on-surface-variant">Total: {{ stockTotal() }} unidades verificadas en este local.</p>
+    }
+  </section>
+
+  <!-- Formulario de armado -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+    <h2 class="font-semibold text-on-surface mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">construction</span>
+      Configuración del kit
+    </h2>
+
+    @if (armarError()) {
+      <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ armarError() }}</div>
+    }
+    @if (imprimirError()) {
+      <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ imprimirError() }}</div>
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nombreKit">Nombre del kit</label>
+        <input
+          id="nombreKit"
+          type="text"
+          required
+          [(ngModel)]="nombreKit"
+          name="nombreKit"
+          placeholder="Ej. Kit Familiar de Alimentos"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="cantidadKitsAFormar">Cantidad de kits a formar</label>
+        <input
+          id="cantidadKitsAFormar"
+          type="number"
+          min="1"
+          step="1"
+          required
+          [(ngModel)]="cantidadKitsAFormar"
+          name="cantidadKitsAFormar"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold text-on-surface">Insumos por kit</h3>
+        <button type="button" (click)="agregarFila()"
+                class="inline-flex items-center gap-1 text-sm font-semibold text-brand-orange hover:underline">
+          <span class="material-symbols-outlined text-base">add_circle</span>
+          Agregar insumo
+        </button>
+      </div>
+      <p class="text-xs text-on-surface-variant mb-3">La cantidad es la que irá DENTRO de cada kit. El stock total requerido = cantidad × número de kits.</p>
+
+      <div class="space-y-2">
+        @for (fila of filas(); track $index) {
+          <div class="flex flex-col sm:flex-row gap-2 items-end">
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-on-surface-variant mb-1">Categoría</label>
+              <select
+                [(ngModel)]="fila.idCategoria"
+                name="categoria-{{ $index }}"
+                class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                <option [ngValue]="0">— Seleccionar —</option>
+                @for (item of inventario(); track item.idCategoria) {
+                  <option [ngValue]="item.idCategoria">{{ item.nombreCategoria }}</option>
+                }
+              </select>
+            </div>
+            <div class="w-full sm:w-44">
+              <label class="block text-xs font-medium text-on-surface-variant mb-1">Cantidad por kit</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="fila.cantidad"
+                name="cantidad-{{ $index }}"
+                class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+            </div>
+            <div class="w-full sm:w-40 text-xs text-on-surface-variant pb-2">
+              Stock disponible: <span class="font-semibold text-on-surface">{{ stockDe(fila.idCategoria) }}</span> {{ unidadDe(fila.idCategoria) }}
+            </div>
+            <button type="button" (click)="quitarFila($index)"
+                    class="mb-0.5 inline-flex items-center justify-center w-9 h-9 rounded-lg text-error hover:bg-error-container/40 transition"
+                    title="Quitar insumo">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        (click)="armar()"
+        [disabled]="armarIcono() || inventario().length === 0"
+        class="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-40 disabled:cursor-not-allowed">
+        <span class="material-symbols-outlined text-lg">{{ armarIcono() ? 'progress_activity' : 'handyman' }}</span>
+        {{ armarIcono() ? 'Armando kits...' : 'Armar kits' }}
+      </button>
+      <p class="text-xs text-on-surface-variant">Si el stock no alcanza, verás el detalle del faltante.</p>
+    </div>
+
+    @if (kitsCreados().length > 0) {
+      <div class="mt-6 rounded-xl bg-primary-fixed/40 border border-primary/30 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h3 class="font-semibold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">check_circle</span>
+            {{ kitsCreados().length }} kit(s) armado(s)
+          </h3>
+          <button
+            type="button"
+            (click)="descargarEtiquetas()"
+            [disabled]="imprimiendo()"
+            class="inline-flex items-center gap-2 bg-brand-orange text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-hover transition disabled:opacity-50">
+            <span class="material-symbols-outlined text-base">{{ imprimiendo() ? 'progress_activity' : 'print' }}</span>
+            {{ imprimiendo() ? 'Generando...' : 'Descargar etiquetas' }}
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          @for (k of kitsCreados(); track k.codigoKit) {
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-sm font-mono font-semibold text-on-surface">
+              <span class="material-symbols-outlined text-base text-brand-orange">qr_code_2</span>
+              {{ k.codigoKit }}
+            </span>
+          }
+        </div>
+        <p class="mt-3 text-xs text-on-surface-variant">Los kits quedaron disponibles. Genera sus etiquetas QR para el etiquetado físico.</p>
+      </div>
+    }
+  </section>
+
+  <!-- Toast (stock insuficiente, etc.) -->
+  @if (toast()) {
+    <div class="fixed bottom-6 right-6 z-50 max-w-sm rounded-xl shadow-lg px-4 py-3 text-sm font-medium flex items-start gap-2 border {{ toastTipo() === 'error' ? 'bg-error-container text-on-error-container border-error/40' : 'bg-primary-fixed text-on-primary-fixed border-primary/40' }}">
+      <span class="material-symbols-outlined text-base mt-0.5">{{ toastTipo() === 'error' ? 'error_outline' : 'check_circle' }}</span>
+      {{ toast() }}
+    </div>
+  }
+</div>
+</main>
