@@ -1,9 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { LocalService } from '../../../../services/local.service';
 import { AlmacenService } from '../../../../services/almacen.service';
 import { Local } from '../../../../models/local.model';
 import { AlertaCaducidad, ResumenInventario } from '../../../../models/almacen.model';
+
+type LocalSel = number | 'all' | null;
 
 @Component({
   selector: 'app-inventario-page',
@@ -16,7 +19,7 @@ export class InventarioPageComponent implements OnInit {
   private almacenService = inject(AlmacenService);
 
   locales = signal<Local[]>([]);
-  localSel = signal<number | null>(null);
+  localSel = signal<LocalSel>(null);
 
   inventario = signal<ResumenInventario[]>([]);
   alertas = signal<AlertaCaducidad[]>([]);
@@ -45,13 +48,22 @@ export class InventarioPageComponent implements OnInit {
   }
 
   seleccionarLocal(event: Event) {
-    this.localSel.set(Number((event.target as HTMLSelectElement).value));
+    const value = (event.target as HTMLSelectElement).value;
+    this.localSel.set(value === 'all' ? 'all' : Number(value));
     this.cargarDatos();
   }
 
   private cargarDatos() {
-    const idLocal = this.localSel();
-    if (idLocal == null) return;
+    const sel = this.localSel();
+    if (sel == null) return;
+    if (sel === 'all') {
+      this.cargarTodos();
+    } else {
+      this.cargarUnLocal(sel);
+    }
+  }
+
+  private cargarUnLocal(idLocal: number) {
     this.loading.set(true);
     this.error.set('');
 
@@ -73,6 +85,57 @@ export class InventarioPageComponent implements OnInit {
     });
 
     this.loading.set(false);
+  }
+
+  private cargarTodos() {
+    this.loading.set(true);
+    this.error.set('');
+
+    const locales = this.locales();
+    if (locales.length === 0) {
+      this.loading.set(false);
+      this.error.set('No hay centros de acopio registrados.');
+      return;
+    }
+
+    forkJoin([
+      forkJoin(locales.map((l) => this.almacenService.obtenerInventario(l.idLocal))),
+      forkJoin(locales.map((l) => this.almacenService.obtenerAlertasCaducidad(l.idLocal))),
+    ]).subscribe({
+      next: ([inventarios, alertas]) => {
+        this.inventario.set(this.consolidarInventario(inventarios));
+        this.alertas.set(alertas.flat());
+        this.stockTotal.set(
+          this.inventario().reduce((acc, i) => acc + (i.stockTotalVerificado ?? 0), 0),
+        );
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.inventario.set([]);
+        this.alertas.set([]);
+        this.stockTotal.set(0);
+        this.loading.set(false);
+        this.error.set(err.error?.message || 'No se pudo cargar el inventario consolidado.');
+      },
+    });
+  }
+
+  private consolidarInventario(listas: ResumenInventario[][]): ResumenInventario[] {
+    const mapa = new Map<number, ResumenInventario>();
+    for (const lista of listas) {
+      for (const item of lista) {
+        const actual = mapa.get(item.idCategoria);
+        if (!actual) {
+          mapa.set(item.idCategoria, { ...item });
+          continue;
+        }
+        actual.stockTotalVerificado = (actual.stockTotalVerificado ?? 0) + (item.stockTotalVerificado ?? 0);
+        actual.totalItemsIncidencia = (actual.totalItemsIncidencia ?? 0) + (item.totalItemsIncidencia ?? 0);
+        actual.requiereRefrigeracion = actual.requiereRefrigeracion || item.requiereRefrigeracion;
+        if (!actual.unidadMedida && item.unidadMedida) actual.unidadMedida = item.unidadMedida;
+      }
+    }
+    return Array.from(mapa.values());
   }
 
   urgencia(alerta: AlertaCaducidad): 'critica' | 'proxima' {

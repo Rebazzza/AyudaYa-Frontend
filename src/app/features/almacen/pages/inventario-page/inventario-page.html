@@ -21,6 +21,7 @@
       @for (l of locales(); track l.idLocal) {
         <option [value]="l.idLocal">{{ l.nombreLocal }}</option>
       }
+      <option value="all">Todos los centros de acopio</option>
     </select>
   </section>
 
@@ -60,14 +61,16 @@
     } @else {
       <section class="rounded-2xl bg-surface-container-high border border-outline-variant/60 px-5 py-4 flex items-center gap-2 text-sm text-on-surface-variant">
         <span class="material-symbols-outlined text-base">check_circle</span>
-        Sin alertas de caducidad próximas en este centro de acopio.
+        Sin alertas de caducidad próximas (menos de 15 días).
       </section>
     }
 
     <!-- Cuadrícula de stock -->
     <header class="flex flex-wrap items-center justify-between gap-2">
       <h2 class="font-semibold text-on-surface">Stock verificado por categoría</h2>
-      <span class="text-sm text-on-surface-variant">{{ stockTotal() }} unidades en total</span>
+      <span class="text-sm text-on-surface-variant">
+        {{ localSel() === 'all' ? 'Consolidado de todos los centros' : 'Centro seleccionado' }} · {{ stockTotal() }} unidades en total
+      </span>
     </header>
 
     @if (inventario().length > 0) {
@@ -108,7 +111,9 @@
     } @else {
       <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 text-center">
         <span class="material-symbols-outlined text-4xl text-on-surface-variant">inventory_2</span>
-        <p class="text-sm text-on-surface-variant mt-2">No hay insumos registrados en este centro de acopio.</p>
+        <p class="text-sm text-on-surface-variant mt-2">
+          {{ localSel() === 'all' ? 'No hay insumos registrados en ningún centro de acopio.' : 'No hay insumos registrados en este centro de acopio.' }}
+        </p>
       </section>
     }
   }

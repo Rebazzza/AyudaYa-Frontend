@@ -1,4 +1,4 @@
-<nav class="bg-brand-orange text-white shadow-md">
+<nav class="bg-brand-orange text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
     <a routerLink="/" class="flex items-center shrink-0" title="AyudaYa">
       <img src="icono2.ico" alt="AyudaYa" class="h-12 w-auto" />
@@ -33,8 +33,16 @@
     <div class="flex items-center gap-4 text-sm ml-auto">
       @if (session.isLoggedIn()) {
         <span class="opacity-80 truncate max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
-        <button (click)="logout()" class="bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
+        <button (click)="logout()" class="hidden sm:inline-block bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
           Salir
+        </button>
+        <button
+          type="button"
+          (click)="toggleMenu()"
+          class="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white/15 hover:bg-white/25 transition"
+          title="{{ menuAbierto() ? 'Cerrar menú' : 'Abrir menú' }}"
+          aria-label="{{ menuAbierto() ? 'Cerrar menú' : 'Abrir menú' }}">
+          <span class="material-symbols-outlined">{{ menuAbierto() ? 'close' : 'menu' }}</span>
         </button>
       } @else {
         <a routerLink="/login" class="hover:underline">Iniciar sesión</a>
@@ -44,4 +52,36 @@
       }
     </div>
   </div>
+
+  <!-- Menú móvil -->
+  @if (session.isLoggedIn()) {
+    <div class="md:hidden bg-brand-orange text-white shadow-inner border-t border-white/15 {{ menuAbierto() ? 'block' : 'hidden' }}">
+      <nav class="px-4 py-3 flex flex-col gap-1 text-sm">
+        <a routerLink="/" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inicio</a>
+        <a routerLink="/locales" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Locales</a>
+        <a routerLink="/donaciones" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donaciones</a>
+        @if (session.getUser()?.nombreRol === 'Donante') {
+          <a routerLink="/donaciones/monetaria" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donación monetaria</a>
+        }
+        @if (session.esAdmin() || session.getUser()?.nombreRol === 'Personal de Apoyo') {
+          <a routerLink="/almacen/verificar" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar</a>
+          <a routerLink="/almacen/inventario" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inventario</a>
+          <a routerLink="/almacen/etiquetas" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Etiquetas</a>
+          <a routerLink="/almacen/kits" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Armar kits</a>
+        }
+        <a routerLink="/kits/seguimiento" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Kits</a>
+        <a routerLink="/categorias" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Categorías</a>
+        @if (session.esAdmin()) {
+          <a routerLink="/verificar-fondos" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Fondos</a>
+          <a routerLink="/trabajadores" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Trabajadores</a>
+        }
+        <a routerLink="/notificaciones" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">
+          <span class="inline-flex items-center gap-2"><span class="material-symbols-outlined text-base">notifications</span> Notificaciones</span>
+        </a>
+        <button (click)="logout()" class="mt-1 sm:hidden px-3 py-2 rounded-lg text-left bg-white/15 hover:bg-white/25 transition font-medium">
+          Salir
+        </button>
+      </nav>
+    </div>
+  }
 </nav>

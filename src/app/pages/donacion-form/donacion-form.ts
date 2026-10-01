@@ -6,6 +6,7 @@ import { CategoriaService } from '../../services/categoria.service';
 import { LocalService } from '../../services/local.service';
 import { SessionService } from '../../services/session.service';
 import { UsuarioService } from '../../services/usuario.service';
+import { AuthService } from '../../services/auth.service';
 import { Categoria } from '../../models/categoria.model';
 import { Local } from '../../models/local.model';
 import { Usuario } from '../../models/usuario.model';
@@ -30,6 +31,7 @@ export class DonacionFormComponent implements OnInit {
   private localService = inject(LocalService);
   private session = inject(SessionService);
   private usuarioService = inject(UsuarioService);
+  private auth = inject(AuthService);
 
   user = this.session.getUser();
   esDonante = this.user?.nombreRol === 'Donante';
@@ -50,6 +52,19 @@ export class DonacionFormComponent implements OnInit {
   loading = signal(false);
   creada = signal<{ idDonacion: number; codigoSeguimiento: string } | null>(null);
 
+  dialogoDonante = signal(false);
+  creandoDonante = signal(false);
+  donanteError = signal('');
+  donanteForm = {
+    dniUsuario: '',
+    nombreUsuario: '',
+    apellidosUsuario: '',
+    correoUsuario: '',
+    telefonoUsuario: '',
+  };
+  donanteContrasena = '';
+  donanteContrasenaConfirm = '';
+
   ngOnInit() {
     this.categoriaService.listar().subscribe((data) => this.categorias.set(data));
     this.localService.listar().subscribe((data) => this.locales.set(data));
@@ -60,6 +75,62 @@ export class DonacionFormComponent implements OnInit {
     this.usuarioService
       .listar()
       .subscribe((data) => this.donantes.set(data.filter((u) => u.nombreRol === 'Donante')));
+  }
+
+  abrirDialogoDonante() {
+    this.donanteForm = {
+      dniUsuario: '',
+      nombreUsuario: '',
+      apellidosUsuario: '',
+      correoUsuario: '',
+      telefonoUsuario: '',
+    };
+    this.donanteContrasena = '';
+    this.donanteContrasenaConfirm = '';
+    this.donanteError.set('');
+    this.dialogoDonante.set(true);
+  }
+
+  cerrarDialogoDonante() {
+    if (this.creandoDonante()) return;
+    this.dialogoDonante.set(false);
+  }
+
+  get donantePasswordsMatch(): boolean {
+    return this.donanteContrasena === this.donanteContrasenaConfirm;
+  }
+
+  crearDonante() {
+    this.donanteError.set('');
+
+    const f = this.donanteForm;
+    if (!f.dniUsuario.trim() || !f.nombreUsuario.trim() || !f.apellidosUsuario.trim() || !f.correoUsuario.trim() || !f.telefonoUsuario.trim()) {
+      this.donanteError.set('Completa todos los campos del donante.');
+      return;
+    }
+    if (!this.donantePasswordsMatch) {
+      this.donanteError.set('Las contraseñas no coinciden.');
+      return;
+    }
+    if (!this.donanteContrasena) {
+      this.donanteError.set('Ingresa una contraseña.');
+      return;
+    }
+
+    this.creandoDonante.set(true);
+    const body = { ...f, 'contraseña': this.donanteContrasena, tipoRegistro: 'DONANTE' as const };
+    this.auth.register(body).subscribe({
+      next: (usuario) => {
+        this.creandoDonante.set(false);
+        this.dialogoDonante.set(false);
+        this.recargarDonantes();
+        this.form.idUsuario = usuario.idUsuario;
+      },
+      error: (err) => {
+        this.creandoDonante.set(false);
+        this.donanteError.set(err.error?.message || 'Error al crear el donante');
+      },
+    });
   }
 
   nuevaFila(): DetalleForm {
