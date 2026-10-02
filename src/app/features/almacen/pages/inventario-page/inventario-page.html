@@ -116,5 +116,122 @@
         </p>
       </section>
     }
+
+    <!-- Búsqueda y filtrado de productos (HU-03) -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 space-y-4">
+      <h2 class="font-semibold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-orange">search</span>
+        Productos en almacén
+      </h2>
+
+      @if (localSel() === 'all') {
+        <p class="text-sm text-on-surface-variant">Selecciona un centro de acopio para buscar y filtrar sus productos.</p>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="busquedaProducto">Buscar por nombre o descripción</label>
+            <input
+              id="busquedaProducto"
+              type="search"
+              [value]="busqueda()"
+              (input)="onBusqueda($event)"
+              placeholder="Ej. arroz"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="categoriaProducto">Categoría</label>
+            <select
+              id="categoriaProducto"
+              [value]="categoriaFiltro() ?? ''"
+              (change)="onCategoria($event)"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
+            >
+              <option value="">Todas las categorías</option>
+              @for (c of categorias(); track c.idCategoria) {
+                <option [value]="c.idCategoria">{{ c.nombreCategoria }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="estadoProducto">Estado de conservación / vencimiento</label>
+            <select
+              id="estadoProducto"
+              [value]="estadoFiltro()"
+              (change)="onEstado($event)"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
+            >
+              <option value="">Todos los estados</option>
+              @for (e of estadosConservacion; track e.valor) {
+                <option [value]="e.valor">{{ e.texto }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        @if (errorProductos()) {
+          <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-base">error_outline</span>{{ errorProductos() }}
+          </div>
+        }
+
+        @if (cargandoProductos()) {
+          <p class="text-sm text-on-surface-variant">Buscando productos...</p>
+        } @else if (productos().length > 0) {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-xs text-on-surface-variant border-b border-outline-variant">
+                  <th class="py-2 pr-4 font-medium">Categoría</th>
+                  <th class="py-2 pr-4 font-medium">Descripción</th>
+                  <th class="py-2 pr-4 font-medium">Cantidad</th>
+                  <th class="py-2 pr-4 font-medium">Vencimiento</th>
+                  <th class="py-2 font-medium">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of productos(); track p.idDetalle) {
+                  <tr class="border-b border-outline-variant/50">
+                    <td class="py-2 pr-4 font-medium text-on-surface">{{ p.nombreCategoria }}</td>
+                    <td class="py-2 pr-4 text-on-surface-variant">{{ p.descripcionDetalle || '—' }}</td>
+                    <td class="py-2 pr-4 text-on-surface">{{ p.cantidad }} {{ p.unidadMedida }}</td>
+                    <td class="py-2 pr-4 text-on-surface-variant">{{ p.fechaVencimiento ? (p.fechaVencimiento | date:'dd MMM yyyy') : '—' }}</td>
+                    <td class="py-2">
+                      <span class="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full {{ estadoClase(p.estadoConservacion) }}">
+                        {{ estadoTexto(p.estadoConservacion) }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-on-surface-variant">
+            <span>{{ totalProductos() }} {{ totalProductos() === 1 ? 'producto' : 'productos' }} · Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                (click)="irAPagina(pagina() - 1)"
+                [disabled]="pagina() === 0"
+                class="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-high disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                (click)="irAPagina(pagina() + 1)"
+                [disabled]="pagina() + 1 >= totalPaginas()"
+                class="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-high disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        } @else if (!errorProductos()) {
+          <p class="text-sm text-on-surface-variant">No se encontraron productos con los criterios indicados.</p>
+        }
+      }
+    </section>
   }
 </section>

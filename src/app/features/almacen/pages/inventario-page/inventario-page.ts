@@ -3,8 +3,15 @@ import { DatePipe } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { LocalService } from '../../../../services/local.service';
 import { AlmacenService } from '../../../../services/almacen.service';
+import { CategoriaService } from '../../../../services/categoria.service';
 import { Local } from '../../../../models/local.model';
-import { AlertaCaducidad, ResumenInventario } from '../../../../models/almacen.model';
+import { Categoria } from '../../../../models/categoria.model';
+import {
+  AlertaCaducidad,
+  EstadoConservacion,
+  ProductoInventario,
+  ResumenInventario,
+} from '../../../../models/almacen.model';
 
 type LocalSel = number | 'all' | null;
 
@@ -17,6 +24,7 @@ type LocalSel = number | 'all' | null;
 export class InventarioPageComponent implements OnInit {
   private localService = inject(LocalService);
   private almacenService = inject(AlmacenService);
+  private categoriaService = inject(CategoriaService);
 
   locales = signal<Local[]>([]);
   localSel = signal<LocalSel>(null);
@@ -28,7 +36,32 @@ export class InventarioPageComponent implements OnInit {
   loading = signal(true);
   error = signal('');
 
+  // Búsqueda y filtrado de productos (HU-03)
+  readonly tamanioPagina = 10;
+  readonly estadosConservacion: { valor: EstadoConservacion; texto: string }[] = [
+    { valor: 'VIGENTE', texto: 'Vigente' },
+    { valor: 'POR_VENCER', texto: 'Por vencer (menos de 15 días)' },
+    { valor: 'VENCIDO', texto: 'Vencido' },
+    { valor: 'SIN_VENCIMIENTO', texto: 'Sin vencimiento' },
+  ];
+  categorias = signal<Categoria[]>([]);
+  productos = signal<ProductoInventario[]>([]);
+  busqueda = signal('');
+  categoriaFiltro = signal<number | null>(null);
+  estadoFiltro = signal<EstadoConservacion | ''>('');
+  pagina = signal(0);
+  totalPaginas = signal(0);
+  totalProductos = signal(0);
+  cargandoProductos = signal(false);
+  errorProductos = signal('');
+  private temporizadorBusqueda?: ReturnType<typeof setTimeout>;
+  private peticionProductos = 0;
+
   ngOnInit() {
+    this.categoriaService.listar().subscribe({
+      next: (data) => this.categorias.set(data),
+      error: () => this.categorias.set([]),
+    });
     this.localService.listar().subscribe({
       next: (data) => {
         this.locales.set(data);
@@ -60,6 +93,90 @@ export class InventarioPageComponent implements OnInit {
       this.cargarTodos();
     } else {
       this.cargarUnLocal(sel);
+    }
+    this.reiniciarProductos();
+  }
+
+  onBusqueda(event: Event) {
+    this.busqueda.set((event.target as HTMLInputElement).value);
+    clearTimeout(this.temporizadorBusqueda);
+    this.temporizadorBusqueda = setTimeout(() => this.reiniciarProductos(), 300);
+  }
+
+  onCategoria(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.categoriaFiltro.set(value === '' ? null : Number(value));
+    this.reiniciarProductos();
+  }
+
+  onEstado(event: Event) {
+    this.estadoFiltro.set((event.target as HTMLSelectElement).value as EstadoConservacion | '');
+    this.reiniciarProductos();
+  }
+
+  irAPagina(pagina: number) {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargarProductos();
+  }
+
+  private reiniciarProductos() {
+    this.pagina.set(0);
+    this.cargarProductos();
+  }
+
+  private cargarProductos() {
+    const sel = this.localSel();
+    if (typeof sel !== 'number') {
+      this.productos.set([]);
+      this.totalPaginas.set(0);
+      this.totalProductos.set(0);
+      return;
+    }
+    const peticion = ++this.peticionProductos;
+    this.cargandoProductos.set(true);
+    this.errorProductos.set('');
+    this.almacenService
+      .buscarProductos(sel, {
+        busqueda: this.busqueda().trim() || undefined,
+        idCategoria: this.categoriaFiltro() ?? undefined,
+        estadoConservacion: this.estadoFiltro() || undefined,
+        pagina: this.pagina(),
+        tamanio: this.tamanioPagina,
+      })
+      .subscribe({
+        next: (res) => {
+          if (peticion !== this.peticionProductos) return;
+          this.productos.set(res.contenido);
+          this.totalPaginas.set(res.totalPaginas);
+          this.totalProductos.set(res.totalElementos);
+          this.cargandoProductos.set(false);
+        },
+        error: (err) => {
+          if (peticion !== this.peticionProductos) return;
+          this.productos.set([]);
+          this.totalPaginas.set(0);
+          this.totalProductos.set(0);
+          this.cargandoProductos.set(false);
+          this.errorProductos.set(err.error?.message || 'No se pudieron cargar los productos.');
+        },
+      });
+  }
+
+  estadoTexto(estado: EstadoConservacion): string {
+    return this.estadosConservacion.find((e) => e.valor === estado)?.texto.split(' (')[0] ?? estado;
+  }
+
+  estadoClase(estado: EstadoConservacion): string {
+    switch (estado) {
+      case 'VENCIDO':
+        return 'bg-error-container text-on-error-container';
+      case 'POR_VENCER':
+        return 'bg-orange-100 text-orange-900';
+      case 'VIGENTE':
+        return 'bg-primary-fixed text-on-primary-fixed';
+      default:
+        return 'bg-surface-container-high text-on-surface-variant';
     }
   }
 
