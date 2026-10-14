@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponseDTO } from '../models/api-response.model';
-import { Local, LocalRequest } from '../models/local.model';
+import { Local, LocalRequest, CapacidadLocal } from '../models/local.model';
 
 @Injectable({ providedIn: 'root' })
 export class LocalService {
@@ -19,6 +19,12 @@ export class LocalService {
   detalle(id: number): Observable<Local> {
     return this.http
       .get<ApiResponseDTO<Local>>(`${this.base}/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
+  capacidad(id: number): Observable<CapacidadLocal> {
+    return this.http
+      .get<ApiResponseDTO<CapacidadLocal>>(`${this.base}/${id}/capacidad`)
       .pipe(map((res) => res.data));
   }
 

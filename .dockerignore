@@ -1,0 +1,27 @@
+# Dependencias: se instalan DENTRO del contenedor (etapa build).
+# Excluirlas evita que los módulos compilados en Windows sobreescriban
+# los de Linux durante el "COPY . ." y arruinen el build.
+node_modules
+
+# Salida local de compilación: se generará de nuevo en el contenedor.
+# Excluirla evita que un dist/ viejo de Windows se cuele en la imagen.
+dist
+
+# Control de versiones y metadatos
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Docker (evita copiarse a sí mismo al contexto)
+Dockerfile
+.dockerignore
+
+# Logs y temporales
+*.log
+npm-debug.log
+
+# Documentación
+README.md
+FUNCIONALIDADES_frontend.md

@@ -1,5 +1,5 @@
 export interface Notificacion {
-  idNoti: number;
+  idNotificacion: number;
   idUsuario: number;
   idDonacion: number | null;
   mensajeNoti: string;

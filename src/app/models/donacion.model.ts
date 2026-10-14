@@ -6,6 +6,7 @@ export interface DetalleDonacion {
   cantidadDeclarada: number;
   cantidadVerificada: number | null;
   fechaVencimiento: string | null;
+  activo: boolean;
 }
 
 export interface Donacion {

@@ -90,6 +90,7 @@
               <th class="px-4 py-3 font-semibold">Nombre</th>
               <th class="px-4 py-3 font-semibold">Unidad</th>
               <th class="px-4 py-3 font-semibold">Refrigeración</th>
+              <th class="px-4 py-3 font-semibold">Estado</th>
               @if (!esDonante) {
                 <th class="px-4 py-3 font-semibold text-right">Acciones</th>
               }
@@ -97,7 +98,7 @@
           </thead>
           <tbody class="divide-y divide-outline-variant/50">
             @for (c of categorias(); track c.idCategoria) {
-              <tr class="hover:bg-surface-container-low transition">
+              <tr class="hover:bg-surface-container-low transition" [class.opacity-60]="!c.activo">
                 <td class="px-4 py-3 font-medium text-on-surface">{{ c.nombreCategoria }}</td>
                 <td class="px-4 py-3 text-on-surface-variant">{{ c.unidadMedCate }}</td>
                 <td class="px-4 py-3">
@@ -107,15 +108,24 @@
                     <span class="text-on-surface-variant/50">—</span>
                   }
                 </td>
+                <td class="px-4 py-3">
+                  @if (c.activo) {
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-container/15 text-primary-container">Activa</span>
+                  } @else {
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">Deshabilitada</span>
+                  }
+                </td>
                 @if (!esDonante) {
                   <td class="px-4 py-3">
                     <div class="flex justify-end gap-1">
                       <button (click)="abrirEdicion(c)" class="p-2 rounded-lg text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition" title="Editar">
                         <span class="material-symbols-outlined text-lg">edit</span>
                       </button>
-                      <button (click)="eliminar(c.idCategoria, c.nombreCategoria)" class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/40 transition" title="Eliminar">
-                        <span class="material-symbols-outlined text-lg">delete</span>
-                      </button>
+                      @if (c.activo) {
+                        <button (click)="deshabilitar(c.idCategoria, c.nombreCategoria)" class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/40 transition" title="Deshabilitar">
+                          <span class="material-symbols-outlined text-lg">block</span>
+                        </button>
+                      }
                     </div>
                   </td>
                 }

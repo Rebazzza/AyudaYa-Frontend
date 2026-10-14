@@ -27,6 +27,12 @@ export class NotificacionService {
       .pipe(map((res) => res.data));
   }
 
+  marcarTodoLeido(idUsuario: number): Observable<number> {
+    return this.http
+      .put<ApiResponseDTO<number>>(`${this.base}/usuario/${idUsuario}/leido-todo`, {})
+      .pipe(map((res) => res.data));
+  }
+
   eliminar(id: number): Observable<void> {
     return this.http.delete<ApiResponseDTO<null>>(`${this.base}/${id}`).pipe(map(() => undefined));
   }

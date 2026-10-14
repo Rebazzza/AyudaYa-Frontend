@@ -1,6 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { DonacionService } from '../../services/donacion.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { LocalService } from '../../services/local.service';
@@ -8,7 +10,7 @@ import { SessionService } from '../../services/session.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
 import { Categoria } from '../../models/categoria.model';
-import { Local } from '../../models/local.model';
+import { Local, CapacidadLocal } from '../../models/local.model';
 import { Usuario } from '../../models/usuario.model';
 import { DetalleDonacionRegistroRequest } from '../../models/donacion.model';
 
@@ -39,6 +41,7 @@ export class DonacionFormComponent implements OnInit {
   categorias = signal<Categoria[]>([]);
   locales = signal<Local[]>([]);
   donantes = signal<Usuario[]>([]);
+  capacidades = signal<Record<number, CapacidadLocal>>({});
 
   form = {
     idUsuario: this.esDonante ? (this.user?.idUsuario ?? 0) : 0,
@@ -66,9 +69,36 @@ export class DonacionFormComponent implements OnInit {
   donanteContrasenaConfirm = '';
 
   ngOnInit() {
-    this.categoriaService.listar().subscribe((data) => this.categorias.set(data));
-    this.localService.listar().subscribe((data) => this.locales.set(data));
+    this.categoriaService.listarActivas().subscribe((data) => this.categorias.set(data));
+    this.cargarLocales();
     this.recargarDonantes();
+  }
+
+  cargarLocales() {
+    this.localService.listar().subscribe((data) => {
+      this.locales.set(data);
+      if (data.length === 0) return;
+
+      forkJoin(
+        data.map((l) =>
+          this.localService.capacidad(l.idLocal).pipe(catchError(() => of(null))),
+        ),
+      ).subscribe((capacidades) => {
+        const mapa: Record<number, CapacidadLocal> = {};
+        for (const c of capacidades) {
+          if (c) mapa[c.idLocal] = c;
+        }
+        this.capacidades.set(mapa);
+      });
+    });
+  }
+
+  localLleno(idLocal: number): boolean {
+    return this.capacidades()[idLocal]?.lleno ?? false;
+  }
+
+  get localSeleccionadoLleno(): boolean {
+    return this.form.idLocalRecepcion > 0 && this.localLleno(this.form.idLocalRecepcion);
   }
 
   recargarDonantes() {
@@ -184,6 +214,11 @@ export class DonacionFormComponent implements OnInit {
   onSubmit() {
     this.error.set('');
 
+    if (this.localSeleccionadoLleno) {
+      this.error.set('El local seleccionado alcanzó su capacidad máxima y no puede recibir nuevas donaciones.');
+      return;
+    }
+
     if (!this.validar()) {
       this.error.set('Completa los campos obligatorios: local, donante, y al menos un detalle con categoría y cantidad mayor a 0.');
       return;
@@ -195,7 +230,7 @@ export class DonacionFormComponent implements OnInit {
       detalles: this.detalles().map((f) => ({
         idCategoria: f.idCategoria,
         descripcionDetalle: f.descripcionDetalle,
-        cantidadDeclarada: f.cantidadDeclarada,
+        cantidadDeclarada: Number(f.cantidadDeclarada),
         fechaVencimiento: this.formatearFecha(f.fechaVencimiento),
       })) as DetalleDonacionRegistroRequest[],
     };

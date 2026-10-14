@@ -47,9 +47,14 @@
                 class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
                 <option [ngValue]="0" disabled>Seleccione un local</option>
                 @for (l of locales(); track l.idLocal) {
-                  <option [ngValue]="l.idLocal">{{ l.nombreLocal }}</option>
+                  <option [ngValue]="l.idLocal" [disabled]="localLleno(l.idLocal)">
+                    {{ l.nombreLocal }}{{ localLleno(l.idLocal) ? ' — LLENO (sin capacidad)' : '' }}
+                  </option>
                 }
               </select>
+              @if (localSeleccionadoLleno) {
+                <p class="text-xs text-error mt-1">Este local alcanzó su capacidad máxima y no puede recibir nuevas donaciones.</p>
+              }
             </div>
 
             <div>

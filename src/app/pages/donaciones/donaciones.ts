@@ -19,6 +19,8 @@ export class DonacionesComponent implements OnInit {
   donaciones = signal<Donacion[]>([]);
   loading = signal(true);
   error = signal('');
+  donacionAEliminar = signal<Donacion | null>(null);
+  eliminando = signal(false);
 
   filtroEstado = '';
   busqueda = '';
@@ -83,5 +85,33 @@ export class DonacionesComponent implements OnInit {
     this.filtroEstado = '';
     this.busqueda = '';
     this.cargar();
+  }
+
+  eliminar(d: Donacion) {
+    this.error.set('');
+    this.donacionAEliminar.set(d);
+  }
+
+  cancelarEliminar() {
+    if (this.eliminando()) return;
+    this.donacionAEliminar.set(null);
+  }
+
+  confirmarEliminar() {
+    const d = this.donacionAEliminar();
+    if (!d || this.eliminando()) return;
+    this.eliminando.set(true);
+    this.error.set('');
+    this.donacionService.eliminar(d.idDonacion).subscribe({
+      next: () => {
+        this.eliminando.set(false);
+        this.donacionAEliminar.set(null);
+        this.donaciones.update((rows) => rows.filter((r) => r.idDonacion !== d.idDonacion));
+      },
+      error: (err) => {
+        this.eliminando.set(false);
+        this.error.set(err.error?.message || 'Error al eliminar la donación');
+      },
+    });
   }
 }

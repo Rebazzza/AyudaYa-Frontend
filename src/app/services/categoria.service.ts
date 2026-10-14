@@ -14,6 +14,12 @@ export class CategoriaService {
     return this.http.get<ApiResponseDTO<Categoria[]>>(this.base).pipe(map((res) => res.data));
   }
 
+  listarActivas(): Observable<Categoria[]> {
+    return this.http
+      .get<ApiResponseDTO<Categoria[]>>(`${this.base}/activas`)
+      .pipe(map((res) => res.data));
+  }
+
   detalle(id: number): Observable<Categoria> {
     return this.http.get<ApiResponseDTO<Categoria>>(`${this.base}/${id}`).pipe(map((res) => res.data));
   }
@@ -26,7 +32,9 @@ export class CategoriaService {
     return this.http.put<ApiResponseDTO<Categoria>>(`${this.base}/${id}`, data).pipe(map((res) => res.data));
   }
 
-  eliminar(id: number): Observable<void> {
-    return this.http.delete<ApiResponseDTO<null>>(`${this.base}/${id}`).pipe(map(() => undefined));
+  deshabilitar(id: number): Observable<Categoria> {
+    return this.http
+      .put<ApiResponseDTO<Categoria>>(`${this.base}/${id}/deshabilitar`, {})
+      .pipe(map((res) => res.data));
   }
 }

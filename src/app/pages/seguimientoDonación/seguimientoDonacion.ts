@@ -62,6 +62,7 @@ export class SeguimientoDonacionComponent implements OnInit {
   generandoComprobante = signal(false);
   comprobanteError = signal('');
   correoAviso = signal('');
+  bajandoDetalle = signal<number | null>(null);
 
   mapUrl = computed(() => {
     const u = this.ubicacion();
@@ -122,6 +123,12 @@ export class SeguimientoDonacionComponent implements OnInit {
     return d?.estadoActual === 'REGISTRADO' && d.idUsuario === this.usuario?.idUsuario;
   });
 
+  puedeDarDeBajaProducto = computed(() => {
+    const d = this.donacion();
+    if (!d || !this.esTrabajador) return false;
+    return ['REGISTRADO', 'EN_TRANSITO', 'EN_ALMACEN'].includes(d.estadoActual);
+  });
+
   estadoActual = computed(() =>
     this.tracking()?.estadoActual ?? this.donacion()?.estadoActual ?? '',
   );
@@ -138,6 +145,8 @@ export class SeguimientoDonacionComponent implements OnInit {
   puedeCargarEvidencias = computed(
     () => !!this.donacion() && this.esTrabajador && this.imagenes().length + this.seleccionadas().length < 3,
   );
+
+  detallesActivos = computed(() => (this.donacion()?.detalles ?? []).filter((d) => d.activo));
 
   huecosLibres = computed(() => 3 - this.imagenes().length);
 
@@ -459,6 +468,27 @@ export class SeguimientoDonacionComponent implements OnInit {
       error: (err) => {
         this.cambiandoEstado.set(false);
         this.estadoError.set(err.error?.message || 'Error al anular la donación');
+      },
+    });
+  }
+
+  darDeBajaProducto(idDetalle: number, descripcion: string) {
+    const d = this.donacion();
+    if (!d || this.bajandoDetalle() != null) return;
+    if (!confirm(`¿Dar de baja el producto "${descripcion || idDetalle}"? Quedará inactivo en la donación.`)) return;
+    this.bajandoDetalle.set(idDetalle);
+    this.estadoError.set('');
+    this.donacionService.darDeBajaProducto(d.idDonacion, idDetalle).subscribe({
+      next: () => {
+        this.bajandoDetalle.set(null);
+        this.donacionService.detalle(d.idDonacion).subscribe({
+          next: (updated) => this.donacion.set(updated),
+          error: () => {},
+        });
+      },
+      error: (err) => {
+        this.bajandoDetalle.set(null);
+        this.estadoError.set(err.error?.message || 'No se pudo dar de baja el producto');
       },
     });
   }

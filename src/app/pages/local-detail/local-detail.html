@@ -11,7 +11,22 @@
       <div class="space-y-3 text-gray-600">
         <p><span class="font-medium text-gray-700">Dirección:</span> {{ local()!.direccionLocal }}</p>
         <p><span class="font-medium text-gray-700">Teléfono:</span> {{ local()!.telefonoLocal }}</p>
-        <p><span class="font-medium text-gray-700">Capacidad:</span> {{ local()!.capacidadLocalM3 }} m³</p>
+        <p>
+          <span class="font-medium text-gray-700">Capacidad:</span>
+          @if (local()!.capacidadLocalM3 != null) { {{ local()!.capacidadLocalM3 }} m³ } @else { Sin límite registrado }
+        </p>
+        @if (capacidad(); as cap) {
+          <p>
+            <span class="font-medium text-gray-700">Donaciones en almacén:</span>
+            {{ cap.donacionesEnAlmacen }}
+            @if (porcentajeOcupacion() != null) { ({{ porcentajeOcupacion() }}%) }
+          </p>
+          @if (cap.lleno) {
+            <div class="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3">
+              El local {{ cap.nombreLocal }} alcanzó su capacidad máxima y no puede recibir nuevas donaciones.
+            </div>
+          }
+        }
         <p>
           <span class="font-medium text-gray-700">Estado:</span>
           @if (local()!.estadoActivo) {

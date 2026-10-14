@@ -3,6 +3,7 @@ export interface Categoria {
   nombreCategoria: string;
   unidadMedCate: string;
   refrigerar: boolean;
+  activo: boolean;
 }
 
 export interface CategoriaRequest {

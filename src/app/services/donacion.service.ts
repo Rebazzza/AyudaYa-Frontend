@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { ApiResponseDTO } from '../models/api-response.model';
 import {
   CambioEstadoRequest,
+  DetalleDonacion,
   Donacion,
   DonacionRegistroRequest,
   DonacionRequest,
@@ -66,6 +67,18 @@ export class DonacionService {
     const params = new HttpParams().set('idUsuario', idUsuario);
     return this.http
       .put<ApiResponseDTO<Donacion>>(`${this.base}/${id}/anular`, {}, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  eliminar(id: number): Observable<void> {
+    return this.http
+      .delete<ApiResponseDTO<null>>(`${this.base}/${id}`)
+      .pipe(map(() => undefined));
+  }
+
+  darDeBajaProducto(idDonacion: number, idDetalle: number): Observable<DetalleDonacion> {
+    return this.http
+      .delete<ApiResponseDTO<DetalleDonacion>>(`${this.base}/${idDonacion}/productos/${idDetalle}`)
       .pipe(map((res) => res.data));
   }
 

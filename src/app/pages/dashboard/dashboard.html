@@ -297,7 +297,7 @@
       </div>
 
       <div class="divide-y divide-outline-variant/40">
-        @for (n of notificacionesRecientes(); track n.idNoti) {
+        @for (n of notificacionesRecientes(); track n.idNotificacion) {
           <div class="px-5 py-4 flex items-start gap-3">
             <span class="mt-0.5 w-2.5 h-2.5 rounded-full shrink-0 {{ n.leido ? 'bg-outline-variant' : 'bg-brand-orange' }}"></span>
             <div class="min-w-0">

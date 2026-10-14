@@ -100,13 +100,13 @@ export class CategoriasComponent implements OnInit {
     });
   }
 
-  eliminar(id: number, nombre: string) {
-    if (!confirm(`¿Eliminar la categoría "${nombre}"?`)) return;
+  deshabilitar(id: number, nombre: string) {
+    if (!confirm(`¿Deshabilitar la categoría "${nombre}"?`)) return;
 
-    this.categoriaService.eliminar(id).subscribe({
+    this.categoriaService.deshabilitar(id).subscribe({
       next: () => this.cargar(),
       error: (err) => {
-        this.error.set(err.error?.message || 'No se pudo eliminar la categoría');
+        this.error.set(err.error?.message || 'No se pudo deshabilitar la categoría');
       },
     });
   }

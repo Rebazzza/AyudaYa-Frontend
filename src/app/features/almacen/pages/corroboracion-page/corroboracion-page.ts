@@ -106,9 +106,7 @@ export class CorroboracionPageComponent implements OnInit {
   }
 
   private filtrarVerificables(data: Donacion[]): Donacion[] {
-    return data.filter(
-      (d) => d.estadoActual !== 'ANULADO' && d.estadoActual !== 'RECHAZADA',
-    );
+    return data.filter((d) => d.estadoActual === 'REGISTRADO');
   }
 
   onCodigoChange(event: Event) {

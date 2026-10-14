@@ -4,7 +4,7 @@ export interface Local {
   direccionLocal: string;
   latitud: number;
   longitud: number;
-  capacidadLocalM3: number;
+  capacidadLocalM3: number | null;
   telefonoLocal: string;
   estadoActivo: boolean;
 }
@@ -14,6 +14,14 @@ export interface LocalRequest {
   direccionLocal: string;
   latitud: number;
   longitud: number;
-  capacidadLocalM3: number;
+  capacidadLocalM3: number | null;
   telefonoLocal: string;
+}
+
+export interface CapacidadLocal {
+  idLocal: number;
+  nombreLocal: string;
+  capacidadLocalM3: number | null;
+  donacionesEnAlmacen: number;
+  lleno: boolean;
 }
