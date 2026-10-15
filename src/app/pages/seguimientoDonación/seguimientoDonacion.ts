@@ -123,6 +123,11 @@ export class SeguimientoDonacionComponent implements OnInit {
     return d?.estadoActual === 'REGISTRADO' && d.idUsuario === this.usuario?.idUsuario;
   });
 
+  // El donante no puede modificar el estado de su donación: solo el personal
+  // de apoyo (o el admin) puede avanzar el flujo; el donante únicamente
+  // solicita la anulación mediante `anular()`.
+  puedeCambiarEstado = computed(() => this.esTrabajador && this.estadosSiguientes().length > 0);
+
   puedeDarDeBajaProducto = computed(() => {
     const d = this.donacion();
     if (!d || !this.esTrabajador) return false;
@@ -421,6 +426,10 @@ export class SeguimientoDonacionComponent implements OnInit {
   cambiarEstado() {
     const d = this.donacion();
     if (!d) return;
+    if (!this.puedeCambiarEstado()) {
+      this.estadoError.set('Solo el personal de apoyo puede actualizar el estado de la donación.');
+      return;
+    }
     this.cambiandoEstado.set(true);
     this.estadoError.set('');
     this.donacionService.cambiarEstado(d.idDonacion, {
@@ -450,7 +459,7 @@ export class SeguimientoDonacionComponent implements OnInit {
 
   anular() {
     const d = this.donacion();
-    if (!d) return;
+    if (!d || !this.puedeAnular()) return;
     if (!confirm('¿Anular esta donación? Esta acción no se puede deshacer.')) return;
     this.cambiandoEstado.set(true);
     this.estadoError.set('');

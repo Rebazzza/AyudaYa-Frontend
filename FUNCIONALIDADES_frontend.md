@@ -106,7 +106,7 @@ Rutas: `/donaciones/:id` y `/seguimiento` (búsqueda por código).
 
 **Acciones por rol:**
 - **Trabajador/Admin:** escanear punto GPS (geolocalización, alta precisión), cambiar estado, subir/eliminar evidencias (`EVIDENCIA_RECEPCION`), notificar al donante.
-- **Donante (dueño):** anular solo si estado `REGISTRADO` (según `puedeAnular`).
+- **Donante (dueño):** únicamente solicitar la anulación (solo si estado `REGISTRADO`, según `puedeAnular`). **No puede actualizar el estado**: la sección "Cambiar estado" (selector + botón) solo se muestra si `puedeCambiarEstado()` (`esTrabajador`); el donante ve solo el mensaje informativo y el botón de anulación. El servicio `cambiarEstado()` está protegido en el componente.
 - **Cualquier autenticado:** descargar comprobante PDF, copiar código.
 
 **Máquina de transiciones:**
@@ -252,7 +252,7 @@ ENTREGADO/ANULADO → (terminal)
 |---|---|---|---|---|
 | Usuario | Registro (+ donante en formulario) | Sí (listar) | No | No |
 | Local | Sí (solo Admin) | Sí | No | No |
-| Donación insumos | Sí | Sí | No directo (estados/anular) | No |
+| Donación insumos | Sí | Sí | No directo (estados: solo personal de apoyo / anulación: solo donante dueño) | No |
 | Donación monetaria | Sí | Sí | No (solo verificación de estado) | No |
 | Categoría | Sí (no donante) | Sí | Sí (no donante) | Sí (no donante) |
 | Trabajador | Sí (Admin) | Sí | Sí (Admin) | No |

@@ -474,11 +474,11 @@
       </section>
 
       <!-- Cambio de estado -->
-      @if (donacion() && (estadosSiguientes().length > 0 || puedeAnular())) {
+      @if (donacion() && (puedeCambiarEstado() || puedeAnular())) {
         <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
           <h2 class="text-lg font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">swap_horiz</span>
-            Cambiar estado
+            <span class="material-symbols-outlined text-primary">{{ puedeCambiarEstado() ? 'swap_horiz' : 'cancel' }}</span>
+            {{ puedeCambiarEstado() ? 'Cambiar estado' : 'Solicitar anulación' }}
           </h2>
 
           @if (estadoError()) {
@@ -486,7 +486,7 @@
           }
 
           <div class="space-y-3">
-            @if (estadosSiguientes().length > 0) {
+            @if (puedeCambiarEstado()) {
               <div>
                 <label class="block text-xs font-medium text-on-surface-variant mb-1" for="nuevoEstado">Nuevo estado</label>
                 <select
@@ -513,6 +513,12 @@
                 class="w-full bg-brand-orange text-white py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition disabled:opacity-50">
                 {{ cambiandoEstado() ? 'Guardando...' : 'Actualizar estado' }}
               </button>
+            } @else {
+              <p class="text-sm text-on-surface-variant">
+                Como donante no puedes modificar el estado de esta donación: los cambios son realizados por el personal de la ONG.
+                Solo puedes solicitar su anulación mientras la donación esté en estado
+                <span class="font-medium text-on-surface">Registrado</span>.
+              </p>
             }
 
             @if (puedeAnular()) {
