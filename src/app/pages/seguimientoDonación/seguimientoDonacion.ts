@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
@@ -26,7 +26,7 @@ interface Paso {
   imports: [FormsModule, DatePipe, RouterLink, SafeUrlPipe],
   templateUrl: './seguimientoDonacion.html',
 })
-export class SeguimientoDonacionComponent implements OnInit {
+export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private donacionService = inject(DonacionService);
   private session = inject(SessionService);
@@ -70,6 +70,37 @@ export class SeguimientoDonacionComponent implements OnInit {
       ? `https://maps.google.com/maps?q=${u.latitudGPS},${u.longitudGPS}&z=16&output=embed`
       : '';
   });
+
+  /**
+   * RF40 · Ubicación actual del paquete: el centro donde se escaneó por última
+   * vez (GPS + local) y, si todavía no hay escaneos, el local asignado a la
+   * donación para que el donante siempre vea dónde está su paquete.
+   */
+  ubicacionInfo = computed<UbicacionActual | null>(() => {
+    const ubicacion = this.ubicacion();
+    if (ubicacion) return ubicacion;
+
+    const track = this.tracking();
+    const d = this.donacion();
+    const nombreLocal = track?.nombreLocal ?? d?.nombreLocal ?? null;
+    if (!nombreLocal) return null;
+
+    return {
+      codigoSeguimiento: track?.codigoSeguimiento ?? d?.codigoSeguimiento ?? '',
+      estadoActual: track?.estadoActual ?? d?.estadoActual ?? '',
+      nombreLocal,
+      direccionLocal: track?.direccionLocal ?? d?.direccionLocal ?? '',
+      latitudGPS: null,
+      longitudGPS: null,
+      fechaUltimoEscaneo: null,
+    };
+  });
+
+  private timerUbicacion: ReturnType<typeof setInterval> | null = null;
+
+  private codigoSeguimientoActual(): string {
+    return this.tracking()?.codigoSeguimiento ?? this.donacion()?.codigoSeguimiento ?? '';
+  }
 
   mapsLink = computed(() => {
     const u = this.ubicacion();
@@ -202,6 +233,17 @@ export class SeguimientoDonacionComponent implements OnInit {
     } else {
       this.loading.set(false);
     }
+
+    // RF40 · la "Ubicación Actual" se sincroniza sola por si el paquete fue
+    // escaneado en otro centro mientras el donante tiene la página abierta.
+    this.timerUbicacion = setInterval(() => {
+      const codigoActual = this.codigoSeguimientoActual();
+      if (codigoActual) this.cargarUbicacion(codigoActual);
+    }, 30_000);
+  }
+
+  ngOnDestroy() {
+    if (this.timerUbicacion) clearInterval(this.timerUbicacion);
   }
 
   cargarPorId(id: number) {

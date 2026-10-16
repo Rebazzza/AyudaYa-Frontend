@@ -100,13 +100,13 @@ Rutas: `/donaciones/:id` y `/seguimiento` (búsqueda por código).
 **Información mostrada:**
 - Resumen: código (copiar / descargar comprobante PDF), donante + DNI, local, trabajador, fecha de expiración.
 - **Stepper:** Registrado → En tránsito → Verificado → Entregado (En almacén se normaliza a "En tránsito").
-- Mapa de ubicación (GPS del último escaneo o local actual).
+- **Ubicación actual (RF40):** bloque con el **centro de distribución / local de acopio donde se escaneó el paquete por última vez** (nombre del local, dirección, fecha del último escaneo y mapa con las coordenadas GPS del escaneo + enlace a Google Maps). La ubicación se carga con `GET /ubicaciones/tracking/{codigo}` y **se refresca automáticamente cada 30 s**; si aún no hay escaneos, muestra el local asignado a la donación.
 - Tabla de insumos: cantidad declarada (prometida) vs verificada.
 - Galería de evidencias (hasta 3 imágenes, lightbox).
 - Historial de movimientos (timeline) / notificaciones al donante.
 
 **Acciones por rol:**
-- **Trabajador/Admin:** escanear punto GPS (geolocalización, alta precisión), cambiar estado, subir/eliminar evidencias (`EVIDENCIA_RECEPCION`), notificar al donante.
+- **Trabajador/Admin:** escanear punto GPS (geolocalización, alta precisión) con `POST /ubicaciones/escaneo`, lo que **sincroniza la Ubicación Actual del donante** (local + coordenadas + fecha del último escaneo), cambiar estado, subir/eliminar evidencias (`EVIDENCIA_RECEPCION`), notificar al donante.
 - **Donante (dueño):** únicamente solicitar la anulación (solo si estado `REGISTRADO`, según `puedeAnular`). **No puede actualizar el estado**: la sección "Cambiar estado" (selector + botón) solo se muestra si `puedeCambiarEstado()` (`esTrabajador`); el donante ve solo el mensaje informativo y el botón de anulación. El servicio `cambiarEstado()` está protegido en el componente.
 - **Cualquier autenticado:** descargar comprobante PDF, copiar código.
 
@@ -171,10 +171,11 @@ ENTREGADO/ANULADO → (terminal)
 
 ---
 
-## 10. Gestión de trabajadores (`/trabajadores`) — solo Admin
+## 10. Gestión de trabajadores (`/trabajadores`) — RF06 y RF09 · solo Admin
 
-- Listado: nombre completo, DNI, local, cargo, fecha de contratación.
-- **Crear/Editar:** usuario disponible (se filtran los ya trabajadores), local, cargo (máx. 50), fecha opcional.
+- **Listado (RF09):** nombre completo, DNI, **local de acopio asignado**, **cargo** y **fecha de contratación**, obtenidos de `GET /trabajadores`.
+- **Crear/Editar (RF06):** vincula un **usuario** (se filtran los que ya son trabajadores) con un **local de acopio**, un cargo (máx. 50) y una fecha opcional; se persiste contra `POST /trabajadores` y `PUT /trabajadores/{id}`.
+- **Nuevo usuario desde el formulario:** crea la cuenta `PERSONAL_APOYO` desde el modal y la asigna automáticamente al trabajador.
 - Validaciones: usuario, local y cargo obligatorios.
 - Sin eliminación en frontend.
 

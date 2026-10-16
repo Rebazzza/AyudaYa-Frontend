@@ -219,42 +219,62 @@
       </div>
     </section>
 
-    <!-- Mapa de ubicación -->
-    @if (ubicacion() && (donacion() || tracking())) {
+    <!-- RF40 · Ubicación actual (sincronizada con el último escaneo GPS) -->
+    @if (ubicacionInfo() && (donacion() || tracking())) {
       <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
         <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/60 flex flex-wrap items-center justify-between gap-2">
           <h3 class="font-semibold text-on-surface flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">map</span>
-            Mapa de ubicación
+            <span class="material-symbols-outlined text-primary">my_location</span>
+            Ubicación actual
           </h3>
           <div class="text-xs text-on-surface-variant">
-            @if (ubicacion()!.fechaUltimoEscaneo) {
-              <span>Último escaneo: {{ ubicacion()!.fechaUltimoEscaneo | date:'dd MMM yyyy, HH:mm' }}</span>
+            @if (ubicacionInfo()!.fechaUltimoEscaneo) {
+              <span>Último escaneo: {{ ubicacionInfo()!.fechaUltimoEscaneo | date:'dd MMM yyyy, HH:mm' }}</span>
             } @else {
               <span>Sin escaneos registrados</span>
             }
           </div>
         </div>
-        <div class="p-6 pt-4">
+        <div class="p-6 pt-4 flex flex-col gap-4">
+
+          <div class="flex items-start gap-3 rounded-xl bg-surface-container-low px-4 py-3">
+            <span class="material-symbols-outlined text-primary mt-0.5">location_on</span>
+            <div class="min-w-0">
+              <p class="text-xs text-on-surface-variant">Centro de distribución / local de acopio</p>
+              <p class="text-sm font-semibold text-on-surface">{{ ubicacionInfo()!.nombreLocal }}</p>
+              @if (ubicacionInfo()!.direccionLocal) {
+                <p class="text-xs text-on-surface-variant">{{ ubicacionInfo()!.direccionLocal }}</p>
+              }
+              @if (ubicacionInfo()!.fechaUltimoEscaneo) {
+                <p class="text-[11px] text-tertiary mt-1 inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">gps_fixed</span>
+                  Ubicación según el último escaneo del paquete
+                </p>
+              }
+            </div>
+          </div>
+
           @if (mapUrl()) {
-            <iframe
-              [src]="mapUrl() | safeUrl"
-              class="w-full h-72 lg:h-96 rounded-xl border border-outline-variant"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              allowfullscreen></iframe>
-            <a
-              [href]="mapsLink()"
-              target="_blank"
-              rel="noopener"
-              class="inline-flex items-center gap-2 mt-3 text-brand-orange hover:underline text-sm font-medium">
-              <span class="material-symbols-outlined text-lg">location_on</span>
-              Ver en Google Maps
-            </a>
+            <div>
+              <iframe
+                [src]="mapUrl() | safeUrl"
+                class="w-full h-72 lg:h-96 rounded-xl border border-outline-variant"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen></iframe>
+              <a
+                [href]="mapsLink()"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-2 mt-3 text-brand-orange hover:underline text-sm font-medium">
+                <span class="material-symbols-outlined text-lg">location_on</span>
+                Ver en Google Maps
+              </a>
+            </div>
           } @else {
             <div class="flex items-center gap-2 rounded-lg bg-surface-container-low text-on-surface-variant text-sm px-4 py-3">
               <span class="material-symbols-outlined text-base">info</span>
-              Aún no hay coordenadas GPS. El paquete se encuentra en {{ ubicacion()!.nombreLocal }} ({{ ubicacion()!.direccionLocal }}).
+              Aún no hay coordenadas GPS: la ubicación mostrada corresponde al local donde está registrada la donación.
             </div>
           }
         </div>
