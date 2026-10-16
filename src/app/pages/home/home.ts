@@ -20,7 +20,10 @@ export class HomeComponent implements OnInit {
   loading = signal(true);
 
   ngOnInit() {
-    this.localService.listar().subscribe({
+    // El administrador gestiona todos los locales (activos e inactivos);
+    // el resto de roles solo ve los activos, como el backend expone en GET /locales.
+    const peticion = this.esAdmin ? this.localService.listarTodos() : this.localService.listar();
+    peticion.subscribe({
       next: (data) => {
         this.locales.set(data);
         this.loading.set(false);

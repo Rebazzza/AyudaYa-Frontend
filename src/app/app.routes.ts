@@ -33,6 +33,12 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
+    path: 'locales/:id/editar',
+    loadComponent: () =>
+      import('./pages/local-form/local-form').then((m) => m.LocalFormComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'locales/:id',
     loadComponent: () =>
       import('./pages/local-detail/local-detail').then((m) => m.LocalDetailComponent),

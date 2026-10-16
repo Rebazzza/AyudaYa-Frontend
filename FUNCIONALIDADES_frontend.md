@@ -13,7 +13,7 @@ Este documento describe las especificaciones y requerimientos que cumple el fron
 |---|--------|---------|------------|
 | 1 | Autenticación (Login / Registro) | `/login`, `/registro` | Invitado |
 | 2 | Dashboard (panel principal) | `/` | Autenticado |
-| 3 | Locales de recepción | `/locales`, `/locales/nuevo`, `/locales/:id` | Autenticado (crear: solo Admin) |
+| 3 | Locales de recepción | `/locales`, `/locales/nuevo`, `/locales/:id`, `/locales/:id/editar` | Autenticado (crear/editar/estado: solo Admin) |
 | 4 | Donaciones de insumos (registro/listado) | `/donaciones`, `/donaciones/nueva` | Autenticado |
 | 5 | Trazabilidad/seguimiento de donación | `/donaciones/:id`, `/seguimiento` | Autenticado |
 | 6 | Donación monetaria | `/donaciones/monetaria` | Autenticado |
@@ -65,14 +65,19 @@ Este documento describe las especificaciones y requerimientos que cumple el fron
 
 ### Listado (`/locales`)
 - Tarjetas: nombre, dirección, teléfono, lat/long, capacidad en m³.
-- **Solo Admin** ve botón "+ Registrar local". Otros roles solo lectura.
+- **Solo Admin** ve botón "+ Registrar local" y carga el listado completo (`GET /locales/todos`, incluye inactivos) con badge **"Inactivo"** en las tarjetas desactivadas. Otros roles solo lectura sobre los locales activos (`GET /locales`).
 
 ### Registro (`/locales/nuevo`) — solo Admin
-- Formulario: nombre, dirección, latitud, longitud, capacidad (mín. 0.01), teléfono.
-- Solo soporta `registrar` (POST). Sin edición ni eliminación en frontend.
+- Formulario: nombre, dirección, latitud, longitud, capacidad (mín. 0.01), teléfono (9 dígitos).
+- Valida en cliente las mismas reglas que el backend (`LocalRequest`) y persiste con `POST /locales`.
+
+### Edición (`/locales/:id/editar`) — solo Admin
+- Mismo formulario precargado con `GET /locales/{id}` y guardado con `PUT /locales/{id}`.
+- **Interruptor de estado del local** ("Activo/Inactivo"): al guardar, si el administrador cambió el interruptor se envía `PUT /locales/{id}/estado`, por lo que **solo el administrador puede editar la información de un local y establecer su estado**.
 
 ### Detalle (`/locales/:id`)
 - Datos del local + **mapa de Google Maps embebido** (iframe sanitizado), enlace "Ver en Google Maps", estado Activo/Inactivo.
+- **Solo Admin:** botones "Editar local" (→ `/locales/:id/editar`) y "Desactivar local"/"Activar local" con confirmación (`PUT /locales/{id}/estado`); el estado se refleja al instante en la ficha.
 
 ---
 
@@ -249,7 +254,7 @@ ENTREGADO/ANULADO → (terminal)
 - Registro auto-loguea al usuario.
 
 ### Roles
-- **Administrador:** guard `adminGuard` (trabajadores, verificar-fondos, fondos/panel, locales/nuevo), KPIs de recaudación.
+- **Administrador:** guard `adminGuard` (trabajadores, verificar-fondos, fondos/panel, locales/nuevo, locales/:id/editar), KPIs de recaudación; único rol que edita locales y cambia su estado.
 - **Donante:** solo sus donaciones; anula en estado REGISTRADO; registra (es el donante por defecto); donación monetaria; categorías solo lectura.
 - **Personal de Apoyo:** operaciones de almacén, corroboración (requiere perfil trabajador), evidencias, escaneo GPS, cambio de estado.
 - Roles registrables: `DONANTE | PERSONAL_APOYO`. **Administrador no es registrable desde el frontend.**
@@ -269,7 +274,7 @@ ENTREGADO/ANULADO → (terminal)
 | Entidad | Crear | Leer | Editar | Eliminar |
 |---|---|---|---|---|
 | Usuario | Registro (+ donante en formulario) | Sí (listar) | No | No |
-| Local | Sí (solo Admin) | Sí | No | No |
+| Local | Sí (solo Admin) | Sí | Sí (solo Admin, incluye activar/desactivar) | No |
 | Donación insumos | Sí | Sí | No directo (estados: solo personal de apoyo / anulación: solo donante dueño) | No |
 | Donación monetaria | Sí | Sí | No (solo verificación de estado) | No |
 | Categoría | Sí (no donante) | Sí | Sí (no donante) | Sí (no donante) |

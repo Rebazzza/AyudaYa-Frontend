@@ -6,6 +6,40 @@
   } @else if (error()) {
     <div class="text-center py-12 text-red-500">{{ error() }}</div>
   } @else if (local()) {
+
+    <!-- Acciones de administración: editar información y estado del local -->
+    @if (esAdmin) {
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full {{ local()!.estadoActivo ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600' }}">
+          <span class="material-symbols-outlined text-sm">{{ local()!.estadoActivo ? 'check_circle' : 'cancel' }}</span>
+          {{ local()!.estadoActivo ? 'Local activo' : 'Local inactivo' }}
+        </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            [routerLink]="['/locales', local()!.idLocal, 'editar']"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-orange text-white text-sm font-semibold hover:bg-brand-hover transition active:scale-[0.98]">
+            <span class="material-symbols-outlined text-lg">edit</span>
+            Editar local
+          </a>
+          <button
+            type="button"
+            (click)="cambiarEstado()"
+            [disabled]="cambiandoEstado()"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-semibold transition disabled:opacity-50 {{ local()!.estadoActivo ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-700 hover:bg-green-50' }}">
+            <span class="material-symbols-outlined text-lg">{{ cambiandoEstado() ? 'progress_activity' : (local()!.estadoActivo ? 'toggle_off' : 'toggle_on') }}</span>
+            {{ local()!.estadoActivo ? 'Desactivar local' : 'Activar local' }}
+          </button>
+        </div>
+      </div>
+
+      @if (aviso()) {
+        <div class="bg-green-50 text-green-700 text-sm rounded-lg px-4 py-3 mb-4">{{ aviso() }}</div>
+      }
+      @if (accionError()) {
+        <div class="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3 mb-4">{{ accionError() }}</div>
+      }
+    }
+
     <div class="bg-white rounded-xl shadow-md p-8">
       <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ local()!.nombreLocal }}</h1>
       <div class="space-y-3 text-gray-600">

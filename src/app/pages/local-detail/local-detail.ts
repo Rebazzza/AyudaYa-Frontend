@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocalService } from '../../services/local.service';
+import { SessionService } from '../../services/session.service';
 import { Local, CapacidadLocal } from '../../models/local.model';
 import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 
@@ -13,11 +14,19 @@ import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 export class LocalDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private localService = inject(LocalService);
+  private session = inject(SessionService);
+
+  /** Editar la información y el estado de un local es exclusivo del administrador. */
+  esAdmin = this.session.esAdmin();
 
   local = signal<Local | null>(null);
   capacidad = signal<CapacidadLocal | null>(null);
   loading = signal(true);
   error = signal('');
+
+  cambiandoEstado = signal(false);
+  accionError = signal('');
+  aviso = signal('');
 
   mapUrl = computed(() => {
     const loc = this.local();
@@ -52,6 +61,34 @@ export class LocalDetailComponent implements OnInit {
     this.localService.capacidad(id).subscribe({
       next: (data) => this.capacidad.set(data),
       error: () => this.capacidad.set(null),
+    });
+  }
+
+  /** RF: activar/desactivar el local (solo administrador). */
+  cambiarEstado() {
+    const loc = this.local();
+    if (!loc || !this.esAdmin || this.cambiandoEstado()) return;
+
+    const activar = loc.estadoActivo === false;
+    const mensaje = activar
+      ? `¿Reactivar "${loc.nombreLocal}"? Volverá a aparecer en el listado de locales para los donantes.`
+      : `¿Desactivar "${loc.nombreLocal}"? Dejará de aparecer en el listado de locales para los donantes (sus donaciones y trabajadores no se eliminan).`;
+    if (!confirm(mensaje)) return;
+
+    this.cambiandoEstado.set(true);
+    this.accionError.set('');
+    this.aviso.set('');
+
+    this.localService.cambiarEstado(loc.idLocal, activar).subscribe({
+      next: (actualizado) => {
+        this.local.set(actualizado);
+        this.cambiandoEstado.set(false);
+        this.aviso.set(activar ? 'Local activado correctamente.' : 'Local desactivado correctamente.');
+      },
+      error: (err) => {
+        this.cambiandoEstado.set(false);
+        this.accionError.set(err.error?.message || 'No se pudo cambiar el estado del local.');
+      },
     });
   }
 }
