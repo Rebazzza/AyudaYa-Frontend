@@ -21,7 +21,8 @@
         <a routerLink="/kits/seguimiento" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Kits</a>
         <a routerLink="/categorias" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Categorías</a>
         @if (session.esAdmin()) {
-          <a routerLink="/verificar-fondos" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Fondos</a>
+          <a routerLink="/fondos/panel" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Recaudación</a>
+          <a routerLink="/verificar-fondos" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Verificar fondos</a>
           <a routerLink="/trabajadores" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Trabajadores</a>
         }
         <a routerLink="/notificaciones" routerLinkActive="font-bold underline underline-offset-4" class="inline-flex items-center gap-1 hover:underline">
@@ -72,7 +73,8 @@
         <a routerLink="/kits/seguimiento" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Kits</a>
         <a routerLink="/categorias" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Categorías</a>
         @if (session.esAdmin()) {
-          <a routerLink="/verificar-fondos" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Fondos</a>
+          <a routerLink="/fondos/panel" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Panel de recaudación</a>
+          <a routerLink="/verificar-fondos" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar fondos</a>
           <a routerLink="/trabajadores" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Trabajadores</a>
         }
         <a routerLink="/notificaciones" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">

@@ -57,9 +57,10 @@ export class DonacionService {
       .pipe(map((res) => res.data));
   }
 
-  cambiarEstado(id: number, data: CambioEstadoRequest): Observable<Donacion> {
+  cambiarEstado(id: number, data: CambioEstadoRequest, idUsuario: number): Observable<Donacion> {
+    const params = new HttpParams().set('idUsuario', idUsuario);
     return this.http
-      .put<ApiResponseDTO<Donacion>>(`${this.base}/${id}/estado`, data)
+      .put<ApiResponseDTO<Donacion>>(`${this.base}/${id}/estado`, data, { params })
       .pipe(map((res) => res.data));
   }
 

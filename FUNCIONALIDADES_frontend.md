@@ -18,6 +18,7 @@ Este documento describe las especificaciones y requerimientos que cumple el fron
 | 5 | Trazabilidad/seguimiento de donación | `/donaciones/:id`, `/seguimiento` | Autenticado |
 | 6 | Donación monetaria | `/donaciones/monetaria` | Autenticado |
 | 7 | Verificación de fondos | `/verificar-fondos` | Solo Admin |
+| 7b | Panel de recaudación de fondos (RF44) | `/fondos/panel` | Solo Admin |
 | 8 | Seguimiento de kits | `/kits/seguimiento` | Autenticado |
 | 9 | Categorías de insumos | `/categorias` | Autenticado (editar: no-donante) |
 | 10 | Gestión de trabajadores | `/trabajadores` | Solo Admin |
@@ -54,7 +55,7 @@ Este documento describe las especificaciones y requerimientos que cumple el fron
 - Saludo por hora del día, nombre, iniciales y chip de rol.
 - **KPIs:** donaciones (solo las suyas si es Donante), cantidad declarada, notificaciones sin leer, total de locales.
 - Distribución por estado de donaciones (Registrado, En tránsito, En almacén, Verificado, Entregado, Anulado).
-- **Solo Admin:** banner "Total recaudado" (S/) y atajo a Verificar fondos.
+- **Solo Admin:** banner de recaudación con **total PEN y USD**, contadores de verificadas/pendientes/rechazadas y accesos al panel de recaudación y a verificar fondos.
 - Donaciones recientes (5) y notificaciones recientes (5).
 - **Accesos rápidos dinámicos por rol** + botón "Nueva donación".
 
@@ -120,22 +121,38 @@ ENTREGADO/ANULADO → (terminal)
 
 ---
 
-## 6. Donación monetaria (`/donaciones/monetaria`)
+## 6. Donación monetaria (`/donaciones/monetaria`) — RF42
 
-- Aporte en soles (S/) mediante **YAPE, PLIN o TRANSFERENCIA**.
-- Campos: monto (> 0), método de pago, número de operación.
-- Adjuntar **captura del comprobante** (opcional, JPG/PNG/WebP, con preview y estado de subida).
-- Estado inicial **PENDIENTE** hasta verificación. Moneda fija `PEN`.
+- Aporte en **PEN (S/) o USD (US$)** mediante **YAPE, PLIN o TRANSFERENCIA**.
+- Campos: moneda, monto (> 0), método de pago y **número de operación** (se limpian espacios y símbolos al escribir: solo `A-Z a-z 0-9 - _`, máx. 50 caracteres).
+- **Evidencia fotográfica del voucher obligatoria:** JPG/PNG/WebP, **máx. 5 MB**, con preview, soporte de arrastrar y soltar y validación de tipo/tamaño antes de enviar.
+- Se envía en **una sola petición multipart** a `POST /donaciones-monetarias/con-comprobante` (el archivo viaja en el mismo `FormData`, sin subirlo aparte).
+- Estado inicial **PENDIENTE**; solo los aportes verificados suman al total recaudado.
+- **Mis aportes:** historial del donante (`GET /donaciones-monetarias/usuario/{id}`) con estado, monto y moneda, método, nº de operación, motivo de rechazo y visor del voucher.
 
 ---
 
-## 7. Verificación de fondos (`/verificar-fondos`) — solo Admin
+## 7. Verificación de aportes (`/verificar-fondos`) — RF43 · solo Admin
 
-- Total recaudado en soles.
-- Listado de donaciones monetarias con monto, donante, nº de operación, método, moneda, fecha.
-- Ver **pendientes**, abrir voucher (`comprobanteUrl`).
-- **Verificar** (`VERIFICADO`) o **Rechazar** (`RECHAZADO`); recalcula el total.
-- Botón "Reintentar" ante errores de carga.
+- **Filtros:** estado (`PENDIENTE`/`VERIFICADO`/`RECHAZADO`), método de pago, moneda y búsqueda por nº de operación o donante; **paginación** de 20 en 20 (`pagina` desde 0, `tamanio` máx. 100).
+- Tarjetas de resumen con el panel: **recaudado S/ y US$**, verificadas, pendientes (monto en espera) y rechazadas (monto que no ingresó).
+- Listado con: estado, fechas, monto y moneda, donante, nº de operación, método, motivo/observación y aviso **"Falta evidencia fotográfica"** cuando `tieneComprobante === false`.
+- **Visor del voucher** en modal usando `comprobanteUrl` (se resuelve contra el host del backend si viene como ruta relativa `/uploads/...`).
+- Acciones con confirmación: **Verificar** (`VERIFICADO`, observación opcional), **Rechazar** (`RECHAZADO`, motivo obligatorio de 500 caracteres) y **Reabrir** (`PENDIENTE`).
+- Toda llamada a `PUT /donaciones-monetarias/{id}/verificar` envía **`idVerificador`** con el usuario en sesión (el backend no tiene JWT).
+- Botón "Reintentar" ante errores de carga y enlace al panel de recaudación; el resumen se recalcula tras cada acción.
+
+---
+
+## 7b. Panel de recaudación (`/fondos/panel`) — RF44 · solo Admin
+
+- Lee `GET /donaciones-monetarias/panel` con **auto-actualización cada 30 segundos**, botón "Actualizar ahora" y marca de la hora de la última actualización.
+- **Tarjetas principales:** total recaudado PEN, total recaudado USD, monto pendiente (PEN) y monto rechazado (PEN).
+- **Contadores:** aportes verificados, pendientes, rechazados y total de aportes.
+- **Desglose por moneda** (monto, cantidad y barra de participación) y **desglose por método de pago** (solo PEN) con monto, cantidad y porcentaje.
+- **Evolución mensual** (últimos 12 meses, solo PEN) en gráfico de barras con monto al pasar el cursor.
+- Nota visible: el consolidado **solo suma aportes `VERIFICADO`** y **no aplica tipo de cambio** (PEN y USD se reportan por separado).
+- Accesible desde el dashboard admin (banner y acceso rápido) y desde la navbar (**Recaudación**).
 
 ---
 
@@ -214,7 +231,7 @@ ENTREGADO/ANULADO → (terminal)
 ## 16. Navbar (componente transversal)
 
 - **No autenticado:** Iniciar sesión / Registrarse.
-- **Autenticado:** Inicio, Locales, Donaciones; **Donante** → Donación monetaria; **Trabajador/Admin** → Verificar, Inventario, Etiquetas, Armar kits; todos → Kits, Categorías, Notificaciones; **Admin** → Fondos, Trabajadores.
+- **Autenticado:** Inicio, Locales, Donaciones; **Donante** → Donación monetaria; **Trabajador/Admin** → Verificar, Inventario, Etiquetas, Armar kits; todos → Kits, Categorías, Notificaciones; **Admin** → Recaudación (panel), Verificar fondos, Trabajadores.
 - Muestra nombre de usuario y botón **Salir** (limpia sesión).
 - Menú móvil con toggle y auto-ocultado al hacer scroll.
 
@@ -231,7 +248,7 @@ ENTREGADO/ANULADO → (terminal)
 - Registro auto-loguea al usuario.
 
 ### Roles
-- **Administrador:** guard `adminGuard` (trabajadores, verificar-fondos, locales/nuevo), KPIs de recaudación.
+- **Administrador:** guard `adminGuard` (trabajadores, verificar-fondos, fondos/panel, locales/nuevo), KPIs de recaudación.
 - **Donante:** solo sus donaciones; anula en estado REGISTRADO; registra (es el donante por defecto); donación monetaria; categorías solo lectura.
 - **Personal de Apoyo:** operaciones de almacén, corroboración (requiere perfil trabajador), evidencias, escaneo GPS, cambio de estado.
 - Roles registrables: `DONANTE | PERSONAL_APOYO`. **Administrador no es registrable desde el frontend.**

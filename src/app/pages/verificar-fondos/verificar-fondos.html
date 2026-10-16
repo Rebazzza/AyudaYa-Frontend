@@ -1,20 +1,115 @@
 <main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
-<div class="w-full max-w-[1080px] flex flex-col gap-6">
+<div class="w-full max-w-[1120px] flex flex-col gap-6">
 
-  <header class="flex flex-wrap items-center justify-between gap-3">
+  <header class="flex flex-wrap items-end justify-between gap-3">
     <div>
-      <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">Verificación de fondos</h1>
-      <p class="text-sm text-on-surface-variant">Valida las donaciones monetarias pendientes.</p>
+      <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">Verificación de aportes</h1>
+      <p class="text-sm text-on-surface-variant">Revisa el voucher y actualiza el estado de cada donación monetaria (PENDIENTE, VERIFICADO, RECHAZADO).</p>
     </div>
-    <div class="inline-flex items-center gap-2 rounded-xl bg-primary-fixed text-on-primary-fixed border border-primary px-4 py-2.5 font-semibold">
-      <span class="material-symbols-outlined text-lg">account_balance</span>
-      Total recaudado: S/ {{ totalText() }}
-    </div>
+    <a routerLink="/fondos/panel"
+       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-semibold hover:bg-brand-hover transition-all">
+      <span class="material-symbols-outlined text-lg">monitoring</span>
+      Panel de recaudación
+    </a>
   </header>
 
-  @if (procesarError()) {
+  <!-- RF44 · resumen en vivo -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="rounded-2xl bg-brand-orange text-white p-4 shadow-sm">
+      <p class="text-xs uppercase tracking-widest text-white/80">Recaudado</p>
+      <p class="text-xl font-bold mt-1">{{ totalRecaudadoTexto }}</p>
+      <p class="text-[11px] text-white/80 mt-0.5">Solo aportes verificados</p>
+    </div>
+    <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-4">
+      <p class="text-xs font-medium text-on-surface-variant">Verificadas</p>
+      <p class="text-xl font-bold text-on-surface mt-1">{{ panel()?.donacionesVerificadas ?? '—' }}</p>
+      <p class="text-[11px] text-on-surface-variant mt-0.5">Suman al consolidado</p>
+    </div>
+    <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-4">
+      <p class="text-xs font-medium text-on-surface-variant">Pendientes</p>
+      <p class="text-xl font-bold text-on-surface mt-1">{{ panel()?.donacionesPendientes ?? '—' }}</p>
+      <p class="text-[11px] text-on-surface-variant mt-0.5">Monto en espera: S/ {{ (panel()?.montoPendientePEN ?? 0) | number: '1.2-2' }}</p>
+    </div>
+    <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-4">
+      <p class="text-xs font-medium text-on-surface-variant">Rechazadas</p>
+      <p class="text-xl font-bold text-on-surface mt-1">{{ panel()?.donacionesRechazadas ?? '—' }}</p>
+      <p class="text-[11px] text-on-surface-variant mt-0.5">No ingresaron: S/ {{ (panel()?.montoRechazadoPEN ?? 0) | number: '1.2-2' }}</p>
+    </div>
+  </section>
+
+  <!-- RF43 · filtros -->
+  <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-4 flex flex-wrap items-end gap-3">
+    <label class="flex flex-col gap-1 text-xs font-medium text-on-surface-variant">
+      Estado
+      <select
+        [(ngModel)]="filtroEstado"
+        (change)="buscar()"
+        class="border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+        <option value="">Todos</option>
+        @for (e of estados; track e) {
+          <option [value]="e">{{ e }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-xs font-medium text-on-surface-variant">
+      Método de pago
+      <select
+        [(ngModel)]="filtroMetodo"
+        (change)="buscar()"
+        class="border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+        <option value="">Todos</option>
+        @for (m of metodosPago; track m) {
+          <option [value]="m">{{ etiquetaMetodo[m] }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-xs font-medium text-on-surface-variant">
+      Moneda
+      <select
+        [(ngModel)]="filtroMoneda"
+        (change)="buscar()"
+        class="border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+        <option value="">Todas</option>
+        @for (c of monedas; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="relative flex-1 min-w-[220px] flex flex-col gap-1 text-xs font-medium text-on-surface-variant">
+      Búsqueda
+      <span class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+        <input
+          type="text"
+          [(ngModel)]="busqueda"
+          (keyup.enter)="buscar()"
+          placeholder="Nº de operación o nombre del donante"
+          class="w-full pl-9 pr-3 py-2 border border-outline-variant rounded-lg text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </span>
+    </label>
+
+    <button
+      type="button"
+      (click)="buscar()"
+      class="px-4 py-2 rounded-xl bg-brand-orange text-white text-sm font-semibold hover:bg-brand-hover transition">
+      Aplicar
+    </button>
+    @if (hayFiltros()) {
+      <button
+        type="button"
+        (click)="limpiarFiltros()"
+        class="text-sm font-medium text-primary-container hover:underline">
+        Limpiar filtros
+      </button>
+    }
+  </section>
+
+  @if (accionError()) {
     <div class="bg-error-container text-on-error-container text-sm rounded-xl px-4 py-3 flex items-start gap-2">
-      <span class="material-symbols-outlined text-base mt-0.5">error_outline</span>{{ procesarError() }}
+      <span class="material-symbols-outlined text-base mt-0.5">error_outline</span>{{ accionError() }}
     </div>
   }
 
@@ -28,7 +123,7 @@
       <span class="flex items-center gap-2 font-medium">
         <span class="material-symbols-outlined text-base">error_outline</span>{{ error() }}
       </span>
-      <span class="text-xs opacity-90">No fue posible listar las donaciones monetarias. Verifica que el backend exponga GET /donaciones-monetarias y vuelve a intentarlo.</span>
+      <span class="text-xs opacity-90">No fue posible listar las donaciones monetarias. Verifica que el backend exponga GET /api/v1/donaciones-monetarias y vuelve a intentarlo.</span>
     </div>
     <button
       type="button"
@@ -38,63 +133,242 @@
       Reintentar
     </button>
   } @else {
+    <!-- Listado -->
     <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
       <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/60 flex flex-wrap items-center justify-between gap-2">
         <h2 class="font-semibold text-on-surface flex items-center gap-2">
           <span class="material-symbols-outlined text-primary">pending_actions</span>
-          Pendientes de verificación ({{ pendientes().length }})
+          Aportes monetarios ({{ totalElementos() }})
+          @if (filtroEstado === 'PENDIENTE') {
+            <span class="text-sm font-normal text-on-surface-variant">· cola de revisión</span>
+          }
         </h2>
+        <button
+          type="button"
+          (click)="cargar(); cargarPanel()"
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+          <span class="material-symbols-outlined text-base">refresh</span>
+          Actualizar
+        </button>
       </div>
 
       <div class="divide-y divide-outline-variant/40">
-        @for (m of pendientes(); track m.idDonacionMonetaria) {
-          <div class="px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div class="min-w-0">
+        @for (m of lista(); track m.idDonacionMonetaria) {
+          <article class="px-6 py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs {{ claseEstado(m.estadoVerificacion) }}">{{ m.estadoVerificacion }}</span>
-                <span class="text-xs text-on-surface-variant">{{ m.fechaRegistro | date:'dd MMM yyyy, HH:mm' }}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ claseEstado(m.estadoVerificacion) }}">{{ m.estadoVerificacion }}</span>
+                <span class="text-xs text-on-surface-variant">{{ m.fechaRegistro | date: 'dd MMM yyyy, HH:mm' }}</span>
+                @if (m.fechaVerificacion) {
+                  <span class="text-xs text-on-surface-variant">• Verificado el {{ m.fechaVerificacion | date: 'dd/MM/yyyy, HH:mm' }}</span>
+                }
               </div>
+
               <p class="font-semibold text-on-surface mt-1 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-baseline text-brand-orange">volunteer_activism</span>
-                S/ {{ m.monto.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                {{ formatearMonto(m.monto, m.moneda) }}
               </p>
-              <p class="text-sm text-on-surface-variant">{{ m.nombreDonante }}</p>
-              <p class="text-xs text-on-surface-variant mt-0.5">Operación: <span class="font-mono">{{ m.numeroOperacion }}</span> • {{ m.metodoPago }} {{ m.moneda ? '• ' + m.moneda : '' }}</p>
+
+              <p class="text-sm text-on-surface-variant">{{ m.nombreDonante ?? 'Donante #' + m.idUsuario }}</p>
+
+              <p class="text-xs text-on-surface-variant mt-0.5">
+                {{ etiquetaMetodo[m.metodoPago] ?? m.metodoPago }} • Operación <span class="font-mono">{{ m.numeroOperacion }}</span>
+                {{ m.moneda ? '• ' + m.moneda : '' }}
+              </p>
+
+              @if (m.estadoVerificacion === 'RECHAZADO' && m.observacionesVerificacion) {
+                <p class="text-xs text-on-error-container mt-1">
+                  <span class="material-symbols-outlined text-sm align-text-bottom">cancel</span>
+                  Motivo: {{ m.observacionesVerificacion }}
+                </p>
+              }
+              @if (m.estadoVerificacion === 'VERIFICADO' && m.observacionesVerificacion) {
+                <p class="text-xs text-on-surface-variant mt-1">
+                  <span class="material-symbols-outlined text-sm align-text-bottom">note</span>
+                  {{ m.observacionesVerificacion }}
+                </p>
+              }
+              @if (m.tieneComprobante === false) {
+                <p class="text-xs text-error mt-1 inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">warning</span>
+                  Falta evidencia fotográfica del voucher.
+                </p>
+              }
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-              @if (m.comprobanteUrl) {
-                <a [href]="m.comprobanteUrl" target="_blank" rel="noopener"
-                   class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
-                  <span class="material-symbols-outlined text-base">visibility</span>Ver voucher
-                </a>
+            <div class="flex items-center gap-2 shrink-0 flex-wrap">
+              @if (m.comprobanteUrl || m.tieneComprobante) {
+                <button
+                  type="button"
+                  (click)="verVoucher(m)"
+                  class="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-outline-variant text-xs font-semibold text-on-surface hover:bg-surface-container-low transition">
+                  <span class="material-symbols-outlined text-base">visibility</span>
+                  Ver voucher
+                </button>
+              } @else {
+                <span class="inline-flex items-center gap-1 text-xs text-error">
+                  <span class="material-symbols-outlined text-base">broken_image</span>
+                  Sin voucher
+                </span>
               }
-              <button
-                type="button"
-                (click)="procesar(m, 'VERIFICADO')"
-                [disabled]="procesandoId() != null"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:bg-primary-fixed hover:text-on-primary-container transition disabled:opacity-50">
-                <span class="material-symbols-outlined text-base">{{ procesandoId() === m.idDonacionMonetaria && procesandoAccion() === 'VERIFICADO' ? 'progress_activity' : 'verified' }}</span>
-                Verificar
-              </button>
-              <button
-                type="button"
-                (click)="procesar(m, 'RECHAZADO')"
-                [disabled]="procesandoId() != null"
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-error text-error text-sm font-semibold hover:bg-error-container/40 transition disabled:opacity-50">
-                <span class="material-symbols-outlined text-base">{{ procesandoId() === m.idDonacionMonetaria && procesandoAccion() === 'RECHAZADO' ? 'progress_activity' : 'block' }}</span>
-                Rechazar
-              </button>
+
+              @if (m.estadoVerificacion !== 'VERIFICADO') {
+                <button
+                  type="button"
+                  (click)="abrirAccion(m, 'VERIFICADO')"
+                  [disabled]="accionGuardando()"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:bg-primary-fixed hover:text-on-primary-container transition disabled:opacity-50">
+                  <span class="material-symbols-outlined text-base">verified</span>
+                  Verificar
+                </button>
+              }
+
+              @if (m.estadoVerificacion !== 'RECHAZADO') {
+                <button
+                  type="button"
+                  (click)="abrirAccion(m, 'RECHAZADO')"
+                  [disabled]="accionGuardando()"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-error text-error text-sm font-semibold hover:bg-error-container/40 transition disabled:opacity-50">
+                  <span class="material-symbols-outlined text-base">block</span>
+                  Rechazar
+                </button>
+              }
+
+              @if (m.estadoVerificacion !== 'PENDIENTE') {
+                <button
+                  type="button"
+                  (click)="abrirAccion(m, 'PENDIENTE')"
+                  [disabled]="accionGuardando()"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-outline-variant text-xs font-semibold text-on-surface-variant hover:bg-surface-container-low transition disabled:opacity-50"
+                  title="Devolver el aporte a PENDIENTE">
+                  <span class="material-symbols-outlined text-base">replay</span>
+                  Reabrir
+                </button>
+              }
             </div>
-          </div>
+          </article>
         } @empty {
           <div class="px-6 py-12 text-center">
             <span class="material-symbols-outlined text-4xl text-on-surface-variant">verified_user</span>
-            <p class="text-sm text-on-surface-variant mt-2">No hay donaciones monetarias pendientes de verificación.</p>
+            <p class="text-sm text-on-surface-variant mt-2">
+              {{ hayFiltros() ? 'No hay aportes que coincidan con los filtros.' : 'No hay donaciones monetarias registradas.' }}
+            </p>
           </div>
         }
       </div>
+
+      <!-- Paginación -->
+      @if (totalPaginas() > 1) {
+        <div class="px-6 py-3 bg-surface-container-low border-t border-outline-variant/60 flex items-center justify-between gap-3 text-sm">
+          <button
+            type="button"
+            (click)="cambiarPagina(-1)"
+            [disabled]="pagina() === 0"
+            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-lowest transition disabled:opacity-40">
+            <span class="material-symbols-outlined text-base">chevron_left</span>
+            Anterior
+          </button>
+          <span class="text-xs text-on-surface-variant">
+            Página {{ pagina() + 1 }} de {{ totalPaginas() }} · {{ totalElementos() }} registros
+          </span>
+          <button
+            type="button"
+            (click)="cambiarPagina(1)"
+            [disabled]="pagina() >= totalPaginas() - 1"
+            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-lowest transition disabled:opacity-40">
+            Siguiente
+            <span class="material-symbols-outlined text-base">chevron_right</span>
+          </button>
+        </div>
+      }
     </section>
+  }
+
+  <!-- Modal de verificación / rechazo -->
+  @if (aporteEnAccion(); as aporte) {
+    <div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" (click)="cancelarAccion()">
+      <div class="relative w-full max-w-md rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-2xl p-6" (click)="$event.stopPropagation()">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ requiereMotivo ? 'bg-error-container text-error' : 'bg-primary-fixed text-primary' }}">
+            <span class="material-symbols-outlined">{{ requiereMotivo ? 'block' : estadoObjetivo === 'VERIFICADO' ? 'verified' : 'replay' }}</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-on-surface">{{ tituloAccion }}</h2>
+            <p class="text-sm text-on-surface-variant mt-1">
+              {{ formatearMonto(aporte.monto, aporte.moneda) }} · {{ aporte.nombreDonante ?? 'Donante #' + aporte.idUsuario }}
+            </p>
+            <p class="text-xs text-on-surface-variant mt-0.5">
+              Operación <span class="font-mono">{{ aporte.numeroOperacion }}</span> · {{ etiquetaMetodo[aporte.metodoPago] ?? aporte.metodoPago }}
+            </p>
+          </div>
+        </div>
+
+        <label class="block text-xs font-medium text-on-surface-variant mb-1" for="motivoVerificacion">
+          {{ requiereMotivo ? 'Motivo del rechazo *' : 'Observación (opcional)' }}
+        </label>
+        <textarea
+          id="motivoVerificacion"
+          rows="3"
+          maxlength="500"
+          [(ngModel)]="motivo"
+          [placeholder]="requiereMotivo ? 'Explica por qué se rechaza el aporte (máx. 500 caracteres)' : 'Comentario para el registro de verificación'"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange resize-none"></textarea>
+        <p class="mt-1 text-xs text-on-surface-variant text-right">{{ motivo.length }}/500</p>
+
+        @if (accionError()) {
+          <div class="mt-2 bg-error-container text-on-error-container text-xs rounded-lg px-3 py-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-sm mt-0.5">error_outline</span>{{ accionError() }}
+          </div>
+        }
+
+        <div class="flex justify-end gap-3 mt-4">
+          <button
+            type="button"
+            (click)="cancelarAccion()"
+            [disabled]="accionGuardando()"
+            class="px-4 py-2 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container-low transition disabled:opacity-50">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="confirmarAccion()"
+            [disabled]="accionGuardando()"
+            class="px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-50 {{ requiereMotivo ? 'bg-error hover:opacity-90' : 'bg-brand-orange hover:bg-brand-hover' }}">
+            {{ accionGuardando() ? 'Guardando...' : 'Confirmar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Visor del voucher -->
+  @if (voucherVisible(); as v) {
+    <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" (click)="voucherVisible.set(null)">
+      <div class="relative w-full max-w-2xl rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-2xl overflow-hidden" (click)="$event.stopPropagation()">
+        <div class="px-5 py-3 border-b border-outline-variant/60 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="font-semibold text-on-surface">Voucher de pago</h2>
+            <p class="text-xs text-on-surface-variant truncate">
+              {{ v.nombreDonante ?? 'Donante #' + v.idUsuario }} · {{ etiquetaMetodo[v.metodoPago] ?? v.metodoPago }} · {{ formatearMonto(v.monto, v.moneda) }}
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="voucherVisible.set(null)"
+            class="w-9 h-9 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center hover:bg-surface-container-highest transition"
+            aria-label="Cerrar visor">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="p-4 bg-surface-container-high flex justify-center">
+          @if (v.comprobanteUrl || v.tieneComprobante) {
+            <img [src]="urlVoucher(v)" alt="Comprobante de pago" class="max-h-[65vh] rounded-lg object-contain" />
+          } @else {
+            <p class="text-sm text-on-surface-variant py-10">Este aporte no tiene evidencia fotográfica adjunta.</p>
+          }
+        </div>
+      </div>
+    </div>
   }
 </div>
 </main>

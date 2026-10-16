@@ -61,24 +61,38 @@
     </div>
   </header>
 
-  <!-- Total recaudado (admin) -->
-  @if (esAdmin && totalFondos() != null) {
+  <!-- RF44 · Fondos recaudados (admin) -->
+  @if (esAdmin && panelFondos(); as p) {
     <section class="rounded-2xl bg-gradient-to-r from-brand-orange to-brand-hover text-white p-6 shadow-md flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
           <span class="material-symbols-outlined text-2xl">account_balance</span>
         </div>
         <div>
-          <p class="text-xs uppercase tracking-widest text-white/80">Total recaudado</p>
-          <p class="text-3xl font-bold">S/ {{ totalFondos()!.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
-          <p class="text-xs text-white/80 mt-0.5">Donaciones monetarias verificadas</p>
+          <p class="text-xs uppercase tracking-widest text-white/80">Total recaudado · aportes verificados</p>
+          <p class="text-3xl font-bold">
+            S/ {{ (p.totalRecaudadoPEN ?? 0) | number: '1.2-2' }}
+            <span class="text-xl font-semibold opacity-90">· US$ {{ (p.totalRecaudadoUSD ?? 0) | number: '1.2-2' }}</span>
+          </p>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-white/85">
+            <span>Verificadas: {{ p.donacionesVerificadas ?? 0 }}</span>
+            <span>Pendientes: {{ p.donacionesPendientes ?? 0 }} (S/ {{ (p.montoPendientePEN ?? 0) | number: '1.2-2' }})</span>
+            <span>Rechazadas: {{ p.donacionesRechazadas ?? 0 }}</span>
+          </div>
         </div>
       </div>
-      <a routerLink="/verificar-fondos"
-         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-primary font-semibold text-sm hover:bg-surface-container-low transition-all">
-        <span class="material-symbols-outlined text-lg">verified_user</span>
-        Verificar fondos
-      </a>
+      <div class="flex flex-wrap gap-2">
+        <a routerLink="/fondos/panel"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-primary font-semibold text-sm hover:bg-surface-container-low transition-all">
+          <span class="material-symbols-outlined text-lg">monitoring</span>
+          Panel de recaudación
+        </a>
+        <a routerLink="/verificar-fondos"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 text-white font-semibold text-sm hover:bg-white/25 transition-colors">
+          <span class="material-symbols-outlined text-lg">verified_user</span>
+          Verificar fondos
+        </a>
+      </div>
     </section>
   }
 
@@ -210,6 +224,16 @@
           <div class="min-w-0">
             <h3 class="font-semibold text-on-surface group-hover:text-on-surface transition-colors">Verificar fondos</h3>
             <p class="text-xs text-on-surface-variant">Valida donaciones monetarias pendientes</p>
+          </div>
+        </a>
+        <a routerLink="/fondos/panel"
+           class="group bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 hover:shadow-md transition-all flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-tertiary-container/30 group-hover:bg-tertiary group-hover:text-on-tertiary transition-colors flex items-center justify-center text-tertiary">
+            <span class="material-symbols-outlined">monitoring</span>
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-semibold text-on-surface group-hover:text-tertiary transition-colors">Panel de recaudación</h3>
+            <p class="text-xs text-on-surface-variant">Consolidado de fondos recaudados en tiempo real</p>
           </div>
         </a>
       }

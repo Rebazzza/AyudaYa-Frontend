@@ -109,6 +109,12 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
+    path: 'fondos/panel',
+    loadComponent: () =>
+      import('./pages/panel-fondos/panel-fondos').then((m) => m.PanelFondosComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'kits/seguimiento',
     loadComponent: () =>
       import('./pages/seguimiento-kit/seguimiento-kit').then((m) => m.SeguimientoKitComponent),

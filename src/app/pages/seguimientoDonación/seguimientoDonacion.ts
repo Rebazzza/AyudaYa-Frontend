@@ -432,12 +432,17 @@ export class SeguimientoDonacionComponent implements OnInit {
     }
     this.cambiandoEstado.set(true);
     this.estadoError.set('');
+    if (!this.usuario?.idUsuario) {
+      this.cambiandoEstado.set(false);
+      this.estadoError.set('No se pudo identificar al usuario que realiza el cambio de estado.');
+      return;
+    }
     this.donacionService.cambiarEstado(d.idDonacion, {
       estado: this.nuevoEstado,
       observacionHistorial: this.observacion,
       idLocal: d.idLocalRecepcion,
       idTrabajador: this.idTrabajadorActual() ?? undefined,
-    }).subscribe({
+    }, this.usuario.idUsuario).subscribe({
       next: (updated) => {
         this.cambiandoEstado.set(false);
         this.donacion.set(updated);

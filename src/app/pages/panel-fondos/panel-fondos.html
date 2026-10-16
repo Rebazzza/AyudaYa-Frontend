@@ -1,0 +1,244 @@
+<main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-[1200px] flex flex-col gap-6">
+
+  <header class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">Panel de recaudación</h1>
+      <p class="text-sm text-on-surface-variant">
+        Consolidado de fondos a partir de las donaciones monetarias verificadas.
+        @if (ultimaActualizacion(); as hora) {
+          <span class="text-on-surface"> · Actualizado {{ hora | date: 'HH:mm:ss' }}</span>
+        }
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="hidden sm:inline-flex items-center gap-1.5 text-xs text-on-surface-variant">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        Auto-actualización cada 30 s
+      </span>
+      <button
+        type="button"
+        (click)="refrescar()"
+        [disabled]="actualizando()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-semibold hover:bg-brand-hover transition-all disabled:opacity-50">
+        <span class="material-symbols-outlined text-lg {{ actualizando() ? 'animate-spin' : '' }}">refresh</span>
+        {{ actualizando() ? 'Actualizando...' : 'Actualizar ahora' }}
+      </button>
+      <a routerLink="/verificar-fondos"
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-low transition-all">
+        <span class="material-symbols-outlined text-lg">verified_user</span>
+        Verificar aportes
+      </a>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="bg-error-container text-on-error-container text-sm rounded-xl px-4 py-3 flex items-start gap-2">
+      <span class="material-symbols-outlined text-base mt-0.5">error_outline</span>{{ error() }}
+    </div>
+  }
+
+  @if (loading() && !panel()) {
+    <div class="flex items-center justify-center py-20 text-on-surface-variant text-sm">
+      <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+      Calculando el consolidado de fondos...
+    </div>
+  } @else {
+    @if (panel(); as p) {
+
+    <!-- RF44 · Tarjetas principales -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div class="rounded-2xl bg-gradient-to-br from-brand-orange to-brand-hover text-white p-5 shadow-md">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-xs uppercase tracking-widest text-white/80">Total recaudado (PEN)</p>
+          <span class="material-symbols-outlined text-xl opacity-80">payments</span>
+        </div>
+        <p class="text-3xl font-bold mt-2">S/ {{ (p.totalRecaudadoPEN ?? 0) | number: '1.2-2' }}</p>
+        <p class="text-xs text-white/80 mt-1">Solo aportes VERIFICADOS en soles</p>
+      </div>
+
+      <div class="rounded-2xl bg-gradient-to-br from-tertiary to-tertiary-container text-white p-5 shadow-md">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-xs uppercase tracking-widest text-white/80">Total recaudado (USD)</p>
+          <span class="material-symbols-outlined text-xl opacity-80">currency_exchange</span>
+        </div>
+        <p class="text-3xl font-bold mt-2">US$ {{ (p.totalRecaudadoUSD ?? 0) | number: '1.2-2' }}</p>
+        <p class="text-xs text-white/80 mt-1">Dólares verificados, sin conversión</p>
+      </div>
+
+      <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-xs font-medium text-on-surface-variant">En espera de verificación</p>
+          <span class="material-symbols-outlined text-xl text-tertiary">hourglass_top</span>
+        </div>
+        <p class="text-3xl font-bold text-on-surface mt-2">S/ {{ (p.montoPendientePEN ?? 0) | number: '1.2-2' }}</p>
+        <p class="text-xs text-on-surface-variant mt-1">{{ p.donacionesPendientes ?? 0 }} aporte(s) pendiente(s)</p>
+      </div>
+
+      <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-xs font-medium text-on-surface-variant">No ingresó (rechazado)</p>
+          <span class="material-symbols-outlined text-xl text-error">block</span>
+        </div>
+        <p class="text-3xl font-bold text-on-surface mt-2">S/ {{ (p.montoRechazadoPEN ?? 0) | number: '1.2-2' }}</p>
+        <p class="text-xs text-on-surface-variant mt-1">{{ p.donacionesRechazadas ?? 0 }} aporte(s) rechazado(s)</p>
+      </div>
+    </section>
+
+    <!-- Contadores por estado -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm px-6 py-4 flex flex-wrap items-center gap-x-8 gap-y-3">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">task_alt</span>
+        <span class="text-sm text-on-surface-variant">Verificadas:</span>
+        <span class="font-bold text-on-surface">{{ p.donacionesVerificadas ?? 0 }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-tertiary">pending</span>
+        <span class="text-sm text-on-surface-variant">Pendientes:</span>
+        <span class="font-bold text-on-surface">{{ p.donacionesPendientes ?? 0 }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-error">cancel</span>
+        <span class="text-sm text-on-surface-variant">Rechazadas:</span>
+        <span class="font-bold text-on-surface">{{ p.donacionesRechazadas ?? 0 }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-on-surface-variant">donut_small</span>
+        <span class="text-sm text-on-surface-variant">Total de aportes:</span>
+        <span class="font-bold text-on-surface">{{ p.totalDonaciones ?? 0 }}</span>
+      </div>
+      <div class="ml-auto text-xs text-on-surface-variant">
+        Equivalencia de referencia: S/ {{ (p.totalRecaudadoPEN ?? 0) | number: '1.2-2' }} + US$ {{ (p.totalRecaudadoUSD ?? 0) | number: '1.2-2' }}
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+
+      <!-- Desglose por moneda -->
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant/60 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">currency_bitcoin</span>
+          <h2 class="font-semibold text-on-surface">Recaudación por moneda</h2>
+        </div>
+        @if (p.desglosePorMoneda?.length) {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-surface-container text-on-surface-variant text-left">
+                  <th class="px-5 py-3 font-semibold">Moneda</th>
+                  <th class="px-5 py-3 font-semibold text-right">Monto</th>
+                  <th class="px-5 py-3 font-semibold text-right">Aportes</th>
+                  <th class="px-5 py-3 font-semibold w-40">Participación</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant/50">
+                @for (d of p.desglosePorMoneda; track d.concepto) {
+                  <tr class="hover:bg-surface-container-low transition">
+                    <td class="px-5 py-3">
+                      <span class="font-semibold text-on-surface">{{ d.concepto }}</span>
+                      <span class="block text-xs text-on-surface-variant">{{ d.etiqueta ?? etiquetaMoneda[d.concepto] }}</span>
+                    </td>
+                    <td class="px-5 py-3 text-right font-bold text-on-surface">{{ d.concepto === 'USD' ? 'US$' : 'S/' }} {{ d.monto | number: '1.2-2' }}</td>
+                    <td class="px-5 py-3 text-right text-on-surface-variant">{{ d.cantidadDonaciones }}</td>
+                    <td class="px-5 py-3">
+                      <div class="h-2.5 rounded-full bg-surface-container-high overflow-hidden">
+                        <div class="h-full rounded-full {{ d.concepto === 'USD' ? 'bg-tertiary' : 'bg-brand-orange' }}" [style.width.%]="anchoMoneda(d.monto)"></div>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="px-5 py-8 text-center text-sm text-on-surface-variant">Sin datos de recaudación por moneda.</p>
+        }
+      </section>
+
+      <!-- Desglose por método de pago -->
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant/60 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+          <h2 class="font-semibold text-on-surface">Por método de pago</h2>
+          <span class="ml-auto text-xs text-on-surface-variant">Solo soles (PEN)</span>
+        </div>
+        @if (p.desglosePorMetodoPago?.length) {
+          <div class="px-5 py-4 flex flex-col gap-4">
+            @for (d of p.desglosePorMetodoPago; track d.concepto) {
+              <div>
+                <div class="flex items-center justify-between text-sm mb-1.5">
+                  <span class="font-medium text-on-surface">{{ d.etiqueta ?? d.concepto }}</span>
+                  <span class="text-on-surface-variant">
+                    <span class="font-semibold text-on-surface">S/ {{ d.monto | number: '1.2-2' }}</span>
+                    · {{ d.cantidadDonaciones }} aporte(s) · {{ porcentaje(d.monto, totalMetodosPEN()) }}%
+                  </span>
+                </div>
+                <div class="h-3 rounded-full bg-surface-container-high overflow-hidden">
+                  <div class="h-full rounded-full bg-brand-orange" [style.width.%]="anchoMetodo(d.monto)"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="px-5 py-8 text-center text-sm text-on-surface-variant">Sin datos por método de pago.</p>
+        }
+      </section>
+    </div>
+
+    <!-- Serie mensual -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-outline-variant/60 flex flex-wrap items-center gap-2">
+        <span class="material-symbols-outlined text-primary">show_chart</span>
+        <h2 class="font-semibold text-on-surface">Evolución mensual</h2>
+        <span class="text-xs text-on-surface-variant">Últimos 12 meses · solo soles (PEN)</span>
+      </div>
+      @if (p.serieMensual?.length) {
+        <div class="px-5 py-6 overflow-x-auto">
+          <div class="flex items-end gap-3 min-w-[560px] h-52">
+            @for (s of p.serieMensual; track s.periodo) {
+              <div class="flex-1 flex flex-col items-center justify-end gap-2 h-full group">
+                <span class="text-[11px] font-semibold text-on-surface opacity-0 group-hover:opacity-100 transition">
+                  S/ {{ s.monto | number: '1.2-2' }}
+                </span>
+                <div
+                  class="w-full rounded-t-lg bg-brand-orange group-hover:bg-brand-hover transition-all"
+                  [style.height.%]="alturaSerie(s.monto)"
+                  [title]="s.periodo + ': S/ ' + s.monto"></div>
+                <span class="text-[11px] text-on-surface-variant whitespace-nowrap">{{ s.periodo }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <p class="px-5 py-8 text-center text-sm text-on-surface-variant">Todavía no hay recaudación registrada en los últimos 12 meses.</p>
+      }
+    </section>
+
+    <p class="text-xs text-on-surface-variant flex items-start gap-1.5">
+      <span class="material-symbols-outlined text-sm mt-0.5">info</span>
+      <span>
+        El consolidado solo suma aportes <span class="font-medium text-on-surface">VERIFICADOS</span>.
+        Los montos se mantienen separados por moneda (no se aplica tipo de cambio) y los desgloses por método de pago
+        y serie mensual se calculan únicamente sobre soles.
+      </span>
+    </p>
+
+    } @else {
+      <div class="bg-error-container text-on-error-container text-sm rounded-xl px-4 py-4 flex flex-col items-start gap-2">
+      <span class="flex items-center gap-2 font-medium">
+        <span class="material-symbols-outlined text-base">error_outline</span>
+        No se pudo cargar el panel de recaudación.
+      </span>
+      <span class="text-xs opacity-90">Verifica que el backend exponga GET /api/v1/donaciones-monetarias/panel.</span>
+      <button
+        type="button"
+        (click)="refrescar()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-orange text-white text-sm font-semibold hover:bg-brand-hover transition">
+        <span class="material-symbols-outlined text-lg">refresh</span>
+        Reintentar
+      </button>
+    </div>
+    }
+  }
+</div>
+</main>

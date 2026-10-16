@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { DonacionService } from '../../services/donacion.service';
@@ -9,12 +9,13 @@ import { CategoriaService } from '../../services/categoria.service';
 import { TrabajadorService } from '../../services/trabajador.service';
 import { MonetariaService } from '../../services/monetaria.service';
 import { Donacion } from '../../models/donacion.model';
+import { PanelFondos } from '../../models/monetaria.model';
 import { Notificacion } from '../../models/notificacion.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, DecimalPipe],
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent implements OnInit {
@@ -36,7 +37,8 @@ export class DashboardComponent implements OnInit {
   totalLocales = signal(0);
   totalCategorias = signal(0);
   totalTrabajadores = signal(0);
-  totalFondos = signal<number | null>(null);
+  /** RF44 · consolidado de fondos recaudados (solo aportes verificados). */
+  panelFondos = signal<PanelFondos | null>(null);
 
   loading = signal(true);
 
@@ -136,9 +138,9 @@ export class DashboardComponent implements OnInit {
     this.trabajadorService.listar().subscribe((data) => this.totalTrabajadores.set(data.length));
 
     if (this.esAdmin) {
-      this.monetariaService.getTotalFondos().subscribe({
-        next: (t) => this.totalFondos.set(t.totalRecaudadoPEN ?? 0),
-        error: () => this.totalFondos.set(0),
+      this.monetariaService.getPanel().subscribe({
+        next: (p) => this.panelFondos.set(p),
+        error: () => this.panelFondos.set(null),
       });
     }
   }
