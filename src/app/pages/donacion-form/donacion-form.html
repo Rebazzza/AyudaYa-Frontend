@@ -27,6 +27,12 @@
         <a routerLink="/donaciones/detalle/{{ creada()!.idDonacion }}" class="bg-brand-orange text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition">
           Ver detalle
         </a>
+        @if (puedeVerTrazabilidad) {
+          <a routerLink="/donaciones/detalle/{{ creada()!.idDonacion }}" class="inline-flex items-center justify-center gap-2 bg-primary-container text-on-primary px-6 py-2.5 rounded-xl font-semibold hover:opacity-90 transition">
+            <span class="material-symbols-outlined text-lg">route</span>
+            Trazabilidad
+          </a>
+        }
         <button (click)="registrarOtra()" class="px-6 py-2.5 rounded-xl font-semibold text-primary-container border border-outline-variant hover:bg-surface-container transition">
           Registrar otra donación
         </button>

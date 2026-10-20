@@ -38,6 +38,12 @@ export class DonacionFormComponent implements OnInit {
 
   user = this.session.getUser();
   esDonante = this.user?.nombreRol === 'Donante';
+  esAdmin = this.session.esAdmin();
+  esTrabajador =
+    this.user?.nombreRol === 'Personal de Apoyo' ||
+    this.user?.nombreRol === 'TrabajadorCentroAcopio';
+  /** Solo el administrador y el personal de apoyo pueden abrir la trazabilidad. */
+  puedeVerTrazabilidad = this.esAdmin || this.esTrabajador;
 
   categorias = signal<Categoria[]>([]);
   locales = signal<Local[]>([]);
