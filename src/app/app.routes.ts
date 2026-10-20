@@ -51,6 +51,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'donaciones/mis-donaciones',
+    loadComponent: () =>
+      import('./pages/donaciones/donaciones').then((m) => m.DonacionesComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'donaciones/nueva',
     loadComponent: () =>
       import('./pages/donacion-form/donacion-form').then((m) => m.DonacionFormComponent),
@@ -63,12 +69,27 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'donaciones/:id',
+    path: 'donaciones/detalle/:id',
     loadComponent: () =>
       import('./pages/seguimientoDonación/seguimientoDonacion').then(
         (m) => m.SeguimientoDonacionComponent,
       ),
     canActivate: [authGuard],
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./pages/dashboard/dashboard').then((m) => m.DashboardComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'tracking',
+    loadComponent: () =>
+      import('./pages/seguimientoDonación/seguimientoDonacion').then(
+        (m) => m.SeguimientoDonacionComponent,
+      ),
+    // TC-FUNC-10: el rastreo público NO exige sesión; cualquier visitante puede
+    // consultar la línea de tiempo con el código de seguimiento.
   },
   {
     path: 'seguimiento',

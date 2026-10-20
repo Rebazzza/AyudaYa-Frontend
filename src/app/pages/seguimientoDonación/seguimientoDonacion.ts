@@ -1,7 +1,7 @@
 import { Component, OnDestroy, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { DonacionService } from '../../services/donacion.service';
 import { SessionService } from '../../services/session.service';
 import { ImagenService } from '../../services/imagen.service';
@@ -28,6 +28,7 @@ interface Paso {
 })
 export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private donacionService = inject(DonacionService);
   private session = inject(SessionService);
   private imagenService = inject(ImagenService);
@@ -111,7 +112,11 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
 
   usuario = this.session.getUser();
   esAdmin = this.session.esAdmin();
-  esTrabajador = this.usuario?.nombreRol === 'Personal de Apoyo' || this.esAdmin;
+  esTrabajador =
+    this.usuario?.nombreRol === 'Personal de Apoyo' ||
+    this.usuario?.nombreRol === 'TrabajadorCentroAcopio' ||
+    this.esAdmin;
+  esDonante = this.usuario?.nombreRol === 'Donante';
   nuevoEstado = '';
   observacion = '';
 
@@ -126,8 +131,8 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
 
   pasos: Paso[] = [
     { estado: 'REGISTRADO', etiqueta: 'Registrado', icono: 'assignment' },
-    { estado: 'EN_TRANSITO', etiqueta: 'En tránsito', icono: 'local_shipping' },
-    { estado: 'VERIFICADO', etiqueta: 'Verificado', icono: 'verified' },
+    { estado: 'EN_ALMACEN', etiqueta: 'En Almacén', icono: 'warehouse' },
+    { estado: 'EN_TRANSITO', etiqueta: 'En Tránsito', icono: 'local_shipping' },
     { estado: 'ENTREGADO', etiqueta: 'Entregado', icono: 'check' },
   ];
 
@@ -170,7 +175,9 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   );
 
   private indiceFase(estado: string): number {
-    const objetivo = estado === 'EN_ALMACEN' ? 'EN_TRANSITO' : estado;
+    // VERIFICADO (verificación en almacén) se muestra dentro de la fase
+    // "En Tránsito" de la línea de tiempo pública.
+    const objetivo = estado === 'VERIFICADO' ? 'EN_TRANSITO' : estado;
     return this.pasos.findIndex((p) => p.estado === objetivo);
   }
 
@@ -249,7 +256,10 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   cargarPorId(id: number) {
     this.loading.set(true);
     this.error.set('');
-    this.donacionService.detalle(id).subscribe({
+    // RF25 · aislamiento de datos: el donante envía su idUsuario para que el
+    // backend responda 403 si la donación pertenece a otro usuario.
+    const idUsuario = this.esDonante ? this.usuario?.idUsuario : undefined;
+    this.donacionService.detalle(id, idUsuario).subscribe({
       next: (data) => {
         this.donacion.set(data);
         this.nuevoEstado = this.transiciones[data.estadoActual]?.[0] ?? data.estadoActual;
@@ -266,6 +276,11 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading.set(false);
+        if (err?.status === 403) {
+          // Evitamos divulgar información: se redirige al panel personal.
+          this.router.navigate(['/donaciones/mis-donaciones']);
+          return;
+        }
         this.error.set(err.error?.message || 'No se encontró la donación');
       },
     });

@@ -13,6 +13,7 @@ import { Categoria } from '../../models/categoria.model';
 import { Local, CapacidadLocal } from '../../models/local.model';
 import { Usuario } from '../../models/usuario.model';
 import { DetalleDonacionRegistroRequest } from '../../models/donacion.model';
+import { environment } from '../../../environments/environment';
 
 interface DetalleForm {
   idCategoria: number;
@@ -54,6 +55,8 @@ export class DonacionFormComponent implements OnInit {
   error = signal('');
   loading = signal(false);
   creada = signal<{ idDonacion: number; codigoSeguimiento: string } | null>(null);
+  /** TC-FUNC-04: imagen del código QR generada por el backend para el código de seguimiento. */
+  qrUrl = signal<string | null>(null);
 
   dialogoDonante = signal(false);
   creandoDonante = signal(false);
@@ -192,6 +195,7 @@ export class DonacionFormComponent implements OnInit {
 
   registrarOtra() {
     this.creada.set(null);
+    this.qrUrl.set(null);
     this.form.idUsuario = this.esDonante ? (this.user?.idUsuario ?? 0) : 0;
     this.form.idLocalRecepcion = 0;
     this.detalles.set([this.nuevaFila()]);
@@ -215,7 +219,7 @@ export class DonacionFormComponent implements OnInit {
     this.error.set('');
 
     if (this.localSeleccionadoLleno) {
-      this.error.set('El local seleccionado alcanzó su capacidad máxima y no puede recibir nuevas donaciones.');
+      this.error.set('El centro de acopio ha alcanzado su capacidad volumétrica máxima');
       return;
     }
 
@@ -241,6 +245,9 @@ export class DonacionFormComponent implements OnInit {
       next: (donacion) => {
         this.loading.set(false);
         this.creada.set({ idDonacion: donacion.idDonacion, codigoSeguimiento: donacion.codigoSeguimiento });
+        if (donacion.codigoSeguimiento) {
+          this.qrUrl.set(`${environment.apiUrl}/documentos/qr/${donacion.codigoSeguimiento}`);
+        }
       },
       error: (err) => {
         this.loading.set(false);

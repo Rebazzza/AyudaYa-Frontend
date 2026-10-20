@@ -33,9 +33,17 @@ export class DonacionService {
       .pipe(map((res) => res.data));
   }
 
-  detalle(id: number): Observable<Donacion> {
+  detalle(id: number, idUsuario?: number): Observable<Donacion> {
+    let params = new HttpParams();
+    if (idUsuario) params = params.set('idUsuario', idUsuario);
     return this.http
-      .get<ApiResponseDTO<Donacion>>(`${this.base}/${id}`)
+      .get<ApiResponseDTO<Donacion>>(`${this.base}/${id}`, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  porCodigo(codigoSeguimiento: string): Observable<Donacion> {
+    return this.http
+      .get<ApiResponseDTO<Donacion>>(`${this.base}/codigo/${codigoSeguimiento}`)
       .pipe(map((res) => res.data));
   }
 

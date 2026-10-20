@@ -17,6 +17,7 @@
     <label class="relative flex-1 min-w-[220px]">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
       <input
+        id="inputBusquedaDonaciones"
         type="text"
         [(ngModel)]="busqueda"
         placeholder="Buscar por donante, código o local"
@@ -74,6 +75,15 @@
                   <a routerLink="/donaciones/{{ d.idDonacion }}" class="inline-flex items-center gap-1 text-primary-container font-medium hover:underline">
                     Ver <span class="material-symbols-outlined text-base">chevron_right</span>
                   </a>
+                  <button
+                    type="button"
+                    id="btnAnularDonacion"
+                    (click)="anularDonacion(d)"
+                    [disabled]="!puedeAnular(d) || anulandoId() === d.idDonacion"
+                    class="ml-3 inline-flex items-center gap-1 text-error font-medium hover:underline disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
+                    title="Anular donación">
+                    {{ anulandoId() === d.idDonacion ? 'Anulando...' : 'Anular Donación' }}
+                  </button>
                   <button
                     type="button"
                     (click)="eliminar(d)"

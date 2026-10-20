@@ -17,7 +17,8 @@ export interface RegisterRequest {
   apellidosUsuario: string;
   correoUsuario: string;
   'contraseña': string;
-  telefonoUsuario: string;
+  /** Opcional (TC-FUNC-01): el plan de pruebas no lo lista como obligatorio. */
+  telefonoUsuario?: string;
   tipoRegistro?: RolRegistrable;
 }
 

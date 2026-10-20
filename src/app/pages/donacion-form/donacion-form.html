@@ -12,7 +12,17 @@
       </span>
       <h1 class="text-2xl font-bold text-on-surface mb-2">Donación registrada</h1>
       <p class="text-sm text-on-surface-variant mb-1">Tu código de seguimiento generado es:</p>
-      <p class="text-3xl font-bold text-brand-orange tracking-tight mb-6">{{ creada()!.codigoSeguimiento }}</p>
+      <p class="text-3xl font-bold text-brand-orange tracking-tight mb-4">{{ creada()!.codigoSeguimiento }}</p>
+      @if (qrUrl()) {
+        <img
+          id="qrSeguimiento"
+          [src]="qrUrl()"
+          alt="Código QR de seguimiento"
+          width="200"
+          height="200"
+          class="mx-auto mb-6 rounded-lg border border-outline-variant"
+        />
+      }
       <div class="flex flex-col sm:flex-row justify-center gap-3">
         <a routerLink="/donaciones/{{ creada()!.idDonacion }}" class="bg-brand-orange text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition">
           Ver detalle
@@ -174,6 +184,7 @@
 
         <button
           type="submit"
+          id="btnRegistrarDonacion"
           [disabled]="loading()"
           class="w-full bg-brand-orange text-white py-3 px-6 rounded-xl font-semibold shadow-sm hover:bg-brand-hover transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
           {{ loading() ? 'Registrando...' : 'Registrar donación' }}

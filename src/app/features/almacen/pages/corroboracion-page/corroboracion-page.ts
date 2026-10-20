@@ -121,23 +121,23 @@ export class CorroboracionPageComponent implements OnInit {
     }
     this.cargandoPendientes.set(true);
     this.codigoError.set('');
+    this.error.set('');
 
-    this.donacionService.listar().subscribe({
-      next: (data) => {
+    this.donacionService.porCodigo(codigo).subscribe({
+      next: (donacion) => {
         this.cargandoPendientes.set(false);
-        const verificables = this.filtrarVerificables(data);
-        this.pendientes.set(verificables);
-        const match = verificables.find((d) => d.codigoSeguimiento.toUpperCase() === codigo);
-        if (match) {
-          this.cargarDonacion(match);
-        } else {
+        if (donacion.estadoActual !== 'REGISTRADO') {
           this.error.set('No se encontró una donación corroborable con ese código.');
+          return;
         }
+        this.pendientes.update((list) =>
+          list.some((d) => d.idDonacion === donacion.idDonacion) ? list : [donacion, ...list],
+        );
+        this.cargarDonacion(donacion);
       },
       error: () => {
         this.cargandoPendientes.set(false);
-        this.codigoError.set('No se pudo completar la búsqueda. Intenta nuevamente.');
-        if (this.pendientes().length === 0) this.cargarPendientes();
+        this.codigoError.set('No se encontró una donación corroborable con ese código.');
       },
     });
   }

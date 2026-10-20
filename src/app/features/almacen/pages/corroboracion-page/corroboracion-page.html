@@ -61,12 +61,12 @@
   @if (seleccion()) {
     <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
-        <p class="text-xs font-medium text-on-surface-variant uppercase">Total ítems</p>
+        <p class="text-xs font-medium text-on-surface-variant uppercase">Total Items</p>
         <p class="text-3xl font-bold text-on-surface mt-1">{{ totalItems() }}</p>
         <p class="text-xs text-on-surface-variant mt-1">{{ filas().length }} insumos declarados</p>
       </article>
       <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
-        <p class="text-xs font-medium text-on-surface-variant uppercase">Con incidencias</p>
+        <p class="text-xs font-medium text-on-surface-variant uppercase">Items con Incidencias</p>
         <p class="text-3xl font-bold mt-1 {{ conIncidencias() > 0 ? 'text-error' : 'text-on-surface' }}">{{ conIncidencias() }}</p>
         <p class="text-xs text-on-surface-variant mt-1">Real ≠ Prometido</p>
       </article>
@@ -112,6 +112,7 @@
                 <td class="px-4 py-3 text-right font-semibold text-on-surface">{{ fila.prometido }}</td>
                 <td class="px-4 py-3">
                   <input
+                    id="recibido{{ $index }}"
                     type="number"
                     min="0"
                     [value]="fila.recibido ?? ''"
@@ -130,17 +131,17 @@
                 <td class="px-4 py-3">
                   @switch (incidenciaOf(fila)) {
                     @case ('EXCEDENTE') {
-                      <span class="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+                      <span id="incidencia{{ $index }}" class="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-full">
                         <span class="material-symbols-outlined text-sm">trending_up</span> Excedente
                       </span>
                     }
                     @case ('FALTANTE') {
-                      <span class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-xs font-semibold px-2.5 py-1 rounded-full">
+                      <span id="incidencia{{ $index }}" class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-xs font-semibold px-2.5 py-1 rounded-full">
                         <span class="material-symbols-outlined text-sm">trending_down</span> Faltante
                       </span>
                     }
                     @default {
-                      <span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant text-xs font-medium px-2.5 py-1 rounded-full">
+                      <span id="incidencia{{ $index }}" class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant text-xs font-medium px-2.5 py-1 rounded-full">
                         <span class="material-symbols-outlined text-sm">check</span> Correcto
                       </span>
                     }
@@ -170,7 +171,7 @@
           >
             <span class="material-symbols-outlined text-2xl">add_a_photo</span>
             <span class="text-[11px]">Agregar foto</span>
-            <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden"
+            <input id="evidencia" type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden"
                    (change)="onSeleccionarEvidencias($event)" />
           </label>
         }
@@ -204,6 +205,7 @@
     <div class="flex flex-wrap items-center justify-end gap-3">
       <button
         type="button"
+        id="btnValidarRecepcion"
         (click)="confirmar()"
         [disabled]="!puedeValidar() || enviando()"
         class="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-40 disabled:cursor-not-allowed">

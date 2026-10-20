@@ -3,8 +3,8 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { SessionService } from '../../services/session.service';
 import { ImagenService } from '../../services/imagen.service';
+import { IaService } from '../../services/ia.service';
 import { RolRegistrable } from '../../models/usuario.model';
 import { ImagenEvidencia } from '../../models/imagen.model';
 
@@ -16,9 +16,9 @@ import { ImagenEvidencia } from '../../models/imagen.model';
 })
 export class RegisterComponent {
   private auth = inject(AuthService);
-  private session = inject(SessionService);
   private router = inject(Router);
   private imagenService = inject(ImagenService);
+  private iaService = inject(IaService);
 
   form = {
     dniUsuario: '',
@@ -33,6 +33,8 @@ export class RegisterComponent {
 
   loading = signal(false);
   error = signal('');
+  /** TC-FUNC-01: alerta/toast de confirmación visible tras un registro exitoso. */
+  exito = signal(false);
   showPassword = signal(false);
   showPasswordConfirm = signal(false);
 
@@ -41,6 +43,12 @@ export class RegisterComponent {
   dniFrontalPreview = signal<string | null>(null);
   dniPosteriorPreview = signal<string | null>(null);
   dniError = signal('');
+
+  /** TC-FUNC-03: estado de la verificación biométrica de las dos caras del DNI. */
+  validandoIdentidad = signal(false);
+  identidadVerificada = signal(false);
+  identidadResultado = signal('');
+  identidadError = signal('');
 
   formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
   maxTamanoBytes = 10 * 1024 * 1024;
@@ -90,6 +98,45 @@ export class RegisterComponent {
       this.dniPosterior.set(null);
       this.dniPosteriorPreview.set(null);
     }
+    // Al quitar una cara vuelve a requerirse la validación completa.
+    this.identidadVerificada.set(false);
+    this.identidadResultado.set('');
+  }
+
+  /**
+   * TC-FUNC-03 · RF03/RF16/RF17: envía anverso y reverso al microservicio Flask a través
+   * del backend. El resultado se muestra con el campo `isValido` del dictamen y las
+   * imágenes se purgan en el servidor (no se almacenan en disco).
+   */
+  validarIdentidad() {
+    const anverso = this.dniFrontal();
+    const reverso = this.dniPosterior();
+
+    this.identidadError.set('');
+    this.identidadResultado.set('');
+    this.identidadVerificada.set(false);
+
+    if (!anverso || !reverso) {
+      this.identidadError.set('Debes adjuntar el anverso y el reverso del DNI antes de validar tu identidad.');
+      return;
+    }
+
+    this.validandoIdentidad.set(true);
+    this.iaService.verificarDniCompleto(anverso, reverso).subscribe({
+      next: (res) => {
+        this.validandoIdentidad.set(false);
+        const isValido = res.anversoValido && res.reversoValido;
+        this.identidadVerificada.set(isValido);
+        this.identidadResultado.set(
+          `isValido: ${isValido} · ${res.mensajeResultado}` +
+            (res.confianza != null ? ` (confianza ${(res.confianza * 100).toFixed(0)}%)` : ''),
+        );
+      },
+      error: (err) => {
+        this.validandoIdentidad.set(false);
+        this.identidadError.set(err.error?.message || 'No se pudo validar la identidad. Intenta nuevamente.');
+      },
+    });
   }
 
   private subirDni(idUsuario: number) {
@@ -114,27 +161,36 @@ export class RegisterComponent {
     this.error.set('');
     this.dniError.set('');
 
-    const body = { ...this.form, 'contraseña': this.contrasena, tipoRegistro: this.rolSeleccionado };
+    const body = {
+      ...this.form,
+      'contraseña': this.contrasena,
+      tipoRegistro: this.rolSeleccionado,
+      // El teléfono es opcional (TC-FUNC-01): no se envía vacío.
+      telefonoUsuario: this.form.telefonoUsuario.trim() || undefined,
+    };
 
     this.auth.register(body).subscribe({
       next: (user) => {
-        this.session.setUser(user);
         const hayDni = this.rolSeleccionado === 'DONANTE' && (this.dniFrontal() || this.dniPosterior());
-        if (!hayDni) {
-          this.loading.set(false);
-          this.router.navigate(['/']);
+
+        if (hayDni && this.identidadVerificada() && this.dniFrontal()) {
+          // TC-FUNC-03 · RF19: se persiste únicamente el estado verificado en MySQL;
+          // las imágenes se purgan en el servidor (purga biométrica).
+          this.iaService.verificarDni(user.idUsuario, this.dniFrontal()!).subscribe({
+            next: () => this.finalizarRegistro(),
+            error: () => this.finalizarRegistro(),
+          });
           return;
         }
+
+        if (!hayDni) {
+          this.finalizarRegistro();
+          return;
+        }
+
         this.subirDni(user.idUsuario).subscribe({
-          next: () => {
-            this.loading.set(false);
-            this.router.navigate(['/']);
-          },
-          error: (err) => {
-            this.loading.set(false);
-            this.dniError.set('Cuenta creada, pero no se pudo cargar el DNI: ' + (err.error?.message ?? 'intenta nuevamente'));
-            this.router.navigate(['/']);
-          },
+          next: () => this.finalizarRegistro(),
+          error: () => this.finalizarRegistro(),
         });
       },
       error: (err) => {
@@ -142,5 +198,17 @@ export class RegisterComponent {
         this.error.set(err.error?.message || 'Error al registrarse');
       },
     });
+  }
+
+  /**
+   * TC-FUNC-01: muestra el toast "Usuario registrado exitosamente" y redirige a la
+   * vista de inicio de sesión, donde la alerta permanece visible para el usuario.
+   */
+  private finalizarRegistro() {
+    this.loading.set(false);
+    this.exito.set(true);
+    setTimeout(() => {
+      this.router.navigate(['/login'], { queryParams: { registro: 'exito' } });
+    }, 1500);
   }
 }

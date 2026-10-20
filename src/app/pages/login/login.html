@@ -70,9 +70,17 @@
 <h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Iniciar Sesión</h1>
 <p class="font-body-md text-body-md text-on-surface-variant mt-1">Ingresa a tu cuenta para continuar con tu labor solidaria</p>
 </div>
+<!-- Mensaje de registro exitoso (TC-FUNC-01) -->
+@if (registroExitoso) {
+  <div id="toastRegistroExito" role="alert"
+       class="bg-primary-fixed text-on-primary-fixed border border-primary text-sm rounded-lg px-4 py-3 mb-4 flex items-center gap-2">
+    <span class="material-symbols-outlined text-base">check_circle</span>
+    Usuario registrado exitosamente
+  </div>
+}
 <!-- Mensaje de error -->
 @if (error()) {
-  <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ error() }}</div>
+  <div id="errorLogin" role="alert" class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ error() }}</div>
 }
 <!-- Tabs / Selector de Perfil -->
 <div class="p-1 bg-surface-container-low rounded-xl flex gap-1 mb-6">
@@ -133,7 +141,7 @@
 </label>
 </div>
 <!-- Botón CTA Principal -->
-<button class="w-full mt-2 py-3.5 px-6 rounded-xl bg-primary-container hover:bg-secondary text-on-primary font-label-md text-label-md tracking-wide shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed" type="submit" [disabled]="loading()">
+<button id="btnIniciarSesion" class="w-full mt-2 py-3.5 px-6 rounded-xl bg-primary-container hover:bg-secondary text-on-primary font-label-md text-label-md tracking-wide shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed" type="submit" [disabled]="loading()">
 <span>{{ loading() ? 'Ingresando...' : 'Iniciar Sesión' }}</span>
 <span class="material-symbols-outlined text-lg">arrow_forward</span>
 </button>

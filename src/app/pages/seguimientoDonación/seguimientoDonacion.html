@@ -81,11 +81,13 @@
               {{ donacion()!.codigoSeguimiento }}
               <button
                 type="button"
+                id="btnDescargarComprobante"
                 (click)="descargarComprobante()"
                 [disabled]="generandoComprobante()"
-                title="Descargar comprobante (PDF)"
-                class="text-sm text-on-surface-variant hover:text-brand-orange transition disabled:opacity-40">
+                title="Descargar Comprobante PDF"
+                class="inline-flex items-center gap-1 text-sm font-semibold text-on-surface-variant hover:text-brand-orange transition disabled:opacity-40">
                 <span class="material-symbols-outlined">{{ generandoComprobante() ? 'progress_activity' : 'picture_as_pdf' }}</span>
+                {{ generandoComprobante() ? 'Generando...' : 'Descargar Comprobante PDF' }}
               </button>
               <button
                 type="button"
@@ -140,11 +142,13 @@
                 {{ tracking()!.codigoSeguimiento }}
                 <button
                   type="button"
+                  id="btnDescargarComprobante"
                   (click)="descargarComprobante()"
                   [disabled]="generandoComprobante()"
-                  title="Descargar comprobante (PDF)"
-                  class="text-sm text-on-surface-variant hover:text-brand-orange transition disabled:opacity-40">
+                  title="Descargar Comprobante PDF"
+                  class="inline-flex items-center gap-1 text-sm font-semibold text-on-surface-variant hover:text-brand-orange transition disabled:opacity-40">
                   <span class="material-symbols-outlined">{{ generandoComprobante() ? 'progress_activity' : 'picture_as_pdf' }}</span>
+                  {{ generandoComprobante() ? 'Generando...' : 'Descargar Comprobante PDF' }}
                 </button>
                 <button
                   type="button"
@@ -225,7 +229,7 @@
         <div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/60 flex flex-wrap items-center justify-between gap-2">
           <h3 class="font-semibold text-on-surface flex items-center gap-2">
             <span class="material-symbols-outlined text-primary">my_location</span>
-            Ubicación actual
+            Ubicación Actual
           </h3>
           <div class="text-xs text-on-surface-variant">
             @if (ubicacionInfo()!.fechaUltimoEscaneo) {

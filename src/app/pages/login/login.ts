@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
@@ -15,6 +15,11 @@ export class LoginComponent {
   private auth = inject(AuthService);
   private session = inject(SessionService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  /** TC-FUNC-02: mensaje exacto exigido por el plan de pruebas funcionales. */
+  static readonly MENSAJE_CREDENCIALES =
+    'Credenciales incorrectas. Verifique su correo y contraseña';
 
   correoUsuario = '';
   contrasena = '';
@@ -24,6 +29,8 @@ export class LoginComponent {
 
   loading = signal(false);
   error = signal('');
+  /** TC-FUNC-01: la alerta "Usuario registrado exitosamente" permanece tras la redirección. */
+  registroExitoso = this.route.snapshot.queryParamMap.get('registro') === 'exito';
   showPassword = signal(false);
 
   toggleShowPassword() {
@@ -64,7 +71,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Credenciales incorrectas');
+        this.error.set(err.error?.message || LoginComponent.MENSAJE_CREDENCIALES);
       },
     });
   }
