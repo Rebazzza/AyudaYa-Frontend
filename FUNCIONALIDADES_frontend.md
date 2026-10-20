@@ -176,13 +176,14 @@ ENTREGADO/ANULADO → (terminal)
 
 ---
 
-## 10. Gestión de trabajadores (`/trabajadores`) — RF06 y RF09 · solo Admin
+## 10. Gestión de trabajadores (`/trabajadores`) — RF06, RF09 y RF10 · solo Admin
 
-- **Listado (RF09):** nombre completo, DNI, **local de acopio asignado**, **cargo** y **fecha de contratación**, obtenidos de `GET /trabajadores`.
+- **Listado (RF09):** nombre completo, DNI, **local de acopio asignado**, **cargo**, **fecha de contratación** y **estado** (Activo/Inactivo), obtenidos de `GET /trabajadores`.
 - **Crear/Editar (RF06):** vincula un **usuario** (se filtran los que ya son trabajadores) con un **local de acopio**, un cargo (máx. 50) y una fecha opcional; se persiste contra `POST /trabajadores` y `PUT /trabajadores/{id}`.
 - **Nuevo usuario desde el formulario:** crea la cuenta `PERSONAL_APOYO` desde el modal y la asigna automáticamente al trabajador.
+- **Baja lógica (RF10):** botón por fila que llama a `PATCH /trabajadores/{id}/desactivar` con confirmación previa. El backend solo marca `estadoActivo = false` (**no borra el registro físico**); las filas inactivas se muestran atenuadas con badge "Inactivo". Actualmente el backend **no expone endpoint de reactivación**, por lo que la confirmación advierte que la acción no se puede deshacer.
 - Validaciones: usuario, local y cargo obligatorios.
-- Sin eliminación en frontend.
+- Sin eliminación física en frontend (el `DELETE /trabajadores/{id}` del backend, que sí borra el registro, queda sin usar a propósito para cumplir el RF10).
 
 ---
 

@@ -7,6 +7,12 @@ export interface Trabajador {
   nombreLocal: string;
   cargoTrabajador: string;
   fechaContratacion: string;
+  /**
+   * Baja lógica (RF10). El backend lo envía siempre como boolean
+   * (las filas antiguas en `NULL` se reportan como activas), pero se
+   * interpreta de forma defensiva con `!== false`.
+   */
+  estadoActivo: boolean;
 }
 
 export interface TrabajadorRequest {

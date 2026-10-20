@@ -31,4 +31,15 @@ export class TrabajadorService {
   actualizar(id: number, data: TrabajadorRequest): Observable<Trabajador> {
     return this.http.put<ApiResponseDTO<Trabajador>>(`${this.base}/${id}`, data).pipe(map((res) => res.data));
   }
+
+  /**
+   * PATCH /trabajadores/{id}/desactivar — baja lógica (RF10).
+   * No borra el registro físico: solo marca `estadoActivo = false`.
+   * El backend no expone endpoint de reactivación por ahora.
+   */
+  desactivar(id: number): Observable<Trabajador> {
+    return this.http
+      .patch<ApiResponseDTO<Trabajador>>(`${this.base}/${id}/desactivar`, {})
+      .pipe(map((res) => res.data));
+  }
 }

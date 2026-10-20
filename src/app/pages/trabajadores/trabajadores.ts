@@ -26,6 +26,7 @@ export class TrabajadoresComponent implements OnInit {
   usuarios = signal<Usuario[]>([]);
   loading = signal(true);
   saving = signal(false);
+  desactivandoId = signal<number | null>(null);
   error = signal('');
   success = signal('');
   showForm = signal(false);
@@ -133,6 +134,36 @@ export class TrabajadoresComponent implements OnInit {
       error: (err) => {
         this.saving.set(false);
         this.error.set(err.error?.message || 'Error al guardar el trabajador');
+      },
+    });
+  }
+
+  /**
+   * RF10 — baja lógica del trabajador. El backend marca `estadoActivo = false`
+   * sin borrar el registro físico. No existe endpoint de reactivación todavía,
+   * por lo que la confirmación advierte que la acción no se puede deshacer.
+   */
+  desactivar(t: Trabajador) {
+    if (this.desactivandoId() !== null) return;
+
+    const mensaje =
+      `¿Desactivar a ${t.nombreCompletoUsuario}? Dejará de figurar como personal activo del local. ` +
+      'El registro NO se elimina, pero por ahora no existe forma de reactivarlo desde la aplicación.';
+    if (!confirm(mensaje)) return;
+
+    this.error.set('');
+    this.success.set('');
+    this.desactivandoId.set(t.idTrabajador);
+
+    this.trabajadorService.desactivar(t.idTrabajador).subscribe({
+      next: () => {
+        this.desactivandoId.set(null);
+        this.success.set('Trabajador desactivado correctamente.');
+        this.cargar();
+      },
+      error: (err) => {
+        this.desactivandoId.set(null);
+        this.error.set(err.error?.message || 'Error al desactivar el trabajador');
       },
     });
   }
