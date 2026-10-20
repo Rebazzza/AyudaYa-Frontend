@@ -24,7 +24,7 @@
         />
       }
       <div class="flex flex-col sm:flex-row justify-center gap-3">
-        <a routerLink="/donaciones/{{ creada()!.idDonacion }}" class="bg-brand-orange text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition">
+        <a routerLink="/donaciones/detalle/{{ creada()!.idDonacion }}" class="bg-brand-orange text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition">
           Ver detalle
         </a>
         <button (click)="registrarOtra()" class="px-6 py-2.5 rounded-xl font-semibold text-primary-container border border-outline-variant hover:bg-surface-container transition">

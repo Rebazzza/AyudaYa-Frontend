@@ -77,6 +77,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    // Alias: enlaces antiguos usaban /donaciones/:id; sin esta ruta caían en el
+    // comodín ** y redirigían al dashboard.
+    path: 'donaciones/:id',
+    loadComponent: () =>
+      import('./pages/seguimientoDonación/seguimientoDonacion').then(
+        (m) => m.SeguimientoDonacionComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard').then((m) => m.DashboardComponent),
