@@ -27,6 +27,7 @@ export class TrabajadoresComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
   desactivandoId = signal<number | null>(null);
+  eliminandoId = signal<number | null>(null);
   error = signal('');
   success = signal('');
   showForm = signal(false);
@@ -164,6 +165,37 @@ export class TrabajadoresComponent implements OnInit {
       error: (err) => {
         this.desactivandoId.set(null);
         this.error.set(err.error?.message || 'Error al desactivar el trabajador');
+      },
+    });
+  }
+
+  /**
+   * Borrado físico del vínculo de trabajador (DELETE /trabajadores/{id}).
+   * El backend desvincula historial de estados y donaciones antes de borrar
+   * (antes el 500 por clave foránea salía sin cabeceras CORS y el navegador
+   * lo reportaba como error de CORS). La cuenta del usuario NO se elimina.
+   */
+  eliminar(t: Trabajador) {
+    if (this.desactivandoId() !== null || this.eliminandoId() !== null) return;
+
+    const mensaje =
+      `¿Eliminar el registro de trabajador de ${t.nombreCompletoUsuario}? ` +
+      'Se borrará su vínculo con el local. La cuenta de usuario NO se elimina.';
+    if (!confirm(mensaje)) return;
+
+    this.error.set('');
+    this.success.set('');
+    this.eliminandoId.set(t.idTrabajador);
+
+    this.trabajadorService.eliminar(t.idTrabajador).subscribe({
+      next: () => {
+        this.eliminandoId.set(null);
+        this.success.set('Trabajador eliminado correctamente. La cuenta de usuario se conserva.');
+        this.cargar();
+      },
+      error: (err) => {
+        this.eliminandoId.set(null);
+        this.error.set(err.error?.message || 'Error al eliminar el trabajador');
       },
     });
   }

@@ -42,4 +42,14 @@ export class TrabajadorService {
       .patch<ApiResponseDTO<Trabajador>>(`${this.base}/${id}/desactivar`, {})
       .pipe(map((res) => res.data));
   }
+
+  /**
+   * DELETE /trabajadores/{id} — borrado físico del vínculo de trabajador.
+   * El backend desvincula historial de estados y donaciones antes de borrar
+   * (antes devolvía un 500 sin cabeceras CORS que el navegador reportaba
+   * como error de CORS). La cuenta del usuario NO se elimina.
+   */
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<ApiResponseDTO<null>>(`${this.base}/${id}`).pipe(map(() => undefined));
+  }
 }
