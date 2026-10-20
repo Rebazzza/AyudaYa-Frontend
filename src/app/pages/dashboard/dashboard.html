@@ -48,8 +48,25 @@
             Trabajadores
           </a>
         }
+        @if (esUsuarioPrueba) {
+          <button
+            type="button"
+            id="btnBorrarUsuarioPrueba"
+            (click)="borrarUsuarioPrueba()"
+            [disabled]="borrandoUsuario()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-error text-on-error font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">delete_forever</span>
+            {{ borrandoUsuario() ? 'Borrando...' : 'Borrar usuario de prueba' }}
+          </button>
+        }
       </div>
     </div>
+
+    @if (errorUsuario()) {
+      <div class="relative z-10 mt-4 rounded-xl bg-error-container text-on-error-container text-sm px-4 py-3">
+        {{ errorUsuario() }}
+      </div>
+    }
 
     <!-- Distribución por estado -->
     <div class="relative z-10 mt-6 flex flex-wrap gap-2">

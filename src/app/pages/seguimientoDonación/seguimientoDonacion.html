@@ -497,6 +497,75 @@
         </div>
       </section>
 
+      <!-- Verificación de la ONG: aquí es donde la donación pasa a VERIFICADO -->
+      @if (puedeVerificar()) {
+        <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">verified_user</span>
+            Verificación de la ONG
+          </h2>
+
+          <div class="mb-4 flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold
+              {{ donacion()!.estadoVerificacion === 'VERIFICADO' ? 'bg-tertiary-fixed text-on-tertiary-fixed'
+                 : donacion()!.estadoVerificacion === 'RECHAZADO' ? 'bg-error-container text-on-error-container'
+                 : 'bg-surface-container-high text-on-surface' }}"
+              id="estadoVerificacionActual">
+              {{ donacion()!.estadoVerificacion === 'VERIFICADO' ? 'Verificada'
+                 : donacion()!.estadoVerificacion === 'RECHAZADO' ? 'Rechazada'
+                 : 'Pendiente de verificación' }}
+            </span>
+            @if (donacion()!.fechaVerificacion) {
+              <span class="text-xs text-on-surface-variant">{{ donacion()!.fechaVerificacion | date:'dd/MM/yyyy HH:mm' }}</span>
+            }
+          </div>
+
+          @if (donacion()!.estadoVerificacion === 'RECHAZADO' && donacion()!.observacionesVerificacion) {
+            <p class="text-sm text-on-surface-variant mb-3">
+              Motivo del rechazo: {{ donacion()!.observacionesVerificacion }}
+            </p>
+          }
+
+          @if (verificacionError()) {
+            <div class="bg-error-container text-on-error-container text-sm rounded-lg px-3 py-2 mb-3">{{ verificacionError() }}</div>
+          }
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1" for="observacionVerificacion">
+                Observación (obligatoria para rechazar)
+              </label>
+              <textarea
+                id="observacionVerificacion"
+                [(ngModel)]="observacionVerificacion"
+                rows="2"
+                placeholder="Ej. Evidencia incompleta, faltan fotos del paquete"
+                class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-brand-orange"></textarea>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button
+                id="btnVerificarDonacion"
+                type="button"
+                (click)="verificar('VERIFICADO')"
+                [disabled]="verificando()"
+                class="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-50">
+                <span class="material-symbols-outlined">check_circle</span>
+                {{ verificando() ? 'Guardando...' : 'Verificar donación' }}
+              </button>
+              <button
+                id="btnRechazarDonacion"
+                type="button"
+                (click)="verificar('RECHAZADO')"
+                [disabled]="verificando()"
+                class="flex-1 inline-flex items-center justify-center gap-2 border border-error text-error px-6 py-3 rounded-xl font-semibold hover:bg-error-container/40 transition disabled:opacity-50">
+                <span class="material-symbols-outlined">cancel</span>
+                Rechazar donación
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+
       <!-- Cambio de estado -->
       @if (donacion() && (puedeCambiarEstado() || puedeAnular())) {
         <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">

@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { DonacionService } from '../../services/donacion.service';
 import { NotificacionService } from '../../services/notificacion.service';
@@ -8,6 +8,7 @@ import { LocalService } from '../../services/local.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { TrabajadorService } from '../../services/trabajador.service';
 import { MonetariaService } from '../../services/monetaria.service';
+import { UsuarioService } from '../../services/usuario.service';
 import { Donacion } from '../../models/donacion.model';
 import { PanelFondos } from '../../models/monetaria.model';
 import { Notificacion } from '../../models/notificacion.model';
@@ -20,17 +21,27 @@ import { Notificacion } from '../../models/notificacion.model';
 })
 export class DashboardComponent implements OnInit {
   private session = inject(SessionService);
+  private router = inject(Router);
   private donacionService = inject(DonacionService);
   private notificacionService = inject(NotificacionService);
   private localService = inject(LocalService);
   private categoriaService = inject(CategoriaService);
   private trabajadorService = inject(TrabajadorService);
   private monetariaService = inject(MonetariaService);
+  private usuarioService = inject(UsuarioService);
 
   user = this.session.getUser();
   esDonante = this.user?.nombreRol === 'Donante';
   esAdmin = this.session.esAdmin();
   esTrabajador = this.esAdmin || this.user?.nombreRol === 'Personal de Apoyo';
+
+  /**
+   * Utilidad de pruebas (TC-FUNC-01): el usuario de prueba Juan Perez ve un botón
+   * para borrarse de la BD y volver al registro, evitando el 409 de duplicado.
+   */
+  esUsuarioPrueba = this.user?.nombreUsuario === 'Juan' && this.user?.apellidosUsuario === 'Perez';
+  borrandoUsuario = signal(false);
+  errorUsuario = signal('');
 
   donaciones = signal<Donacion[]>([]);
   notificaciones = signal<Notificacion[]>([]);
@@ -116,6 +127,31 @@ export class DashboardComponent implements OnInit {
       default:
         return 'bg-surface-container-high text-on-surface';
     }
+  }
+
+  /**
+   * Borra la cuenta (y sus datos) del usuario de prueba Juan Perez y lo devuelve a la
+   * vista de registro para poder repetir el TC-FUNC-01 sin duplicar correo/DNI.
+   * Sin diálogo nativo para no bloquear la automatización de Katalon.
+   */
+  borrarUsuarioPrueba() {
+    const usuario = this.user;
+    if (!usuario || this.borrandoUsuario()) return;
+
+    this.borrandoUsuario.set(true);
+    this.errorUsuario.set('');
+
+    this.usuarioService.eliminar(usuario.idUsuario).subscribe({
+      next: () => {
+        this.borrandoUsuario.set(false);
+        this.session.clearUser();
+        this.router.navigate(['/registro']);
+      },
+      error: (err) => {
+        this.borrandoUsuario.set(false);
+        this.errorUsuario.set(err?.error?.message || 'No se pudo eliminar la cuenta de prueba');
+      },
+    });
   }
 
   ngOnInit() {

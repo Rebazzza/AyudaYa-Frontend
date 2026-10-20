@@ -16,6 +16,10 @@ export interface Donacion {
   fechaExpiracion: string | null;
   fechaVerificacion: string | null;
   estadoActual: string;
+  /** Verificación de la organización (PENDIENTE, VERIFICADO, RECHAZADO). */
+  estadoVerificacion?: string | null;
+  verificadoPor?: number | null;
+  observacionesVerificacion?: string | null;
   idUsuario: number;
   dniDonante: string;
   nombreDonante: string;
@@ -64,6 +68,13 @@ export interface CambioEstadoRequest {
   observacionHistorial?: string;
   idLocal?: number;
   idTrabajador?: number;
+}
+
+/** PUT /donaciones/{id}/verificacion — revisión de la ONG/administrador. */
+export interface VerificacionDonacionRequest {
+  estado: 'PENDIENTE' | 'VERIFICADO' | 'RECHAZADO';
+  observacion?: string;
+  idVerificador: number;
 }
 
 export interface TrackingHistorial {

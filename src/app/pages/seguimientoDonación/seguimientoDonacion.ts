@@ -117,13 +117,29 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     this.usuario?.nombreRol === 'TrabajadorCentroAcopio' ||
     this.esAdmin;
   esDonante = this.usuario?.nombreRol === 'Donante';
+  esOrganizacion = this.usuario?.nombreRol === 'Organizacion';
   nuevoEstado = '';
   observacion = '';
 
+  // --- Verificación de la ONG (estadoVerificacion: PENDIENTE/VERIFICADO/RECHAZADO) ---
+  verificando = signal(false);
+  verificacionError = signal('');
+  observacionVerificacion = '';
+
+  /**
+   * Estados siguientes válidos. Deben coincidir con la ruta del backend
+   * (PU-26: REGISTRADO → EN_ALMACEN → EN_TRANSITO → ENTREGADO, sólo se avanza).
+   *
+   * OJO: "VERIFICADO" NO es un estado de esta ruta: es el estado de verificación
+   * de la organización, que se gestiona con el panel "Verificación de la ONG".
+   * Ofrecerlo aquí hacía que el backend respondiera 400 con el mensaje
+   * "Estado no válido en la ruta de seguimiento".
+   */
   transiciones: Record<string, string[]> = {
-    REGISTRADO: ['EN_TRANSITO', 'EN_ALMACEN', 'ANULADO'],
-    EN_TRANSITO: ['VERIFICADO'],
-    EN_ALMACEN: ['VERIFICADO'],
+    REGISTRADO: ['EN_ALMACEN', 'EN_TRANSITO', 'ANULADO'],
+    EN_ALMACEN: ['EN_TRANSITO', 'ENTREGADO'],
+    EN_TRANSITO: ['ENTREGADO'],
+    // Donaciones antiguas guardadas con un estado fuera de la ruta: no se bloquean.
     VERIFICADO: ['ENTREGADO'],
     ENTREGADO: [],
     ANULADO: [],
@@ -163,6 +179,15 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   // de apoyo (o el admin) puede avanzar el flujo; el donante únicamente
   // solicita la anulación mediante `anular()`.
   puedeCambiarEstado = computed(() => this.esTrabajador && this.estadosSiguientes().length > 0);
+
+  /**
+   * La verificación de la donación (pasarla a VERIFICADO/RECHAZADO) corresponde a la
+   * organización y al administrador — los mismos roles que autoriza el backend en
+   * `ROLES_PERMITIDOS_VERIFICACION`.
+   */
+  puedeVerificar = computed(
+    () => (this.esAdmin || this.esOrganizacion) && this.donacion() !== null,
+  );
 
   puedeDarDeBajaProducto = computed(() => {
     const d = this.donacion();
@@ -517,6 +542,49 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
         this.estadoError.set(err.error?.message || 'Error al cambiar el estado');
       },
     });
+  }
+
+  /**
+   * Revisa la donación desde la organización/administrador y la pasa a VERIFICADO
+   * o RECHAZADO (RF de verificación de la ONG). Con RECHAZADO la observación es
+   * obligatoria, igual que exige el backend.
+   */
+  verificar(estado: 'VERIFICADO' | 'RECHAZADO') {
+    const d = this.donacion();
+    if (!d || !this.puedeVerificar() || this.verificando()) return;
+
+    const observacion = this.observacionVerificacion.trim();
+    if (estado === 'RECHAZADO' && !observacion) {
+      this.verificacionError.set('Indica el motivo del rechazo.');
+      return;
+    }
+
+    this.verificando.set(true);
+    this.verificacionError.set('');
+
+    this.donacionService
+      .verificar(d.idDonacion, {
+        estado,
+        observacion: observacion || undefined,
+        idVerificador: this.usuario!.idUsuario,
+      })
+      .subscribe({
+        next: (actualizada) => {
+          this.verificando.set(false);
+          this.donacion.set(actualizada);
+          this.observacionVerificacion = '';
+          this.mostrarAvisoCorreo();
+          this.donacionService.historial(d.idDonacion).subscribe((h) => this.historial.set(h));
+          this.donacionService.tracking(actualizada.codigoSeguimiento).subscribe({
+            next: (track) => this.tracking.set(track),
+            error: () => {},
+          });
+        },
+        error: (err) => {
+          this.verificando.set(false);
+          this.verificacionError.set(err.error?.message || 'No se pudo verificar la donación');
+        },
+      });
   }
 
   anular() {

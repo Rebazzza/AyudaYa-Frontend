@@ -10,6 +10,7 @@ import {
   DonacionRegistroRequest,
   DonacionRequest,
   TrackingResponse,
+  VerificacionDonacionRequest,
 } from '../models/donacion.model';
 import { HistorialEstado } from '../models/historial.model';
 
@@ -76,6 +77,16 @@ export class DonacionService {
     const params = new HttpParams().set('idUsuario', idUsuario);
     return this.http
       .put<ApiResponseDTO<Donacion>>(`${this.base}/${id}/anular`, {}, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Revisión de la ONG/administrador: marca la donación como VERIFICADA o RECHAZADA
+   * (estado de verificación, distinto de la ruta logística REGISTRADO/EN_ALMACEN/...).
+   */
+  verificar(id: number, data: VerificacionDonacionRequest): Observable<Donacion> {
+    return this.http
+      .put<ApiResponseDTO<Donacion>>(`${this.base}/${id}/verificacion`, data)
       .pipe(map((res) => res.data));
   }
 
