@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { DonacionService } from '../../../../services/donacion.service';
 import { ImagenService } from '../../../../services/imagen.service';
@@ -32,6 +33,7 @@ export class CorroboracionPageComponent implements OnInit {
   private almacenService = inject(AlmacenService);
   private trabajadorService = inject(TrabajadorService);
   private session = inject(SessionService);
+  private route = inject(ActivatedRoute);
 
   pendientes = signal<Donacion[]>([]);
   codigoInput = signal('');
@@ -86,21 +88,31 @@ export class CorroboracionPageComponent implements OnInit {
   huecosEvidencia = computed(() => this.maxEvidencias - this.evidencias().length);
 
   ngOnInit() {
-    this.cargarPendientes();
+    // Atajo desde el alta de donación: /almacen/verificar?codigo=AYU-XXX
+    // precarga el código y selecciona la donación sin buscarla a mano.
+    const codigo = this.route.snapshot.queryParamMap.get('codigo')?.trim().toUpperCase();
+    if (codigo) {
+      this.codigoInput.set(codigo);
+      this.cargarPendientes(() => this.buscarPorCodigo());
+    } else {
+      this.cargarPendientes();
+    }
   }
 
-  cargarPendientes() {
+  cargarPendientes(alFinalizar?: () => void) {
     this.cargandoPendientes.set(true);
     this.codigoError.set('');
     this.donacionService.listar().subscribe({
       next: (data) => {
         this.pendientes.set(this.filtrarVerificables(data));
         this.cargandoPendientes.set(false);
+        alFinalizar?.();
       },
       error: () => {
         this.pendientes.set([]);
         this.cargandoPendientes.set(false);
         this.codigoError.set('No se pudieron cargar las donaciones.');
+        alFinalizar?.();
       },
     });
   }
