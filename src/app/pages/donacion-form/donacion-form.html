@@ -28,10 +28,6 @@
           Ver detalle
         </a>
         @if (puedeVerTrazabilidad) {
-          <a routerLink="/donaciones/detalle/{{ creada()!.idDonacion }}" class="inline-flex items-center justify-center gap-2 bg-primary-container text-on-primary px-6 py-2.5 rounded-xl font-semibold hover:opacity-90 transition">
-            <span class="material-symbols-outlined text-lg">route</span>
-            Trazabilidad
-          </a>
           <a
             routerLink="/almacen/verificar"
             [queryParams]="{ codigo: creada()!.codigoSeguimiento }"
