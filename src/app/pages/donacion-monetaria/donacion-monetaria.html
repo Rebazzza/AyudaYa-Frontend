@@ -173,7 +173,7 @@
       </div>
     } @else {
       <div class="divide-y divide-outline-variant/40">
-        @for (a of misAportes(); track a.idDonacionMonetaria) {
+        @for (a of paginaAportes.items(); track a.idDonacionMonetaria) {
           <article class="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
@@ -207,6 +207,12 @@
             </div>
           </article>
         }
+      </div>
+      <div class="border-t border-outline-variant/60">
+        <app-pagination
+          [total]="misAportes().length"
+          [(pagina)]="pagina"
+          unidad="aportes" />
       </div>
     }
   </section>

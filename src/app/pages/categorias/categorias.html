@@ -117,7 +117,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/50">
-            @for (c of categorias(); track c.idCategoria) {
+            @for (c of paginaCategorias.items(); track c.idCategoria) {
               <tr class="hover:bg-surface-container-low transition" [class.opacity-60]="!c.activo">
                 <td class="px-4 py-3 font-medium text-on-surface">{{ c.nombreCategoria }}</td>
                 <td class="px-4 py-3 text-on-surface-variant">{{ c.unidadMedCate }}</td>
@@ -153,6 +153,12 @@
             }
           </tbody>
         </table>
+      </div>
+      <div class="border-t border-outline-variant/60">
+        <app-pagination
+          [total]="categorias().length"
+          [(pagina)]="pagina"
+          unidad="categorías" />
       </div>
     </div>
   }

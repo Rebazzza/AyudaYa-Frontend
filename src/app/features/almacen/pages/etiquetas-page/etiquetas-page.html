@@ -70,7 +70,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/50">
-            @for (d of donaciones(); track d.idDonacion) {
+            @for (d of paginaDonaciones.items(); track d.idDonacion) {
               <tr class="{{ seleccionadas().includes(d.idDonacion) ? 'bg-brand-orange/5' : '' }}">
                 <td class="px-4 py-3">
                   <input
@@ -92,6 +92,13 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="border-t border-outline-variant/60">
+        <app-pagination
+          [total]="donaciones().length"
+          [(pagina)]="pagina"
+          unidad="donaciones" />
       </div>
 
       <div class="mt-4 flex flex-wrap items-center justify-end gap-3">

@@ -41,7 +41,7 @@ export class VerificarFondosComponent implements OnInit {
   filtroMoneda = '';
   busqueda = '';
 
-  readonly tamanio = 20;
+  readonly tamanio = 10;
   pagina = signal(0);
 
   lista = signal<DonacionMonetaria[]>([]);

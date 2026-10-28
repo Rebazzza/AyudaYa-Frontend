@@ -13,6 +13,7 @@ import {
   Moneda,
   formatearMonto,
 } from '../../models/monetaria.model';
+import { PaginationComponent, paginar } from '../../components/pagination/pagination';
 
 const LIMITE_5MB = 5 * 1024 * 1024;
 const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
@@ -20,7 +21,7 @@ const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
 @Component({
   selector: 'app-donacion-monetaria',
   standalone: true,
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, PaginationComponent],
   templateUrl: './donacion-monetaria.html',
 })
 export class DonacionMonetariaComponent implements OnDestroy {
@@ -46,6 +47,9 @@ export class DonacionMonetariaComponent implements OnDestroy {
 
   misAportes = signal<DonacionMonetaria[]>([]);
   cargandoAportes = signal(true);
+
+  pagina = signal(0);
+  paginaAportes = paginar(this.misAportes, this.pagina, 10);
 
   metodosPago = METODOS_PAGO;
   monedas = MONEDAS;

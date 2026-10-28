@@ -41,7 +41,7 @@
     <div class="text-center py-16 text-on-surface-variant">No tienes notificaciones.</div>
   } @else {
     <ul class="space-y-3">
-      @for (n of notificaciones(); track n.idNotificacion) {
+      @for (n of paginaNotificaciones.items(); track n.idNotificacion) {
         <li
           (click)="marcarLeida(n)"
           [class.bg-surface-container-lowest]="n.leido"
@@ -74,6 +74,12 @@
         </li>
       }
     </ul>
+    <div class="mt-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm">
+      <app-pagination
+        [total]="notificaciones().length"
+        [(pagina)]="pagina"
+        unidad="notificaciones" />
+    </div>
   }
 
 </div>

@@ -8,11 +8,12 @@ import { AuthService } from '../../services/auth.service';
 import { Trabajador, TrabajadorRequest } from '../../models/trabajador.model';
 import { Local } from '../../models/local.model';
 import { Usuario } from '../../models/usuario.model';
+import { PaginationComponent, paginar } from '../../components/pagination/pagination';
 
 @Component({
   selector: 'app-trabajadores',
   standalone: true,
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, PaginationComponent],
   templateUrl: './trabajadores.html',
 })
 export class TrabajadoresComponent implements OnInit {
@@ -32,6 +33,9 @@ export class TrabajadoresComponent implements OnInit {
   success = signal('');
   showForm = signal(false);
   editandoId = signal<number | null>(null);
+
+  pagina = signal(0);
+  paginaTrabajadores = paginar(this.trabajadores, this.pagina, 10);
 
   dialogoUsuario = signal(false);
   creandoUsuario = signal(false);

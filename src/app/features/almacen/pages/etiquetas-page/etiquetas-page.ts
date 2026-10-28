@@ -4,11 +4,12 @@ import { DonacionService } from '../../../../services/donacion.service';
 import { DocumentoService, descargarBlob } from '../../../../services/documento.service';
 import { Donacion } from '../../../../models/donacion.model';
 import { NotificarTestRequest } from '../../../../models/documento.model';
+import { PaginationComponent, paginar } from '../../../../components/pagination/pagination';
 
 @Component({
   selector: 'app-etiquetas-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, PaginationComponent],
   templateUrl: './etiquetas-page.html',
 })
 export class EtiquetasPageComponent implements OnInit {
@@ -36,6 +37,9 @@ export class EtiquetasPageComponent implements OnInit {
   testError = signal('');
 
   seleccionadasCount = computed(() => this.seleccionadas().length);
+
+  pagina = signal(0);
+  paginaDonaciones = paginar(this.donaciones, this.pagina, 10);
 
   todasSeleccionadas = computed(
     () => this.donaciones().length > 0 && this.seleccionadas().length === this.donaciones().length,

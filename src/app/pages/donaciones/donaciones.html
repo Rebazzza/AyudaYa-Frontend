@@ -20,6 +20,7 @@
         id="inputBusquedaDonaciones"
         type="text"
         [(ngModel)]="busqueda"
+        (ngModelChange)="reiniciarPagina()"
         placeholder="Buscar por donante, código o local"
         class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
     </label>
@@ -83,7 +84,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/50">
-            @for (d of filtradas(); track d.idDonacion) {
+            @for (d of paginaFiltradas.items(); track d.idDonacion) {
               <tr class="hover:bg-surface-container-low transition">
                 <td class="px-4 py-3 font-medium text-on-surface">{{ d.codigoSeguimiento }}</td>
                 <td class="px-4 py-3 text-on-surface-variant">{{ d.fechaRegistro | date: 'dd/MM/yyyy' }}</td>
@@ -117,6 +118,12 @@
             }
           </tbody>
         </table>
+      </div>
+      <div class="border-t border-outline-variant/60">
+        <app-pagination
+          [total]="filtradas().length"
+          [(pagina)]="pagina"
+          unidad="donaciones" />
       </div>
     </div>
   }

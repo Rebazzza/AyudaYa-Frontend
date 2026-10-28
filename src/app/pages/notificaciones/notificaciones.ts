@@ -3,11 +3,12 @@ import { DatePipe } from '@angular/common';
 import { NotificacionService } from '../../services/notificacion.service';
 import { SessionService } from '../../services/session.service';
 import { Notificacion } from '../../models/notificacion.model';
+import { PaginationComponent, paginar } from '../../components/pagination/pagination';
 
 @Component({
   selector: 'app-notificaciones',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, PaginationComponent],
   templateUrl: './notificaciones.html',
 })
 export class NotificacionesComponent implements OnInit {
@@ -21,6 +22,9 @@ export class NotificacionesComponent implements OnInit {
   marcandoTodo = signal(false);
 
   noLeidas = computed(() => this.notificaciones().filter((n) => !n.leido).length);
+
+  pagina = signal(0);
+  paginaNotificaciones = paginar(this.notificaciones, this.pagina, 10);
 
   ngOnInit() {
     this.cargar();

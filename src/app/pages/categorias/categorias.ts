@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { CategoriaService } from '../../services/categoria.service';
 import { SessionService } from '../../services/session.service';
 import { Categoria, CategoriaRequest } from '../../models/categoria.model';
+import { PaginationComponent, paginar } from '../../components/pagination/pagination';
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, PaginationComponent],
   templateUrl: './categorias.html',
 })
 export class CategoriasComponent implements OnInit {
@@ -22,6 +23,9 @@ export class CategoriasComponent implements OnInit {
   error = signal('');
   showForm = signal(false);
   editandoId = signal<number | null>(null);
+
+  pagina = signal(0);
+  paginaCategorias = paginar(this.categorias, this.pagina, 10);
 
   form: CategoriaRequest = {
     nombreCategoria: '',

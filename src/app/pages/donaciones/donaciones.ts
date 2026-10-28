@@ -5,11 +5,12 @@ import { DatePipe } from '@angular/common';
 import { DonacionService } from '../../services/donacion.service';
 import { SessionService } from '../../services/session.service';
 import { Donacion } from '../../models/donacion.model';
+import { PaginationComponent, paginar } from '../../components/pagination/pagination';
 
 @Component({
   selector: 'app-donaciones',
   standalone: true,
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, PaginationComponent],
   templateUrl: './donaciones.html',
 })
 export class DonacionesComponent implements OnInit {
@@ -55,6 +56,9 @@ export class DonacionesComponent implements OnInit {
     });
   });
 
+  pagina = signal(0);
+  paginaFiltradas = paginar(this.filtradas, this.pagina, 10);
+
   ngOnInit() {
     this.cargar();
   }
@@ -79,13 +83,19 @@ export class DonacionesComponent implements OnInit {
   }
 
   aplicarFiltro() {
+    this.pagina.set(0);
     this.cargar();
   }
 
   limpiarFiltro() {
     this.filtroEstado = '';
     this.busqueda = '';
+    this.pagina.set(0);
     this.cargar();
+  }
+
+  reiniciarPagina() {
+    this.pagina.set(0);
   }
 
   eliminar(d: Donacion) {
