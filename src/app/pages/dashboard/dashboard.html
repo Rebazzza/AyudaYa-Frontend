@@ -2,9 +2,96 @@
 <div class="w-full max-w-[1200px] flex flex-col gap-6">
 
 @if (loading()) {
-  <div class="flex items-center justify-center py-24 text-on-surface-variant text-sm">
-    <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-    Cargando panel...
+  <!-- Skeleton: header de bienvenida -->
+  <header class="rounded-2xl bg-surface-container-lowest border border-outline-variant/60 p-6 lg:p-8 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+      <div class="flex items-center gap-4">
+        <div class="skeleton h-16 w-16 rounded-2xl"></div>
+        <div class="space-y-2">
+          <div class="skeleton h-3 w-40 rounded"></div>
+          <div class="skeleton h-7 w-32 rounded"></div>
+          <div class="skeleton h-3 w-48 rounded"></div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3 lg:ml-auto">
+        <div class="skeleton h-10 w-36 rounded-xl"></div>
+        <div class="skeleton h-10 w-36 rounded-xl"></div>
+      </div>
+    </div>
+    <div class="mt-6 flex flex-wrap gap-2">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton h-6 w-24 rounded-full"></div>
+      }
+    </div>
+  </header>
+
+  <!-- Skeleton: KPIs -->
+  <section class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    @for (i of [1,2,3,4]; track i) {
+      <div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 flex flex-col justify-between gap-3">
+        <div class="flex items-center justify-between">
+          <div class="skeleton h-3 w-28 rounded"></div>
+          <div class="skeleton h-10 w-10 rounded-xl"></div>
+        </div>
+        <div class="skeleton h-8 w-16 rounded"></div>
+        <div class="skeleton h-3 w-32 rounded"></div>
+      </div>
+    }
+  </section>
+
+  <!-- Skeleton: accesos directos -->
+  <section class="w-full space-y-4">
+    <div class="skeleton h-5 w-56 rounded"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/60 flex items-center gap-4">
+          <div class="skeleton h-12 w-12 rounded-xl"></div>
+          <div class="flex-1 space-y-2">
+            <div class="skeleton h-4 w-24 rounded"></div>
+            <div class="skeleton h-3 w-40 rounded"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Skeleton: donaciones recientes + notificaciones -->
+  <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    <section class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/60 overflow-hidden">
+      <div class="px-5 py-4 border-b border-outline-variant/60 flex items-center gap-2">
+        <div class="skeleton h-5 w-5 rounded"></div>
+        <div class="skeleton h-4 w-40 rounded"></div>
+      </div>
+      <div class="divide-y divide-outline-variant/40">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="px-5 py-4 flex items-center gap-3">
+            <div class="skeleton h-11 w-11 rounded-xl shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton h-3 w-48 rounded"></div>
+              <div class="skeleton h-3 w-64 rounded"></div>
+            </div>
+            <div class="skeleton h-9 w-24 rounded-xl shrink-0"></div>
+          </div>
+        }
+      </div>
+    </section>
+    <section class="lg:col-span-4 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/60 overflow-hidden">
+      <div class="px-5 py-4 border-b border-outline-variant/60 flex items-center gap-2">
+        <div class="skeleton h-5 w-5 rounded"></div>
+        <div class="skeleton h-4 w-32 rounded"></div>
+      </div>
+      <div class="divide-y divide-outline-variant/40">
+        @for (i of [1,2,3]; track i) {
+          <div class="px-5 py-4 flex items-start gap-3">
+            <div class="skeleton h-2.5 w-2.5 rounded-full mt-1 shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton h-3 w-full rounded"></div>
+              <div class="skeleton h-3 w-20 rounded"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
   </div>
 } @else {
   <!-- Header de bienvenida -->

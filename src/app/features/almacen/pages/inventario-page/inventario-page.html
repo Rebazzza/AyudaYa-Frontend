@@ -26,7 +26,28 @@
   </section>
 
   @if (loading()) {
-    <p class="text-sm text-on-surface-variant">Cargando inventario...</p>
+    <div class="space-y-6">
+      <div class="skeleton h-16 w-full rounded-2xl"></div>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="skeleton h-5 w-56 rounded"></div>
+        <div class="skeleton h-4 w-48 rounded"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
+            <div class="flex items-start justify-between">
+              <div class="skeleton h-11 w-11 rounded-xl"></div>
+              <div class="skeleton h-7 w-12 rounded"></div>
+            </div>
+            <div class="skeleton h-4 w-32 rounded mt-3"></div>
+            <div class="space-y-2 mt-3">
+              <div class="skeleton h-3 w-24 rounded"></div>
+              <div class="skeleton h-5 w-28 rounded-full"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
   }
 
   @if (error()) {
@@ -176,7 +197,17 @@
         }
 
         @if (cargandoProductos()) {
-          <p class="text-sm text-on-surface-variant">Buscando productos...</p>
+          <div class="space-y-3">
+            @for (i of [1,2,3,4]; track i) {
+              <div class="flex items-center gap-4">
+                <div class="skeleton h-4 flex-1 rounded"></div>
+                <div class="skeleton h-4 flex-1 rounded"></div>
+                <div class="skeleton h-4 w-20 rounded"></div>
+                <div class="skeleton h-4 w-24 rounded"></div>
+                <div class="skeleton h-6 w-20 rounded-full"></div>
+              </div>
+            }
+          </div>
         } @else if (productos().length > 0) {
           <div class="overflow-x-auto">
             <table class="w-full text-sm">

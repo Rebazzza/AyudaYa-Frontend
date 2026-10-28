@@ -18,7 +18,15 @@
     }
 
     @if (cargandoLocal()) {
-      <div class="text-center py-10 text-gray-500 text-sm">Cargando datos del local...</div>
+      <div class="space-y-4">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div>
+            <div class="skeleton h-4 w-32 rounded mb-2"></div>
+            <div class="skeleton h-10 w-full rounded-lg"></div>
+          </div>
+        }
+        <div class="skeleton h-11 w-40 rounded-lg"></div>
+      </div>
     } @else {
       <form (ngSubmit)="onSubmit()" class="space-y-4">
         <div>

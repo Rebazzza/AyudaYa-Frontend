@@ -106,7 +106,30 @@
   }
 
   @if (loading()) {
-    <div class="text-center py-16 text-on-surface-variant">Cargando trabajadores...</div>
+    <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+      <div class="bg-surface-container px-4 py-3 flex items-center gap-4">
+        @for (i of [1,2,3,4,5,6,7]; track i) {
+          <div class="skeleton h-3.5 flex-1 rounded"></div>
+        }
+      </div>
+      <div class="divide-y divide-outline-variant/50">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="px-4 py-3 flex items-center gap-4">
+            <div class="skeleton h-4 flex-1 rounded"></div>
+            <div class="skeleton h-4 flex-1 rounded"></div>
+            <div class="skeleton h-4 flex-1 rounded"></div>
+            <div class="skeleton h-4 flex-1 rounded"></div>
+            <div class="skeleton h-4 flex-1 rounded"></div>
+            <div class="skeleton h-6 w-16 rounded-full"></div>
+            <div class="flex-1 flex justify-end gap-2">
+              <div class="skeleton h-7 w-7 rounded-lg"></div>
+              <div class="skeleton h-7 w-7 rounded-lg"></div>
+              <div class="skeleton h-7 w-7 rounded-lg"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
   } @else if (trabajadores().length === 0) {
     <div class="text-center py-16 text-on-surface-variant">No hay trabajadores registrados.</div>
   } @else {

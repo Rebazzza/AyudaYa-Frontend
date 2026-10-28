@@ -39,10 +39,60 @@
   }
 
   @if (loading() && !panel()) {
-    <div class="flex items-center justify-center py-20 text-on-surface-variant text-sm">
-      <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-      Calculando el consolidado de fondos...
+    <!-- Skeleton: tarjetas principales -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-2">
+            <div class="skeleton h-3 w-28 rounded"></div>
+            <div class="skeleton h-5 w-5 rounded"></div>
+          </div>
+          <div class="skeleton h-8 w-32 rounded mt-3"></div>
+          <div class="skeleton h-3 w-40 rounded mt-2"></div>
+        </div>
+      }
+    </section>
+
+    <!-- Skeleton: contadores por estado -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm px-6 py-4 flex flex-wrap items-center gap-x-8 gap-y-3">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton h-5 w-32 rounded"></div>
+      }
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+      @for (panel of [1,2]; track panel) {
+        <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-outline-variant/60 flex items-center gap-2">
+            <div class="skeleton h-5 w-5 rounded"></div>
+            <div class="skeleton h-4 w-44 rounded"></div>
+          </div>
+          <div class="px-5 py-4 flex flex-col gap-4">
+            @for (fila of [1,2,3]; track fila) {
+              <div class="space-y-2">
+                <div class="skeleton h-4 w-1/2 rounded"></div>
+                <div class="skeleton h-3 w-full rounded-full"></div>
+              </div>
+            }
+          </div>
+        </section>
+      }
     </div>
+
+    <!-- Skeleton: serie mensual -->
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-outline-variant/60 flex items-center gap-2">
+        <div class="skeleton h-5 w-5 rounded"></div>
+        <div class="skeleton h-4 w-40 rounded"></div>
+      </div>
+      <div class="px-5 py-6 overflow-hidden">
+        <div class="flex items-end gap-3 h-52">
+          @for (barra of [1,2,3,4,5,6,7,8,9,10,11,12]; track barra) {
+            <div class="skeleton flex-1 rounded-t-lg" [style.height.%]="30 + ((barra * 37) % 60)"></div>
+          }
+        </div>
+      </div>
+    </section>
   } @else {
     @if (panel(); as p) {
 
