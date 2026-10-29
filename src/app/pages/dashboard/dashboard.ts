@@ -157,12 +157,21 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     const idUsuario = this.user!.idUsuario;
 
+    // El skeleton se mantiene hasta que cargan los datos críticos. Para admin
+    // incluye el panel de fondos, para que "Total recaudado" se pinte junto al
+    // resto de paneles y no aparezca después con un salto de layout.
+    let pendientes = this.esAdmin ? 2 : 1;
+    const finalizarCarga = () => {
+      pendientes -= 1;
+      if (pendientes <= 0) this.loading.set(false);
+    };
+
     this.donacionService.listar(this.esDonante ? idUsuario : undefined).subscribe({
       next: (data) => {
         this.donaciones.set(data);
-        this.loading.set(false);
+        finalizarCarga();
       },
-      error: () => this.loading.set(false),
+      error: () => finalizarCarga(),
     });
 
     this.notificacionService.listarPorUsuario(idUsuario).subscribe({
@@ -175,8 +184,14 @@ export class DashboardComponent implements OnInit {
 
     if (this.esAdmin) {
       this.monetariaService.getPanel().subscribe({
-        next: (p) => this.panelFondos.set(p),
-        error: () => this.panelFondos.set(null),
+        next: (p) => {
+          this.panelFondos.set(p);
+          finalizarCarga();
+        },
+        error: () => {
+          this.panelFondos.set(null);
+          finalizarCarga();
+        },
       });
     }
   }
