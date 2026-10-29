@@ -1,5 +1,5 @@
 <main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
-<div class="w-full max-w-[1200px] flex flex-col gap-6" [class.skeleton-stagger]="loading()">
+<div class="w-full max-w-[1200px] flex flex-col gap-6" [class.skeleton-stagger]="loading()" [class.content-stagger]="!loading()">
 
 @if (loading()) {
   <!-- Skeleton: header de bienvenida -->
