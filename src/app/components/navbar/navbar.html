@@ -1,31 +1,32 @@
 <nav class="bg-brand-orange text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-    <a routerLink="/" class="flex items-center shrink-0" title="AyudaYa">
+    <a routerLink="/" class="flex items-center gap-2 shrink-0" title="AyudaYa">
+      <span class="text-xl font-bold tracking-tight text-white hidden sm:inline">AyudaYa</span>
       <img src="icono2.ico" alt="AyudaYa" class="h-12 w-auto" />
     </a>
 
     @if (session.isLoggedIn()) {
       <div class="hidden md:flex items-center gap-5 text-sm">
-        <a routerLink="/" class="hover:underline">Inicio</a>
-        <a routerLink="/locales" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Locales</a>
-        <a routerLink="/donaciones" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Donaciones</a>
+        <a routerLink="/" [routerLinkActiveOptions]="{ exact: true }" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Inicio</a>
+        <a routerLink="/locales" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Locales</a>
+        <a routerLink="/donaciones" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Donaciones</a>
         @if (session.getUser()?.nombreRol === 'Donante') {
-          <a routerLink="/donaciones/monetaria" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Donación monetaria</a>
+          <a routerLink="/donaciones/monetaria" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Donación monetaria</a>
         }
         @if (session.esAdmin() || session.getUser()?.nombreRol === 'Personal de Apoyo') {
-          <a routerLink="/almacen/verificar" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Verificar</a>
-          <a routerLink="/almacen/inventario" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Inventario</a>
-          <a routerLink="/almacen/etiquetas" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Etiquetas</a>
-          <a routerLink="/almacen/kits" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Armar kits</a>
+          <a routerLink="/almacen/verificar" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Verificar</a>
+          <a routerLink="/almacen/inventario" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Inventario</a>
+          <a routerLink="/almacen/etiquetas" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Etiquetas</a>
+          <a routerLink="/almacen/kits" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Armar kits</a>
         }
-        <a routerLink="/kits/seguimiento" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Kits</a>
-        <a routerLink="/categorias" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Categorías</a>
+        <a routerLink="/kits/seguimiento" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Kits</a>
+        <a routerLink="/categorias" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Categorías</a>
         @if (session.esAdmin()) {
-          <a routerLink="/fondos/panel" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Recaudación</a>
-          <a routerLink="/verificar-fondos" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Verificar fondos</a>
-          <a routerLink="/trabajadores" routerLinkActive="font-bold underline underline-offset-4" class="hover:underline">Trabajadores</a>
+          <a routerLink="/fondos/panel" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Recaudación</a>
+          <a routerLink="/verificar-fondos" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Verificar fondos</a>
+          <a routerLink="/trabajadores" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Trabajadores</a>
         }
-        <a routerLink="/notificaciones" routerLinkActive="font-bold underline underline-offset-4" class="inline-flex items-center gap-1 hover:underline">
+        <a routerLink="/notificaciones" [routerLinkActive]="claseEnlaceActivo" class="inline-flex items-center gap-1 hover:underline">
           <span class="material-symbols-outlined text-base">notifications</span>
         </a>
       </div>
@@ -58,26 +59,26 @@
   @if (session.isLoggedIn()) {
     <div class="md:hidden bg-brand-orange text-white shadow-inner border-t border-white/15 {{ menuAbierto() ? 'block' : 'hidden' }}">
       <nav class="px-4 py-3 flex flex-col gap-1 text-sm">
-        <a routerLink="/" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inicio</a>
-        <a routerLink="/locales" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Locales</a>
-        <a routerLink="/donaciones" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donaciones</a>
+        <a routerLink="/" (click)="cerrarMenu()" [routerLinkActiveOptions]="{ exact: true }" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inicio</a>
+        <a routerLink="/locales" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Locales</a>
+        <a routerLink="/donaciones" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donaciones</a>
         @if (session.getUser()?.nombreRol === 'Donante') {
-          <a routerLink="/donaciones/monetaria" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donación monetaria</a>
+          <a routerLink="/donaciones/monetaria" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donación monetaria</a>
         }
         @if (session.esAdmin() || session.getUser()?.nombreRol === 'Personal de Apoyo') {
-          <a routerLink="/almacen/verificar" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar</a>
-          <a routerLink="/almacen/inventario" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inventario</a>
-          <a routerLink="/almacen/etiquetas" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Etiquetas</a>
-          <a routerLink="/almacen/kits" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Armar kits</a>
+          <a routerLink="/almacen/verificar" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar</a>
+          <a routerLink="/almacen/inventario" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inventario</a>
+          <a routerLink="/almacen/etiquetas" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Etiquetas</a>
+          <a routerLink="/almacen/kits" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Armar kits</a>
         }
-        <a routerLink="/kits/seguimiento" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Kits</a>
-        <a routerLink="/categorias" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Categorías</a>
+        <a routerLink="/kits/seguimiento" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Kits</a>
+        <a routerLink="/categorias" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Categorías</a>
         @if (session.esAdmin()) {
-          <a routerLink="/fondos/panel" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Panel de recaudación</a>
-          <a routerLink="/verificar-fondos" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar fondos</a>
-          <a routerLink="/trabajadores" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Trabajadores</a>
+          <a routerLink="/fondos/panel" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Panel de recaudación</a>
+          <a routerLink="/verificar-fondos" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar fondos</a>
+          <a routerLink="/trabajadores" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Trabajadores</a>
         }
-        <a routerLink="/notificaciones" (click)="cerrarMenu()" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">
+        <a routerLink="/notificaciones" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">
           <span class="inline-flex items-center gap-2"><span class="material-symbols-outlined text-base">notifications</span> Notificaciones</span>
         </a>
         <button (click)="logout()" class="mt-1 sm:hidden px-3 py-2 rounded-lg text-left bg-white/15 hover:bg-white/25 transition font-medium">

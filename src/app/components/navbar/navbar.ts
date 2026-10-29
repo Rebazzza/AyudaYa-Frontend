@@ -1,15 +1,18 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
 })
 export class NavbarComponent {
   session = inject(SessionService);
+
+  /** Clases del enlace de navegación de la sección activa (resaltado). */
+  readonly claseEnlaceActivo = 'font-bold underline decoration-2 underline-offset-4';
 
   oculto = signal(false);
   menuAbierto = signal(false);
