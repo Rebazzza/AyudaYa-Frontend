@@ -39,6 +39,7 @@
   }
 
   @if (loading() && !panel()) {
+    <div class="skeleton-stagger flex flex-col gap-6">
     <!-- Skeleton: tarjetas principales -->
     <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       @for (i of [1,2,3,4]; track i) {
@@ -93,6 +94,7 @@
         </div>
       </div>
     </section>
+    </div>
   } @else {
     @if (panel(); as p) {
 

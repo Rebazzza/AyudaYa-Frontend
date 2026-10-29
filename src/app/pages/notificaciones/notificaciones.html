@@ -24,7 +24,7 @@
   }
 
   @if (loading()) {
-    <ul class="space-y-3">
+    <ul class="space-y-3 skeleton-stagger">
       @for (i of [1,2,3,4,5]; track i) {
         <li class="flex items-start gap-4 rounded-2xl border border-outline-variant shadow-sm p-5">
           <div class="skeleton-circle h-10 w-10 shrink-0"></div>

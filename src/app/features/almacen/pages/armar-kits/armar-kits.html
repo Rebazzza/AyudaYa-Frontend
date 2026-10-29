@@ -31,7 +31,7 @@
     </div>
 
     @if (inventarioCargando()) {
-      <div class="divide-y divide-outline-variant/50">
+      <div class="divide-y divide-outline-variant/50 skeleton-stagger">
         @for (i of [1,2,3,4]; track i) {
           <div class="py-3 flex items-center gap-4">
             <div class="skeleton h-4 flex-1 rounded"></div>

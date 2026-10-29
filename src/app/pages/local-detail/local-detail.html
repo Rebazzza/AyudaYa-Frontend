@@ -2,7 +2,7 @@
   <a routerLink="/" class="text-brand-orange hover:underline text-sm mb-4 inline-block">&larr; Volver a locales</a>
 
   @if (loading()) {
-    <div class="bg-white rounded-xl shadow-md p-8">
+    <div class="bg-white rounded-xl shadow-md p-8 skeleton-stagger">
       <div class="skeleton h-7 w-56 rounded mb-4"></div>
       <div class="space-y-3">
         @for (i of [1,2,3,4]; track i) {

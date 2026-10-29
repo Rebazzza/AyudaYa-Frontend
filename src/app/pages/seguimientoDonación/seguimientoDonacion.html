@@ -41,6 +41,7 @@
 
   <!-- Cargando -->
   @if (loading()) {
+    <div class="skeleton-stagger flex flex-col gap-6">
     <!-- Skeleton: resumen de la donación -->
     <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -98,6 +99,7 @@
         }
       </div>
     </section>
+    </div>
   } @else if (error() && !donacion()) {
     <div class="flex flex-col items-center gap-3 rounded-xl bg-surface-container-lowest border border-error/30 p-8 text-center">
       <span class="material-symbols-outlined text-4xl text-error">search_off</span>

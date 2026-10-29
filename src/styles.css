@@ -56,6 +56,27 @@ body {
     );
     animation: skeleton-shimmer 1.4s ease-in-out infinite;
   }
+
+  /*
+   * Entrada escalonada: los paneles del skeleton aparecen uno a uno
+   * de arriba hacia abajo (hasta 12 bloques).
+   */
+  .skeleton-stagger > * {
+    animation: skeleton-rise 0.5s ease-out both;
+  }
+
+  .skeleton-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .skeleton-stagger > *:nth-child(2) { animation-delay: 90ms; }
+  .skeleton-stagger > *:nth-child(3) { animation-delay: 180ms; }
+  .skeleton-stagger > *:nth-child(4) { animation-delay: 270ms; }
+  .skeleton-stagger > *:nth-child(5) { animation-delay: 360ms; }
+  .skeleton-stagger > *:nth-child(6) { animation-delay: 450ms; }
+  .skeleton-stagger > *:nth-child(7) { animation-delay: 540ms; }
+  .skeleton-stagger > *:nth-child(8) { animation-delay: 630ms; }
+  .skeleton-stagger > *:nth-child(9) { animation-delay: 720ms; }
+  .skeleton-stagger > *:nth-child(10) { animation-delay: 810ms; }
+  .skeleton-stagger > *:nth-child(11) { animation-delay: 900ms; }
+  .skeleton-stagger > *:nth-child(12) { animation-delay: 990ms; }
 }
 
 @keyframes skeleton-shimmer {
@@ -64,11 +85,23 @@ body {
   }
 }
 
+@keyframes skeleton-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton::after,
   .skeleton-text::after,
   .skeleton-circle::after,
-  .skeleton-card::after {
+  .skeleton-card::after,
+  .skeleton-stagger > * {
     animation: none;
   }
 }
