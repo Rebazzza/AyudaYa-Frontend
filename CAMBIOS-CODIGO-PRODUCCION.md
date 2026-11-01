@@ -15,6 +15,9 @@
 | Archivos de test | 24 | **29** (5 nuevos) |
 
 > El único error es `AyudaYaBackendApplicationTests.contextLoads`, que **ya fallaba antes de mis cambios**: es un `@SpringBootTest` que intenta conectar a MySQL local (`localhost:3306`) y en este entorno no hay base de datos levantada. No está relacionado con las PU nuevas.
+>
+> **Actualización 30-10-2026:** con el Módulo 5 y la purga RF18 la suite del backend quedó en
+> **209 tests** (0 fallos) al excluir `contextLoads`; el build de Angular también pasa.
 
 ---
 
@@ -89,6 +92,16 @@ PATCH /api/v1/trabajadores/{id}/desactivar
 * **Evidencia:** el nuevo `KitServiceTest` (PU-18/PU-19) revienta exactamente ahí sin este cambio; antes no había ningún test que ejercitara `armarKits`, por eso el bug pasaba desapercibido.
 * **Impacto:** es un arreglo de comportamiento (antes era un 500 en runtime), no un cambio de regla de negocio. `Donacion` ya usaba `@Builder.Default` en su lista equivalente, con lo que este caso era una omisión.
 
+### 2.6 Registro sin persistencia del DNI (RF18, 30-10-2026)
+
+* `pages/register/register.ts`: se eliminó `subirDni()` y el uso de `ImagenService`/`forkJoin`; el
+  DNI ya no se envía a `/api/v1/imagenes/upload`. Si el donante adjunta fotos, `onSubmit` exige que
+  ambas caras estén validadas y, tras `auth.register`, revalida con
+  `iaService.verificarDniCompleto(anverso, reverso, user.idUsuario)`.
+* Al cambiar o quitar una cara se invalida el dictamen previo (`identidadVerificada = false`).
+* El backend conserva solo la bandera `dniVerificado` y purga archivos/filas biométricas
+  (`Files.deleteIfExists` + `DELETE`); el endpoint genérico de imágenes rechaza DNI.
+
 ---
 
 ## 3. Cambios que **NO** se hicieron en producción (adaptaciones solo de test)
@@ -107,7 +120,7 @@ Estos casos del `PUS.md` describen clases, métodos o mensajes que **no existen 
 | PU-15 | Incidencia `"EXCEDENTE"` | Texto real de la incidencia: **`"Excedente"`** (misma clase `clasificarIncidencia`) | Test nuevo con el valor real |
 | PU-17 | Atributo `alertaAltaIncidencia = true` en la respuesta | No existe ese flag: cuando `incidencias > ítems / 2` el servicio llama `notificarAdministradores(...)` y guarda una `Notificacion` por cada administrador | Test nuevo que verifica la notificación interna (y su ausencia justo al 50 %) |
 | PU-20 | Respuesta JSON con `dniDetectado` | `RespuestaIaDniDTO` solo tiene `esValido`, `confianza` y `mensaje` | Test que afirma `esValido` + `confianza` |
-| PU-21 | `biometriaIaService.procesarVerificacionYPurgar` borrando `./uploads/temp_dni/dni_test.jpg` y verificando `imagenEvidenciaRepository.save` | El método es `UsuarioService.procesarVerificacionYPurgar`; la imagen se procesa **solo en memoria** (nunca se copia a disco) y el servicio **no tiene** repositorio de evidencias, por lo que no puede guardarla | Test que crea la carpeta temporal y verifica que **no queda ningún archivo** tras el proceso, y que `save` solo se usa para marcar `dniVerificado` |
+| PU-21 | `biometriaIaService.procesarVerificacionYPurgar` borrando `./uploads/temp_dni/dni_test.jpg` y verificando `imagenEvidenciaRepository.save` | El método es `UsuarioService.procesarVerificacionYPurgar`; la imagen se procesa en memoria y, desde RF18 (30-10-2026), se purgan archivos y filas reales con `ImagenService.eliminarImagenesDniPorUsuario` (`Files.deleteIfExists` + `DELETE`). El frontend ya no sube DNI como evidencia | `BiometriaPurgaTest` (3) verifica la purga tras el dictamen; `ImagenServicePurgaTest` (3) verifica el borrado físico y de fila con `@TempDir` |
 | PU-22 | `ConnectException` (503) con purga del archivo | `IaVerificationServiceImpl` captura `RestClientException` y devuelve *fallback* con mensaje amigable | 2 tests: 503 con `MockRestServiceServer` y apagado real del microservicio (conexión rechazada a `127.0.0.1:1`) |
 | PU-23 | `evaluarRiesgoVencimiento()` con estado `PROXIMO_A_VENCER` y emisión de notificación | No existe `evaluarRiesgoVencimiento` ni notificación de caducidad; `AlmacenServiceImpl.obtenerAlertasCaducidad(idLocal)` devuelve las alertas de **< 15 días** | Test nuevo que afirma `diasParaCaducar = 10` y que el producto a 30 días queda fuera |
 | PU-25 | `verificarFondos(id, "VERIFICADO")` y sumatoria global | Ya existe y está cubierto (`verificaAporte`, `consolidaSoloVerificadas`, `totalFondos`) | Cubierto antes de mis cambios |

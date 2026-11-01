@@ -1,12 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { ImagenService } from '../../services/imagen.service';
 import { IaService } from '../../services/ia.service';
 import { RolRegistrable } from '../../models/usuario.model';
-import { ImagenEvidencia } from '../../models/imagen.model';
 
 @Component({
   selector: 'app-register',
@@ -17,7 +14,6 @@ import { ImagenEvidencia } from '../../models/imagen.model';
 export class RegisterComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
-  private imagenService = inject(ImagenService);
   private iaService = inject(IaService);
 
   form = {
@@ -77,6 +73,9 @@ export class RegisterComponent {
     }
 
     this.dniError.set('');
+    // Al cambiar cualquier cara se invalida el dictamen previo: hay que revalidar.
+    this.identidadVerificada.set(false);
+    this.identidadResultado.set('');
     if (lado === 'frontal') {
       if (this.dniFrontalPreview()) URL.revokeObjectURL(this.dniFrontalPreview()!);
       this.dniFrontal.set(file);
@@ -139,21 +138,18 @@ export class RegisterComponent {
     });
   }
 
-  private subirDni(idUsuario: number) {
-    const frontal = this.dniFrontal();
-    const posterior = this.dniPosterior();
-    const frontal$ = frontal
-      ? this.imagenService.upload(frontal, 'DNI_FRONTAL', undefined, idUsuario)
-      : of(null as ImagenEvidencia | null);
-    const posterior$ = posterior
-      ? this.imagenService.upload(posterior, 'DNI_POSTERIOR', undefined, idUsuario)
-      : of(null as ImagenEvidencia | null);
-    return forkJoin([frontal$, posterior$]);
-  }
-
   onSubmit() {
     if (!this.passwordsMatch) {
       this.error.set('Las contraseñas no coinciden');
+      return;
+    }
+
+    const anverso = this.dniFrontal();
+    const reverso = this.dniPosterior();
+    const hayDni = this.rolSeleccionado === 'DONANTE' && (anverso !== null || reverso !== null);
+
+    if (hayDni && (!anverso || !reverso || !this.identidadVerificada())) {
+      this.dniError.set('Adjunta y valida el anverso y reverso del DNI antes de registrarte.');
       return;
     }
 
@@ -171,24 +167,15 @@ export class RegisterComponent {
 
     this.auth.register(body).subscribe({
       next: (user) => {
-        const hayDni = this.rolSeleccionado === 'DONANTE' && (this.dniFrontal() || this.dniPosterior());
-
-        if (hayDni && this.identidadVerificada() && this.dniFrontal()) {
-          // TC-FUNC-03 · RF19: se persiste únicamente el estado verificado en MySQL;
-          // las imágenes se purgan en el servidor (purga biométrica).
-          this.iaService.verificarDni(user.idUsuario, this.dniFrontal()!).subscribe({
-            next: () => this.finalizarRegistro(),
-            error: () => this.finalizarRegistro(),
-          });
-          return;
-        }
-
         if (!hayDni) {
           this.finalizarRegistro();
           return;
         }
 
-        this.subirDni(user.idUsuario).subscribe({
+        // RF18: no se suben fotos del DNI como evidencia. Se revalidan ambas caras
+        // y el backend solo persiste la bandera dniVerificado, purgando cualquier
+        // archivo o registro biométrico que hubiera quedado de versiones anteriores.
+        this.iaService.verificarDniCompleto(anverso!, reverso!, user.idUsuario).subscribe({
           next: () => this.finalizarRegistro(),
           error: () => this.finalizarRegistro(),
         });

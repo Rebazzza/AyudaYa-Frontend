@@ -140,6 +140,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'predicciones/escasez',
+    loadComponent: () =>
+      import('./features/predicciones/pages/panel-escasez-page/panel-escasez-page').then(
+        (m) => m.PanelEscasezPageComponent,
+      ),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'verificar-fondos',
     loadComponent: () =>
       import('./pages/verificar-fondos/verificar-fondos').then((m) => m.VerificarFondosComponent),
@@ -175,5 +183,9 @@ export const routes: Routes = [
       import('./pages/notificaciones/notificaciones').then((m) => m.NotificacionesComponent),
     canActivate: [authGuard],
   },
-  { path: '**', redirectTo: '' },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./pages/not-found/not-found').then((m) => m.NotFoundComponent),
+  },
 ];

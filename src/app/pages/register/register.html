@@ -213,7 +213,7 @@
         @if (rolSeleccionado === 'DONANTE') {
           <div>
             <div class="flex items-center justify-between mb-2">
-              <p class="text-xs font-medium text-on-surface-variant">Fotos del DNI (frente y reverso) — opcional</p>
+              <p class="text-xs font-medium text-on-surface-variant">Fotos del DNI (frente y reverso) — opcional; si las adjuntas, valida ambas caras</p>
             </div>
             @if (dniError()) {
               <div class="bg-error-container text-on-error-container text-xs rounded-lg px-3 py-2 mb-2">{{ dniError() }}</div>

@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 export class FooterComponent {
   readonly anio = new Date().getFullYear();
   readonly correoInstitucional = 'contacto@ayudaya.pe';
-  readonly correoAliado = 'caritasfelices@gmail.com';
-  readonly whatsapp = '+51 976 XXX XXX';
+  readonly correoAliado = 'contacto@misioncaritasfelices.org';
+  readonly whatsapp = '+51 999 741 727';
+  readonly blog = 'https://www.misioncaritasfelices.org/';
 }

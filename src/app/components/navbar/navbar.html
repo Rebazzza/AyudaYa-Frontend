@@ -22,6 +22,7 @@
         <a routerLink="/kits/seguimiento" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Kits</a>
         <a routerLink="/categorias" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Categorías</a>
         @if (session.esAdmin()) {
+          <a routerLink="/predicciones/escasez" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Escasez</a>
           <a routerLink="/fondos/panel" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Recaudación</a>
           <a routerLink="/verificar-fondos" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Verificar fondos</a>
           <a routerLink="/trabajadores" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Trabajadores</a>
@@ -74,6 +75,7 @@
         <a routerLink="/kits/seguimiento" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Kits</a>
         <a routerLink="/categorias" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Categorías</a>
         @if (session.esAdmin()) {
+          <a routerLink="/predicciones/escasez" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Panel de escasez</a>
           <a routerLink="/fondos/panel" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Panel de recaudación</a>
           <a routerLink="/verificar-fondos" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Verificar fondos</a>
           <a routerLink="/trabajadores" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Trabajadores</a>
