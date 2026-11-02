@@ -91,3 +91,47 @@ body {
     animation: none;
   }
 }
+
+@page {
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  app-navbar,
+  app-footer {
+    display: none !important;
+  }
+
+  app-root > div {
+    min-height: 0 !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  main > div {
+    max-width: none !important;
+    gap: 12px !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  section,
+  header {
+    break-inside: avoid;
+  }
+}

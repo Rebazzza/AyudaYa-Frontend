@@ -28,6 +28,8 @@ export interface Donacion {
   direccionLocal?: string | null;
   idTrabajador: number | null;
   nombreTrabajador: string | null;
+  idCampana?: number | null;
+  nombreCampana?: string | null;
   detalles: DetalleDonacion[];
 }
 
@@ -41,6 +43,7 @@ export interface DetalleDonacionRegistroRequest {
 export interface DonacionRegistroRequest {
   idUsuario: number;
   idLocalRecepcion: number;
+  idCampana?: number | null;
   detalles: DetalleDonacionRegistroRequest[];
 }
 
@@ -60,6 +63,7 @@ export interface DonacionRequest {
   idUsuario: number;
   idLocalRecepcion: number;
   idTrabajador?: number;
+  idCampana?: number | null;
   detalles: DetalleDonacionRequest[];
 }
 

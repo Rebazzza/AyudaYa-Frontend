@@ -1,8 +1,8 @@
 <nav class="bg-brand-orange text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-    <a routerLink="/" class="flex items-center gap-2 shrink-0 -ml-8 sm:-ml-8 lg:-ml-12" title="AyudaYa">
-      <span class="text-xl font-bold tracking-tight text-white hidden sm:inline">AyudaYa</span>
-      <img src="icono2.ico" alt="AyudaYa" class="h-12 w-auto" />
+    <a routerLink="/" class="flex items-center gap-2 shrink-0" title="AyudaYa">
+      <span class="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">AyudaYa</span>
+      <img src="icono2.ico" alt="AyudaYa" class="h-10 sm:h-12 w-auto shrink-0" />
     </a>
 
     @if (session.isLoggedIn()) {
@@ -33,6 +33,9 @@
             }
           </div>
         }
+        @if (session.puedeGestionarLogistica()) {
+          <a routerLink="/logistica/lotes" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Logística</a>
+        }
         <a routerLink="/kits/seguimiento" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Kits</a>
         @if (session.esAdmin()) {
           <div class="nav-desplegable relative"
@@ -61,8 +64,10 @@
             @if (desplegableActivo() === 'administracion') {
               <div class="absolute left-0 top-full pt-2">
                 <div class="min-w-56 rounded-xl bg-white p-2 text-gray-700 shadow-xl ring-1 ring-black/5">
+                  <a routerLink="/campanas" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Campañas</a>
                   <a routerLink="/categorias" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Categorías</a>
                   <a routerLink="/trabajadores" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Trabajadores</a>
+                  <a routerLink="/auditoria" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Auditor&iacute;a</a>
                 </div>
               </div>
             }
@@ -78,7 +83,7 @@
 
     <div class="flex items-center gap-4 text-sm ml-auto">
       @if (session.isLoggedIn()) {
-        <span class="opacity-80 truncate max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
+        <span class="opacity-80 truncate max-w-[80px] sm:max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
         <button (click)="logout()" class="hidden sm:inline-block bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
           Salir
         </button>
@@ -123,6 +128,9 @@
             </div>
           </details>
         }
+        @if (session.puedeGestionarLogistica()) {
+          <a routerLink="/logistica/lotes" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Logística</a>
+        }
         <a routerLink="/kits/seguimiento" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Kits</a>
         @if (session.esAdmin()) {
           <details class="rounded-lg">
@@ -141,8 +149,10 @@
               <span class="material-symbols-outlined text-base">expand_more</span>
             </summary>
             <div class="mt-1 flex flex-col gap-0.5 pl-3">
+              <a routerLink="/campanas" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Campañas</a>
               <a routerLink="/categorias" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Categorías</a>
               <a routerLink="/trabajadores" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Trabajadores</a>
+              <a routerLink="/auditoria" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Auditor&iacute;a</a>
             </div>
           </details>
         } @else {

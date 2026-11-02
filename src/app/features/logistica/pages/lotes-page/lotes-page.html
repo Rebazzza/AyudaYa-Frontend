@@ -1,0 +1,282 @@
+<main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
+  <div class="w-full max-w-[1120px] flex flex-col gap-6">
+
+    <header class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">
+          Lotes de distribución
+        </h1>
+        <p class="text-sm text-on-surface-variant">
+          Agrupa donaciones y kits, asigna vehículo y conductor, y controla la entrega final en la zona de impacto.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="mostrarFormulario() ? cerrarFormulario() : abrirFormulario()"
+        class="inline-flex items-center gap-2 bg-brand-orange text-white px-5 py-2.5 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition">
+        <span class="material-symbols-outlined text-lg">{{ mostrarFormulario() ? 'close' : 'add_road' }}</span>
+        {{ mostrarFormulario() ? 'Cancelar' : 'Nuevo lote' }}
+      </button>
+    </header>
+
+    @if (error()) {
+      <div class="bg-error-container text-on-error-container text-sm rounded-xl px-4 py-3">{{ error() }}</div>
+    }
+
+    @if (mostrarFormulario()) {
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+        <h2 class="font-semibold text-on-surface mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">local_shipping</span>
+          Armado del lote
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="vehiculoPlaca">Vehículo (placa / descripción)</label>
+            <input
+              id="vehiculoPlaca"
+              name="vehiculoPlaca"
+              type="text"
+              [(ngModel)]="vehiculoPlaca"
+              placeholder="Ej. ABC-123 / Toyota Hiace"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="vehiculoModelo">Modelo (opcional)</label>
+            <input
+              id="vehiculoModelo"
+              name="vehiculoModelo"
+              type="text"
+              [(ngModel)]="vehiculoModelo"
+              placeholder="Ej. Toyota Hiace 2022"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="conductorNombre">Conductor responsable</label>
+            <input
+              id="conductorNombre"
+              name="conductorNombre"
+              type="text"
+              [(ngModel)]="conductorNombre"
+              placeholder="Ej. Juan Pérez"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-on-surface-variant mb-1" for="zonaDesastre">Zona de desastre / punto de entrega</label>
+            <input
+              id="zonaDesastre"
+              name="zonaDesastre"
+              type="text"
+              [(ngModel)]="zonaDesastre"
+              placeholder="Ej. AA.HH. Villa El Salvador - Sector 3"
+              class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+          </div>
+        </div>
+
+        @if (formError()) {
+          <div class="mt-4 bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3">{{ formError() }}</div>
+        }
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <section>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-primary">inventory_2</span>
+                Donaciones EN_ALMACEN
+              </h3>
+              <span class="text-xs text-on-surface-variant">{{ seleccionDonaciones().size }} seleccionada(s)</span>
+            </div>
+            @if (donaciones().length === 0) {
+              <p class="text-sm text-on-surface-variant rounded-xl border border-dashed border-outline-variant px-4 py-6 text-center">
+                No hay donaciones disponibles. Verifica que estén corroboradas en estado EN_ALMACEN.
+              </p>
+            } @else {
+              <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                @for (d of donaciones(); track d.idDonacion) {
+                  <label class="flex items-start gap-3 rounded-xl border border-outline-variant/70 px-3 py-2.5 cursor-pointer hover:bg-surface-container-low transition">
+                    <input
+                      type="checkbox"
+                      [checked]="estaDonacionSeleccionada(d.idDonacion)"
+                      (change)="toggleDonacion(d.idDonacion)"
+                      class="mt-1 h-4 w-4 accent-[#FF7717]" />
+                    <span class="min-w-0">
+                      <span class="block text-sm font-semibold text-on-surface font-mono">{{ d.codigoSeguimiento }}</span>
+                      <span class="block text-xs text-on-surface-variant">
+                        {{ d.nombreDonante ?? 'Donante' }} · {{ d.nombreLocal ?? 'Sin local' }}
+                      </span>
+                      <span class="block text-xs text-on-surface-variant">
+                        {{ d.cantidadProductos }} producto(s) · {{ d.estadoActual }}
+                      </span>
+                    </span>
+                  </label>
+                }
+              </div>
+            }
+          </section>
+
+          <section>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-primary">package_2</span>
+                Kits DISPONIBLES
+              </h3>
+              <span class="text-xs text-on-surface-variant">{{ seleccionKits().size }} seleccionado(s)</span>
+            </div>
+            @if (kits().length === 0) {
+              <p class="text-sm text-on-surface-variant rounded-xl border border-dashed border-outline-variant px-4 py-6 text-center">
+                No hay kits disponibles. Ármalos primero desde Almacén → Armar kits.
+              </p>
+            } @else {
+              <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                @for (k of kits(); track k.idKit) {
+                  <label class="flex items-start gap-3 rounded-xl border border-outline-variant/70 px-3 py-2.5 cursor-pointer hover:bg-surface-container-low transition">
+                    <input
+                      type="checkbox"
+                      [checked]="estaKitSeleccionado(k.idKit)"
+                      (change)="toggleKit(k.idKit)"
+                      class="mt-1 h-4 w-4 accent-[#FF7717]" />
+                    <span class="min-w-0">
+                      <span class="block text-sm font-semibold text-on-surface font-mono">{{ k.codigoKit }}</span>
+                      <span class="block text-xs text-on-surface-variant">
+                        {{ k.nombreKit }} · {{ k.nombreLocal ?? 'Sin local' }}
+                      </span>
+                      <span class="block text-xs text-on-surface-variant">
+                        {{ k.cantidadInsumos }} insumo(s) · {{ k.estado }}
+                      </span>
+                    </span>
+                  </label>
+                }
+              </div>
+            }
+          </section>
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            (click)="crear()"
+            [disabled]="guardando() || totalSeleccion() === 0"
+            class="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined text-lg">{{ guardando() ? 'progress_activity' : 'add_road' }}</span>
+            {{ guardando() ? 'Armando lote...' : 'Armar lote' }}
+          </button>
+          <p class="text-xs text-on-surface-variant">
+            {{ totalSeleccion() }} elemento(s) seleccionado(s) para el lote.
+          </p>
+        </div>
+      </section>
+    }
+
+    <section class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold text-on-surface">Lotes registrados</h2>
+        <button type="button" (click)="cargarTodo()" class="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-brand-orange transition">
+          <span class="material-symbols-outlined text-base">refresh</span>
+          Actualizar
+        </button>
+      </div>
+
+      @if (cargando()) {
+        <div class="grid grid-cols-1 gap-3 skeleton-stagger">
+          @for (i of [1,2,3]; track i) {
+            <div class="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-5">
+              <div class="skeleton h-5 w-48 rounded mb-3"></div>
+              <div class="skeleton h-4 w-full rounded mb-2"></div>
+              <div class="skeleton h-4 w-2/3 rounded"></div>
+            </div>
+          }
+        </div>
+      } @else if (lotes().length === 0) {
+        <div class="rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-12 text-center">
+          <span class="material-symbols-outlined text-4xl text-on-surface-variant">route</span>
+          <p class="mt-2 text-sm text-on-surface-variant">Aún no hay lotes de distribución. Arma el primero con el botón “Nuevo lote”.</p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 gap-3">
+          @for (lote of lotes(); track lote.idLote) {
+            <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-mono text-lg font-bold text-on-surface">{{ lote.codigoLote }}</h3>
+                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold {{ claseEstado(lote.estadoLote) }}">
+                      {{ etiquetaEstado(lote.estadoLote) }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-on-surface-variant mt-1">
+                    {{ lote.zonaDesastre }} · {{ lote.totalDonaciones }} donación(es) · {{ lote.totalKits }} kit(s)
+                  </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <a
+                    [routerLink]="['/logistica/lotes', lote.idLote]"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container transition">
+                    <span class="material-symbols-outlined text-base">map</span>
+                    Hoja de ruta
+                  </a>
+                  @if (lote.estadoLote === 'ARMADO') {
+                    <button
+                      type="button"
+                      (click)="despachar(lote)"
+                      [disabled]="accionEnCurso() === lote.idLote"
+                      class="inline-flex items-center gap-1.5 rounded-lg bg-brand-orange px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover transition disabled:opacity-50">
+                      <span class="material-symbols-outlined text-base">{{ accionEnCurso() === lote.idLote ? 'progress_activity' : 'local_shipping' }}</span>
+                      Despachar
+                    </button>
+                  } @else if (lote.estadoLote === 'EN_TRANSITO') {
+                    <a
+                      [routerLink]="['/logistica/lotes', lote.idLote]"
+                      class="inline-flex items-center gap-1.5 rounded-lg bg-brand-orange px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover transition">
+                      <span class="material-symbols-outlined text-base">draw</span>
+                      Registrar entrega
+                    </a>
+                  } @else if (lote.estadoLote === 'ENTREGADO') {
+                    <span class="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                      <span class="material-symbols-outlined text-base">verified</span>
+                      Entrega confirmada
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <dt class="text-xs text-on-surface-variant">Vehículo</dt>
+                  <dd class="font-medium text-on-surface">{{ lote.vehiculoPlaca }}<span class="text-on-surface-variant"> · {{ lote.vehiculoModelo || 'Sin modelo' }}</span></dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-on-surface-variant">Conductor</dt>
+                  <dd class="font-medium text-on-surface">{{ lote.conductorNombre }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-on-surface-variant">Despacho</dt>
+                  <dd class="font-medium text-on-surface">{{ formatearFecha(lote.fechaDespacho) }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-on-surface-variant">Entrega</dt>
+                  <dd class="font-medium text-on-surface">{{ formatearFecha(lote.fechaEntrega) }}</dd>
+                </div>
+              </dl>
+
+              @if (lote.representanteNombre) {
+                <p class="mt-3 text-xs text-on-surface-variant">
+                  Recibido por <span class="font-semibold text-on-surface">{{ lote.representanteNombre }}</span>
+                  @if (lote.latitudEntrega != null && lote.longitudEntrega != null) {
+                    · GPS {{ lote.latitudEntrega }}, {{ lote.longitudEntrega }}
+                  }
+                </p>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    @if (toast()) {
+      <div class="fixed bottom-6 right-6 z-50 max-w-sm rounded-xl shadow-lg px-4 py-3 text-sm font-medium flex items-start gap-2 border {{ toastTipo() === 'error' ? 'bg-error-container text-on-error-container border-error/40' : 'bg-primary-fixed text-on-primary-fixed border-primary/40' }}">
+        <span class="material-symbols-outlined text-base mt-0.5">{{ toastTipo() === 'error' ? 'error_outline' : 'check_circle' }}</span>
+        {{ toast() }}
+      </div>
+    }
+  </div>
+</main>

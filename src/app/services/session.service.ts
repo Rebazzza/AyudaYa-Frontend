@@ -31,6 +31,15 @@ export class SessionService {
     return this.usuario()?.nombreRol === 'Administrador';
   }
 
+  /** Roles que pueden armar lotes y registrar entregas (RF42/RF43). */
+  puedeGestionarLogistica(): boolean {
+    const rol = this.usuario()?.nombreRol;
+    return rol === 'Administrador'
+      || rol === 'Organizacion'
+      || rol === 'Personal de Apoyo'
+      || rol === 'TrabajadorCentroAcopio';
+  }
+
   private cargar(): Usuario | null {
     const rawStorage = localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY);
     return rawStorage ? JSON.parse(rawStorage) : null;

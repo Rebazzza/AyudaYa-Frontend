@@ -1,0 +1,173 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-on-surface">Auditor&iacute;a</h1>
+      <p class="text-sm text-on-surface-variant mt-1">
+        Registro inmutable de las modificaciones cr&iacute;ticas realizadas en el sistema
+      </p>
+    </div>
+    <div class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm text-on-surface-variant">
+      <span class="material-symbols-outlined text-lg text-primary-container">lock</span>
+      Solo lectura
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 mb-5 shadow-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div>
+        <label for="idUsuario" class="block text-xs font-medium text-on-surface-variant mb-1">ID de usuario</label>
+        <input
+          id="idUsuario"
+          type="number"
+          min="1"
+          name="idUsuario"
+          [(ngModel)]="filtros.idUsuario"
+          placeholder="Todos"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label for="accion" class="block text-xs font-medium text-on-surface-variant mb-1">Acci&oacute;n</label>
+        <input
+          id="accion"
+          type="text"
+          name="accion"
+          [(ngModel)]="filtros.accion"
+          placeholder="Ej. ANULACION"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label for="entidad" class="block text-xs font-medium text-on-surface-variant mb-1">Entidad</label>
+        <input
+          id="entidad"
+          type="text"
+          name="entidad"
+          [(ngModel)]="filtros.entidad"
+          placeholder="Ej. DONACION"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label for="fechaDesde" class="block text-xs font-medium text-on-surface-variant mb-1">Desde</label>
+        <input
+          id="fechaDesde"
+          type="date"
+          name="fechaDesde"
+          [(ngModel)]="filtros.fechaDesde"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label for="fechaHasta" class="block text-xs font-medium text-on-surface-variant mb-1">Hasta</label>
+        <input
+          id="fechaHasta"
+          type="date"
+          name="fechaHasta"
+          [(ngModel)]="filtros.fechaHasta"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        (click)="aplicarFiltros()"
+        class="inline-flex items-center gap-2 bg-brand-orange text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:bg-brand-hover transition">
+        <span class="material-symbols-outlined text-lg">filter_alt</span>
+        Filtrar
+      </button>
+      <button
+        type="button"
+        (click)="limpiarFiltros()"
+        class="inline-flex items-center gap-2 border border-outline-variant text-on-surface px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-container transition">
+        <span class="material-symbols-outlined text-lg">restart_alt</span>
+        Limpiar
+      </button>
+      <span class="ml-auto text-xs text-on-surface-variant">
+        {{ total() }} evento{{ total() === 1 ? '' : 's' }} registrado{{ total() === 1 ? '' : 's' }}
+      </span>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ error() }}</div>
+  }
+
+  <div class="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm overflow-hidden">
+    @if (loading()) {
+      <div class="flex items-center justify-center gap-2 px-4 py-16 text-sm text-on-surface-variant">
+        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+        Cargando auditor&iacute;a...
+      </div>
+    } @else if (registros().length === 0) {
+      <div class="flex flex-col items-center justify-center px-4 py-16 text-center">
+        <span class="material-symbols-outlined text-5xl text-on-surface-variant/50">history</span>
+        <p class="mt-3 text-sm font-medium text-on-surface">No hay eventos de auditor&iacute;a</p>
+        <p class="mt-1 text-xs text-on-surface-variant">Ajusta los filtros o realiza una modificaci&oacute;n cr&iacute;tica para generar registros.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-surface-container text-left text-xs uppercase tracking-wide text-on-surface-variant">
+            <tr>
+              <th class="px-4 py-3 font-semibold whitespace-nowrap">Fecha y hora</th>
+              <th class="px-4 py-3 font-semibold">Usuario</th>
+              <th class="px-4 py-3 font-semibold">Acci&oacute;n</th>
+              <th class="px-4 py-3 font-semibold">Entidad</th>
+              <th class="px-4 py-3 font-semibold whitespace-nowrap">IP cliente</th>
+              <th class="px-4 py-3 font-semibold">Origen</th>
+              <th class="px-4 py-3 font-semibold">Detalle</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/50">
+            @for (registro of registros(); track registro.idAuditoria) {
+              <tr class="align-top hover:bg-surface-container/50 transition">
+                <td class="px-4 py-3 whitespace-nowrap text-on-surface">
+                  {{ registro.fechaHora | date: 'dd/MM/yyyy HH:mm:ss' }}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="font-medium text-on-surface">
+                    {{ registro.nombreUsuario || ('Usuario ' + registro.idUsuario) }}
+                  </div>
+                  <div class="text-xs text-on-surface-variant">ID {{ registro.idUsuario }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex rounded-full bg-primary-container/15 px-2.5 py-1 text-xs font-semibold text-primary-container whitespace-nowrap">
+                    {{ etiquetaAccion(registro.accion) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="font-medium text-on-surface">{{ registro.entidad }}</div>
+                  @if (registro.idEntidad) {
+                    <div class="text-xs text-on-surface-variant">#{{ registro.idEntidad }}</div>
+                  }
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap font-mono text-xs text-on-surface">
+                  {{ registro.ipCliente }}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="font-mono text-xs text-on-surface">{{ registro.metodoHttp || '-' }}</div>
+                  <div class="text-xs text-on-surface-variant break-all">{{ registro.rutaPeticion || '-' }}</div>
+                </td>
+                <td class="px-4 py-3 text-xs text-on-surface-variant min-w-56">
+                  {{ registro.detalle || '-' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-outline-variant/60">
+        <app-pagination
+          [total]="total()"
+          [pagina]="pagina()"
+          [tamanoPagina]="tamanio"
+          (paginaChange)="cambiarPagina($event)"
+          unidad="eventos" />
+      </div>
+    }
+  </div>
+
+  <p class="mt-4 text-xs text-on-surface-variant">
+    Los registros de auditor&iacute;a son inmutables: no existe ninguna acci&oacute;n para editarlos ni eliminarlos.
+  </p>
+
+</div>

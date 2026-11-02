@@ -9,7 +9,9 @@ import { CategoriaService } from '../../services/categoria.service';
 import { TrabajadorService } from '../../services/trabajador.service';
 import { MonetariaService } from '../../services/monetaria.service';
 import { UsuarioService } from '../../services/usuario.service';
+import { CampanaService } from '../../services/campana.service';
 import { Donacion } from '../../models/donacion.model';
+import { AlertaStockCampana } from '../../models/campana.model';
 import { PanelFondos } from '../../models/monetaria.model';
 import { Notificacion } from '../../models/notificacion.model';
 
@@ -29,6 +31,7 @@ export class DashboardComponent implements OnInit {
   private trabajadorService = inject(TrabajadorService);
   private monetariaService = inject(MonetariaService);
   private usuarioService = inject(UsuarioService);
+  private campanaService = inject(CampanaService);
 
   user = this.session.getUser();
   esDonante = this.user?.nombreRol === 'Donante';
@@ -50,6 +53,13 @@ export class DashboardComponent implements OnInit {
   totalTrabajadores = signal(0);
   /** RF44 · consolidado de fondos recaudados (solo aportes verificados). */
   panelFondos = signal<PanelFondos | null>(null);
+  /** RF58 · metas de campaña sin cubrir según el stock verificado en almacén. */
+  alertasCampana = signal<AlertaStockCampana[]>([]);
+
+  alertasCriticasCampana = computed(
+    () => this.alertasCampana().filter((a) => a.nivelAlerta === 'CRITICO').length,
+  );
+  alertasRecientes = computed(() => this.alertasCampana().slice(0, 4));
 
   loading = signal(true);
 
@@ -181,6 +191,13 @@ export class DashboardComponent implements OnInit {
     this.localService.listar().subscribe((data) => this.totalLocales.set(data.length));
     this.categoriaService.listar().subscribe((data) => this.totalCategorias.set(data.length));
     this.trabajadorService.listar().subscribe((data) => this.totalTrabajadores.set(data.length));
+
+    if (this.esTrabajador) {
+      this.campanaService.alertasStock().subscribe({
+        next: (data) => this.alertasCampana.set(data),
+        error: () => this.alertasCampana.set([]),
+      });
+    }
 
     if (this.esAdmin) {
       this.monetariaService.getPanel().subscribe({

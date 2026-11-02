@@ -166,6 +166,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'campanas',
+    loadComponent: () =>
+      import('./pages/campanas/campanas').then((m) => m.CampanasComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'categorias',
     loadComponent: () =>
       import('./pages/categorias/categorias').then((m) => m.CategoriasComponent),
@@ -178,9 +184,31 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
+    path: 'auditoria',
+    loadComponent: () =>
+      import('./pages/auditoria/auditoria').then((m) => m.AuditoriaComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'notificaciones',
     loadComponent: () =>
       import('./pages/notificaciones/notificaciones').then((m) => m.NotificacionesComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'logistica/lotes',
+    loadComponent: () =>
+      import('./features/logistica/pages/lotes-page/lotes-page').then(
+        (m) => m.LotesPageComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'logistica/lotes/:id',
+    loadComponent: () =>
+      import('./features/logistica/pages/hoja-ruta-page/hoja-ruta-page').then(
+        (m) => m.HojaRutaPageComponent,
+      ),
     canActivate: [authGuard],
   },
   {

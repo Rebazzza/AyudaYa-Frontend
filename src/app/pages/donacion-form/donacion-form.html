@@ -106,6 +106,34 @@
                 </div>
               }
             </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-xs font-medium text-on-surface-variant mb-1" for="campana">
+                Campaña de emergencia <span class="font-normal">(opcional)</span>
+              </label>
+              <select
+                id="campana"
+                [(ngModel)]="form.idCampana"
+                name="campana"
+                class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                <option [ngValue]="0">Sin campaña — donación general</option>
+                @for (c of campanas(); track c.idCampana) {
+                  <option [ngValue]="c.idCampana">{{ c.nombreCampana }} — {{ c.zonaEmergencia }}</option>
+                }
+              </select>
+              @if (campanaSeleccionada(); as campana) {
+                <div class="mt-2 rounded-lg bg-primary-fixed/30 px-3 py-2">
+                  <p class="text-xs text-on-surface-variant">
+                    Vigente hasta el {{ campana.fechaFin }}. Metas:
+                    @for (meta of campana.metas; track meta.idMeta) {
+                      <span class="inline-flex items-center ml-1 rounded-full bg-surface-container-lowest px-2 py-0.5 text-xs text-on-surface">
+                        {{ meta.nombreCategoria }}: {{ meta.cantidadObjetivo }} {{ meta.unidadMedida }}
+                      </span>
+                    }
+                  </p>
+                </div>
+              }
+            </div>
           </div>
         </fieldset>
 

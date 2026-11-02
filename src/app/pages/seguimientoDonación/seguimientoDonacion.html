@@ -106,6 +106,7 @@
       <p class="text-sm text-on-surface-variant">{{ error() }}</p>
     </div>
   } @else if (donacion() || tracking()) {
+    <div class="content-stagger flex flex-col gap-6">
 
     <!-- Banner anulada -->
     @if (esAnulada()) {
@@ -684,6 +685,7 @@
           </div>
         </section>
       }
+    </div>
     </div>
   }
 </div>

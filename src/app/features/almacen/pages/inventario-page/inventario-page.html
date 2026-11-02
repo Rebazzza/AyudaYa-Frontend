@@ -95,7 +95,7 @@
     </header>
 
     @if (inventario().length > 0) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 content-stagger">
         @for (item of inventario(); track item.idCategoria) {
           <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5 hover:shadow-md hover:border-brand-orange/40 transition">
             <div class="flex items-start justify-between">

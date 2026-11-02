@@ -1,0 +1,372 @@
+<main class="w-full flex justify-center p-4 sm:p-6 lg:p-8">
+  <div class="w-full max-w-[1120px] flex flex-col gap-6">
+
+    <div>
+      <a routerLink="/logistica/lotes" class="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-brand-orange transition print:hidden">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+        Volver a lotes de distribución
+      </a>
+    </div>
+
+    @if (cargando()) {
+      <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant p-6 skeleton-stagger">
+        <div class="skeleton h-7 w-56 rounded mb-3"></div>
+        <div class="skeleton h-4 w-full rounded mb-2"></div>
+        <div class="skeleton h-4 w-2/3 rounded"></div>
+      </div>
+    } @else if (error()) {
+      <div class="bg-error-container text-on-error-container text-sm rounded-xl px-4 py-3">{{ error() }}</div>
+    } @else if (lote(); as l) {
+      <header class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="font-mono text-2xl lg:text-3xl font-bold tracking-tight text-on-surface">{{ l.codigoLote }}</h1>
+              <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold {{ claseEstado(l.estadoLote) }}">
+                {{ etiquetaEstado(l.estadoLote) }}
+              </span>
+            </div>
+            <p class="text-sm text-on-surface-variant mt-1">Hoja de ruta digital · {{ l.zonaDesastre }}</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 print:hidden">
+            <button type="button" (click)="cargar(l.idLote)" class="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container transition">
+              <span class="material-symbols-outlined text-base">refresh</span>
+              Actualizar
+            </button>
+            @if (l.estadoLote === 'ARMADO') {
+              <button type="button" (click)="despachar()" [disabled]="accionEnCurso()" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover transition disabled:opacity-50">
+                <span class="material-symbols-outlined text-base">{{ accionEnCurso() ? 'progress_activity' : 'local_shipping' }}</span>
+                Despachar lote
+              </button>
+            }
+            <button type="button" (click)="imprimirHoja()" class="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container transition">
+              <span class="material-symbols-outlined text-base">print</span>
+              Imprimir
+            </button>
+          </div>
+        </div>
+
+        <dl class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div>
+            <dt class="text-xs text-on-surface-variant">Vehículo</dt>
+            <dd class="font-semibold text-on-surface">{{ l.vehiculoPlaca }}</dd>
+            <dd class="text-xs text-on-surface-variant">{{ l.vehiculoModelo || 'Sin modelo registrado' }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-on-surface-variant">Conductor</dt>
+            <dd class="font-semibold text-on-surface">{{ l.conductorNombre }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-on-surface-variant">Fecha de despacho</dt>
+            <dd class="font-semibold text-on-surface">{{ formatearFecha(l.fechaDespacho) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-on-surface-variant">Fecha de entrega</dt>
+            <dd class="font-semibold text-on-surface">{{ formatearFecha(l.fechaEntrega) }}</dd>
+          </div>
+        </dl>
+      </header>
+
+      <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+        <h2 class="font-semibold text-on-surface mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">route</span>
+          Puntos de entrega
+        </h2>
+        @if (l.puntosEntrega.length === 0) {
+          <p class="text-sm text-on-surface-variant">El lote no tiene donaciones ni kits asociados.</p>
+        } @else {
+          <ol class="space-y-3">
+            @for (p of l.puntosEntrega; track p.codigo; let i = $index) {
+              <li class="flex items-start gap-3 rounded-xl border border-outline-variant/70 px-4 py-3">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-orange text-xs font-bold text-white">{{ i + 1 }}</span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-sm font-semibold text-on-surface">{{ p.codigo }}</span>
+                    <span class="rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">{{ p.tipo }}</span>
+                    <span class="text-xs text-on-surface-variant">{{ p.cantidadBultos }} bulto(s)</span>
+                  </div>
+                  <p class="text-sm text-on-surface-variant">{{ p.descripcion }}</p>
+                  <p class="text-xs text-on-surface-variant">
+                    {{ p.nombreLocal ?? 'Sin local' }}
+                    @if (p.direccionLocal) { · {{ p.direccionLocal }} }
+                    @if (p.latitud != null && p.longitud != null) {
+                      · GPS {{ p.latitud }}, {{ p.longitud }}
+                    }
+                  </p>
+                </div>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+          <h2 class="font-semibold text-on-surface mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">inventory_2</span>
+            Donaciones ({{ l.totalDonaciones }})
+          </h2>
+          @if (l.donaciones.length === 0) {
+            <p class="text-sm text-on-surface-variant">Sin donaciones en este lote.</p>
+          } @else {
+            <ul class="divide-y divide-outline-variant/60">
+              @for (d of l.donaciones; track d.idDonacion) {
+                <li class="py-2.5">
+                  <p class="font-mono text-sm font-semibold text-on-surface">{{ d.codigoSeguimiento }}</p>
+                  <p class="text-xs text-on-surface-variant">{{ d.nombreDonante ?? 'Donante' }} · {{ d.nombreLocal ?? 'Sin local' }} · {{ d.cantidadProductos }} producto(s)</p>
+                  <p class="text-xs text-on-surface-variant">Estado: {{ d.estadoActual }}</p>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+          <h2 class="font-semibold text-on-surface mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">package_2</span>
+            Kits ({{ l.totalKits }})
+          </h2>
+          @if (l.kits.length === 0) {
+            <p class="text-sm text-on-surface-variant">Sin kits en este lote.</p>
+          } @else {
+            <ul class="divide-y divide-outline-variant/60">
+              @for (k of l.kits; track k.idKit) {
+                <li class="py-2.5">
+                  <p class="font-mono text-sm font-semibold text-on-surface">{{ k.codigoKit }}</p>
+                  <p class="text-xs text-on-surface-variant">{{ k.nombreKit }} · {{ k.nombreLocal ?? 'Sin local' }} · {{ k.cantidadInsumos }} insumo(s)</p>
+                  <p class="text-xs text-on-surface-variant">Estado: {{ k.estado }}</p>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </section>
+
+      @if (l.estadoLote === 'EN_TRANSITO') {
+        <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 print:hidden">
+          <h2 class="font-semibold text-on-surface mb-1 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">draw</span>
+            Confirmar entrega final
+          </h2>
+          <p class="text-xs text-on-surface-variant mb-5">
+            Registra la foto de evidencia, la firma táctil o el código de confirmación y las coordenadas GPS del punto de entrega.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1" for="representanteNombre">Representante que recibe</label>
+              <input
+                id="representanteNombre"
+                name="representanteNombre"
+                type="text"
+                [(ngModel)]="representanteNombre"
+                placeholder="Ej. María Quispe"
+                class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1">Método de confirmación</label>
+              <div class="inline-flex rounded-lg border border-outline-variant overflow-hidden">
+                <button
+                  type="button"
+                  (click)="modoCodigo.set(false)"
+                  class="px-4 py-2 text-sm font-semibold transition"
+                  [class.bg-brand-orange]="!modoCodigo()"
+                  [class.text-white]="!modoCodigo()"
+                  [class.text-on-surface]="modoCodigo()">
+                  Firma táctil
+                </button>
+                <button
+                  type="button"
+                  (click)="modoCodigo.set(true)"
+                  class="px-4 py-2 text-sm font-semibold transition"
+                  [class.bg-brand-orange]="modoCodigo()"
+                  [class.text-white]="modoCodigo()"
+                  [class.text-on-surface]="!modoCodigo()">
+                  Código
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            @if (!modoCodigo()) {
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-medium text-on-surface-variant">Firma del representante</label>
+                <button type="button" (click)="limpiarFirma()" class="inline-flex items-center gap-1 text-xs font-semibold text-error hover:underline">
+                  <span class="material-symbols-outlined text-sm">ink_eraser</span>
+                  Limpiar
+                </button>
+              </div>
+              <div class="relative">
+                <canvas
+                  #firmaCanvas
+                  width="600"
+                  height="220"
+                  (pointerdown)="iniciarFirma($event)"
+                  (pointermove)="dibujarFirma($event)"
+                  (pointerup)="terminarFirma()"
+                  (pointerleave)="terminarFirma()"
+                  class="w-full h-48 rounded-xl border-2 border-dashed border-outline-variant bg-white touch-none cursor-crosshair"></canvas>
+                @if (!firmaCapturada()) {
+                  <span class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-on-surface-variant/60">
+                    Firme aquí con el dedo o el mouse
+                  </span>
+                }
+              </div>
+            } @else {
+              <div class="max-w-xs">
+                <label class="block text-xs font-medium text-on-surface-variant mb-1" for="codigoConfirmacion">Código de confirmación</label>
+                <input
+                  id="codigoConfirmacion"
+                  name="codigoConfirmacion"
+                  type="text"
+                  [(ngModel)]="codigoConfirmacion"
+                  placeholder="Ej. 4821"
+                  maxlength="20"
+                  class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+                <p class="mt-1 text-xs text-on-surface-variant">Se usa cuando el representante no puede firmar en pantalla.</p>
+              </div>
+            }
+          </div>
+
+          <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1" for="fotoEvidencia">Foto de evidencia</label>
+              <input
+                id="fotoEvidencia"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="seleccionarFoto($event)"
+                class="block w-full text-sm text-on-surface-variant file:mr-3 file:rounded-lg file:border-0 file:bg-brand-orange file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-hover" />
+              @if (subiendoFoto()) {
+                <p class="mt-1 text-xs text-on-surface-variant">Subiendo foto...</p>
+              }
+              @if (fotoUrl()) {
+                <p class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                  <span class="material-symbols-outlined text-sm">check_circle</span>
+                  Foto subida correctamente
+                </p>
+              }
+              @if (fotoError()) {
+                <p class="mt-1 text-xs text-error">{{ fotoError() }}</p>
+              }
+              @if (fotoPreview()) {
+                <img [src]="fotoPreview()" alt="Vista previa de la evidencia" class="mt-2 h-32 w-full rounded-xl object-cover border border-outline-variant" />
+              }
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1">Coordenadas GPS</label>
+              <button
+                type="button"
+                (click)="obtenerUbicacion()"
+                [disabled]="gpsCargando()"
+                class="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container transition disabled:opacity-50">
+                <span class="material-symbols-outlined text-base">{{ gpsCargando() ? 'progress_activity' : 'my_location' }}</span>
+                {{ gpsCargando() ? 'Obteniendo...' : 'Obtener ubicación actual' }}
+              </button>
+              <div class="mt-2 grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-on-surface-variant" for="latitud">Latitud</label>
+                  <input
+                    id="latitud"
+                    type="number"
+                    step="0.000001"
+                    [ngModel]="latitud()"
+                    (ngModelChange)="latitud.set($event)"
+                    name="latitud"
+                    class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-on-surface-variant" for="longitud">Longitud</label>
+                  <input
+                    id="longitud"
+                    type="number"
+                    step="0.000001"
+                    [ngModel]="longitud()"
+                    (ngModelChange)="longitud.set($event)"
+                    name="longitud"
+                    class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+                </div>
+              </div>
+              @if (gpsError()) {
+                <p class="mt-1 text-xs text-error">{{ gpsError() }}</p>
+              }
+            </div>
+          </div>
+
+          @if (entregaError()) {
+            <div class="mt-4 bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3">{{ entregaError() }}</div>
+          }
+
+          <div class="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              (click)="registrarEntrega()"
+              [disabled]="accionEnCurso()"
+              class="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-brand-hover transition disabled:opacity-40 disabled:cursor-not-allowed">
+              <span class="material-symbols-outlined text-lg">{{ accionEnCurso() ? 'progress_activity' : 'verified' }}</span>
+              {{ accionEnCurso() ? 'Confirmando entrega...' : 'Confirmar entrega' }}
+            </button>
+            <p class="text-xs text-on-surface-variant">La entrega cierra el lote y marca las donaciones y kits como ENTREGADO.</p>
+          </div>
+        </section>
+      }
+
+      @if (l.estadoLote === 'ENTREGADO') {
+        <section class="rounded-2xl bg-primary-fixed/30 border border-primary/30 shadow-sm p-6">
+          <h2 class="font-semibold text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">verified</span>
+            Entrega confirmada
+          </h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            <div>
+              <dt class="text-xs text-on-surface-variant">Representante</dt>
+              <dd class="font-semibold text-on-surface">{{ l.representanteNombre }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-on-surface-variant">Fecha de entrega</dt>
+              <dd class="font-semibold text-on-surface">{{ formatearFecha(l.fechaEntrega) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-on-surface-variant">GPS</dt>
+              <dd class="font-semibold text-on-surface">{{ l.latitudEntrega }}, {{ l.longitudEntrega }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-on-surface-variant">Confirmación</dt>
+              <dd class="font-semibold text-on-surface">
+                @if (l.codigoConfirmacion) { Código {{ l.codigoConfirmacion }} } @else { Firma digital }
+              </dd>
+            </div>
+          </dl>
+
+          <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            @if (l.fotoEvidenciaUrl) {
+              <div>
+                <h3 class="text-xs font-medium text-on-surface-variant mb-2">Foto de evidencia</h3>
+                <a [href]="fotoAbsoluta(l.fotoEvidenciaUrl)" target="_blank" rel="noopener">
+                  <img [src]="fotoAbsoluta(l.fotoEvidenciaUrl)" alt="Evidencia de entrega" class="h-48 w-full rounded-xl object-cover border border-outline-variant" />
+                </a>
+              </div>
+            }
+            @if (firmaVisible()) {
+              <div>
+                <h3 class="text-xs font-medium text-on-surface-variant mb-2">Firma del representante</h3>
+                <img [src]="firmaVisible()" alt="Firma digital de entrega" class="h-48 w-full rounded-xl object-contain border border-outline-variant bg-white" />
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (toast()) {
+        <div class="fixed bottom-6 right-6 z-50 max-w-sm rounded-xl shadow-lg px-4 py-3 text-sm font-medium flex items-start gap-2 border print:hidden {{ toastTipo() === 'error' ? 'bg-error-container text-on-error-container border-error/40' : 'bg-primary-fixed text-on-primary-fixed border-primary/40' }}">
+          <span class="material-symbols-outlined text-base mt-0.5">{{ toastTipo() === 'error' ? 'error_outline' : 'check_circle' }}</span>
+          {{ toast() }}
+        </div>
+      }
+    }
+  </div>
+</main>

@@ -1,14 +1,16 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { DonacionService } from '../../services/donacion.service';
 import { CategoriaService } from '../../services/categoria.service';
+import { CampanaService } from '../../services/campana.service';
 import { LocalService } from '../../services/local.service';
 import { SessionService } from '../../services/session.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
+import { Campana } from '../../models/campana.model';
 import { Categoria } from '../../models/categoria.model';
 import { Local, CapacidadLocal } from '../../models/local.model';
 import { Usuario } from '../../models/usuario.model';
@@ -31,6 +33,7 @@ interface DetalleForm {
 export class DonacionFormComponent implements OnInit {
   private donacionService = inject(DonacionService);
   private categoriaService = inject(CategoriaService);
+  private campanaService = inject(CampanaService);
   private localService = inject(LocalService);
   private session = inject(SessionService);
   private usuarioService = inject(UsuarioService);
@@ -46,6 +49,7 @@ export class DonacionFormComponent implements OnInit {
   puedeVerTrazabilidad = this.esAdmin || this.esTrabajador;
 
   categorias = signal<Categoria[]>([]);
+  campanas = signal<Campana[]>([]);
   locales = signal<Local[]>([]);
   donantes = signal<Usuario[]>([]);
   capacidades = signal<Record<number, CapacidadLocal>>({});
@@ -53,7 +57,12 @@ export class DonacionFormComponent implements OnInit {
   form = {
     idUsuario: this.esDonante ? (this.user?.idUsuario ?? 0) : 0,
     idLocalRecepcion: 0,
+    idCampana: 0,
   };
+
+  campanaSeleccionada = computed(
+    () => this.campanas().find((c) => c.idCampana === this.form.idCampana) ?? null,
+  );
 
   detalles = signal<DetalleForm[]>([this.nuevaFila()]);
 
@@ -79,6 +88,10 @@ export class DonacionFormComponent implements OnInit {
 
   ngOnInit() {
     this.categoriaService.listarActivas().subscribe((data) => this.categorias.set(data));
+    this.campanaService.listarDisponibles().subscribe({
+      next: (data) => this.campanas.set(data),
+      error: () => this.campanas.set([]),
+    });
     this.cargarLocales();
     this.recargarDonantes();
   }
@@ -204,6 +217,7 @@ export class DonacionFormComponent implements OnInit {
     this.qrUrl.set(null);
     this.form.idUsuario = this.esDonante ? (this.user?.idUsuario ?? 0) : 0;
     this.form.idLocalRecepcion = 0;
+    this.form.idCampana = 0;
     this.detalles.set([this.nuevaFila()]);
     this.error.set('');
     this.detallesValidos.set(true);
@@ -237,6 +251,7 @@ export class DonacionFormComponent implements OnInit {
     const payload = {
       idUsuario: this.form.idUsuario,
       idLocalRecepcion: this.form.idLocalRecepcion,
+      idCampana: this.form.idCampana > 0 ? this.form.idCampana : null,
       detalles: this.detalles().map((f) => ({
         idCategoria: f.idCategoria,
         descripcionDetalle: f.descripcionDetalle,
