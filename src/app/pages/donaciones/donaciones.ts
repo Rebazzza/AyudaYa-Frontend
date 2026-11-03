@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { DonacionService } from '../../services/donacion.service';
 import { SessionService } from '../../services/session.service';
@@ -16,6 +16,7 @@ import { PaginationComponent, paginar } from '../../components/pagination/pagina
 export class DonacionesComponent implements OnInit {
   private donacionService = inject(DonacionService);
   private session = inject(SessionService);
+  private router = inject(Router);
 
   donaciones = signal<Donacion[]>([]);
   loading = signal(true);
@@ -26,6 +27,9 @@ export class DonacionesComponent implements OnInit {
 
   filtroEstado = '';
   busqueda = '';
+  codigoBusqueda = '';
+  buscandoCodigo = signal(false);
+  errorCodigo = signal('');
 
   estadosPosibles = ['REGISTRADO', 'EN_TRANSITO', 'EN_ALMACEN', 'VERIFICADO', 'ENTREGADO', 'ANULADO', 'RECHAZADA'];
 
@@ -85,6 +89,23 @@ export class DonacionesComponent implements OnInit {
   aplicarFiltro() {
     this.pagina.set(0);
     this.cargar();
+  }
+
+  buscarPorCodigo() {
+    const codigo = this.codigoBusqueda.trim();
+    if (!codigo || this.buscandoCodigo()) return;
+    this.buscandoCodigo.set(true);
+    this.errorCodigo.set('');
+    this.donacionService.porCodigo(codigo).subscribe({
+      next: (d) => {
+        this.buscandoCodigo.set(false);
+        this.router.navigate(['/donaciones/detalle', d.idDonacion]);
+      },
+      error: (err) => {
+        this.buscandoCodigo.set(false);
+        this.errorCodigo.set(err.error?.message || 'No se encontró una donación con ese código');
+      },
+    });
   }
 
   limpiarFiltro() {

@@ -12,6 +12,32 @@
     </a>
   </div>
 
+  <!-- Buscar donación por código -->
+  <div class="flex flex-wrap items-center gap-3 mb-6 p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+    <label class="relative flex-1 min-w-[220px]">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">qr_code_2</span>
+      <input
+        id="inputCodigoBusqueda"
+        type="text"
+        [(ngModel)]="codigoBusqueda"
+        (keyup.enter)="buscarPorCodigo()"
+        placeholder="Código de seguimiento (ej. DON-2025-001)"
+        class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+    </label>
+    <button
+      type="button"
+      id="btnBuscarDonacion"
+      (click)="buscarPorCodigo()"
+      [disabled]="!codigoBusqueda.trim() || buscandoCodigo()"
+      class="inline-flex items-center gap-2 bg-surface-container text-on-surface border border-outline-variant px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-surface-container-high transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+      <span class="material-symbols-outlined text-lg">search</span>
+      {{ buscandoCodigo() ? 'Buscando...' : 'Buscar donación' }}
+    </button>
+  </div>
+  @if (errorCodigo()) {
+    <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ errorCodigo() }}</div>
+  }
+
   <!-- Filtros -->
   <div class="flex flex-wrap items-center gap-3 mb-6 p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm">
     <label class="relative flex-1 min-w-[220px]">
