@@ -45,27 +45,7 @@
         </div>
       }
 
-      <!-- Rol Tabs -->
-      <div class="flex p-1 bg-surface-container rounded-lg mb-6">
-        <button
-          type="button"
-          (click)="rolSeleccionado = 'DONANTE'"
-          class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200"
-          [class]="rolSeleccionado === 'DONANTE'
-            ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-            : 'text-on-surface-variant hover:text-on-surface'">
-          Soy Donante
-        </button>
-        <button
-          type="button"
-          (click)="rolSeleccionado = 'PERSONAL_APOYO'"
-          class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200"
-          [class]="rolSeleccionado === 'PERSONAL_APOYO'
-            ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-            : 'text-on-surface-variant hover:text-on-surface'">
-          Personal de Apoyo
-        </button>
-      </div>
+      <p class="text-sm text-on-surface-variant mb-6">Registro para donantes</p>
 
       <!-- Formulario -->
       <form (ngSubmit)="onSubmit()" class="space-y-4">
@@ -210,7 +190,6 @@
         </div>
 
         <!-- Fotos del DNI (solo donante) -->
-        @if (rolSeleccionado === 'DONANTE') {
           <div>
             <div class="flex items-center justify-between mb-2">
               <p class="text-xs font-medium text-on-surface-variant">Fotos del DNI (frente y reverso) — opcional; si las adjuntas, valida ambas caras</p>
@@ -287,7 +266,6 @@
               <p id="resultadoIdentidad" class="text-xs text-on-surface-variant mt-2">{{ identidadResultado() }}</p>
             }
           </div>
-        }
 
         <!-- Botón Registrar -->
         <button

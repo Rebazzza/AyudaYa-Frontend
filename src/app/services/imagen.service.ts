@@ -11,6 +11,15 @@ export class ImagenService {
   private base = `${environment.apiUrl}/imagenes`;
   storageUrl = environment.storageUrl;
 
+  cargarArchivo(ruta: string): Observable<Blob> {
+    const base = new URL(this.storageUrl);
+    const url = new URL(ruta, `${base.origin}/`);
+    if (url.origin !== base.origin || !url.pathname.startsWith('/uploads/')) {
+      throw new Error('Ruta de archivo no permitida');
+    }
+    return this.http.get(url.toString(), { responseType: 'blob' });
+  }
+
   upload(file: File, tipoImagen: string, idDonacion?: number, idUsuario?: number): Observable<ImagenEvidencia> {
     const form = new FormData();
     form.append('file', file);

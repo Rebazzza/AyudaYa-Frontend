@@ -384,7 +384,11 @@
         </div>
         <div class="p-4 bg-surface-container-high flex justify-center">
           @if (v.comprobanteUrl || v.tieneComprobante) {
-            <img [src]="urlVoucher(v)" alt="Comprobante de pago" class="max-h-[65vh] rounded-lg object-contain" />
+            @if (voucherUrl()) {
+              <img [src]="voucherUrl()" alt="Comprobante de pago" class="max-h-[65vh] rounded-lg object-contain" />
+            } @else {
+              <p class="text-sm text-on-surface-variant py-10">Cargando comprobante...</p>
+            }
           } @else {
             <p class="text-sm text-on-surface-variant py-10">Este aporte no tiene evidencia fotográfica adjunta.</p>
           }

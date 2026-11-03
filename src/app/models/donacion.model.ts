@@ -84,7 +84,7 @@ export interface VerificacionDonacionRequest {
 export interface TrackingHistorial {
   estado: string;
   fechaCambio: string;
-  observacion: string | null;
+  observacion?: string | null;
   nombreLocal: string | null;
 }
 
@@ -92,7 +92,6 @@ export interface TrackingResponse {
   codigoSeguimiento: string;
   estadoActual: string;
   nombreLocal: string;
-  direccionLocal: string;
   fechaRegistro: string;
   historial: TrackingHistorial[];
 }

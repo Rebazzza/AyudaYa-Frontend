@@ -69,8 +69,19 @@ export class DonacionMonetariaComponent implements OnDestroy {
     return this.form.moneda === 'USD' ? 'US$' : 'S/';
   }
 
-  rutaComprobante(aporte: DonacionMonetaria): string {
-    return this.monetariaService.urlComprobante(aporte.comprobanteUrl);
+  verComprobante(aporte: DonacionMonetaria) {
+    const ventana = window.open('', '_blank');
+    this.monetariaService.descargarComprobante(aporte.idDonacionMonetaria).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        if (ventana) ventana.location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      },
+      error: () => {
+        ventana?.close();
+        this.error.set('No se pudo abrir el comprobante.');
+      },
+    });
   }
 
   cargarAportes() {

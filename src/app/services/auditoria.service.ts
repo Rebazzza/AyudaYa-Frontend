@@ -28,6 +28,9 @@ export class AuditoriaService {
     if (filtros.entidad.trim()) {
       params = params.set('entidad', filtros.entidad.trim());
     }
+    if (filtros.ipCliente.trim()) {
+      params = params.set('ipCliente', filtros.ipCliente.trim());
+    }
     if (filtros.fechaDesde) {
       params = params.set('fechaDesde', filtros.fechaDesde);
     }

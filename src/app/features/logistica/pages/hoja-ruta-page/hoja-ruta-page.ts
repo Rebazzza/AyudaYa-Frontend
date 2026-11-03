@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -12,7 +12,7 @@ import { EntregarLoteRequest, LoteDistribucion } from '../../../../models/lote.m
   imports: [FormsModule, RouterLink],
   templateUrl: './hoja-ruta-page.html',
 })
-export class HojaRutaPageComponent implements OnInit {
+export class HojaRutaPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private loteService = inject(LoteService);
   readonly imagenService = inject(ImagenService);
@@ -35,6 +35,22 @@ export class HojaRutaPageComponent implements OnInit {
   fotoPreview = signal<string | null>(null);
   subiendoFoto = signal(false);
   fotoError = signal('');
+  fotoProtegida = signal<string | null>(null);
+
+  ngOnDestroy() {
+    if (this.fotoProtegida()) URL.revokeObjectURL(this.fotoProtegida()!);
+  }
+
+  private cargarFotoProtegida(ruta?: string | null) {
+    if (!ruta) return;
+    this.imagenService.cargarArchivo(ruta).subscribe({
+      next: (blob) => {
+        if (this.fotoProtegida()) URL.revokeObjectURL(this.fotoProtegida()!);
+        this.fotoProtegida.set(URL.createObjectURL(blob));
+      },
+      error: () => this.fotoError.set('No se pudo cargar la foto de entrega.'),
+    });
+  }
 
   latitud = signal<number | null>(null);
   longitud = signal<number | null>(null);
@@ -66,6 +82,7 @@ export class HojaRutaPageComponent implements OnInit {
       .subscribe({
         next: (lote) => {
           this.lote.set(lote);
+          this.cargarFotoProtegida(lote.fotoEvidenciaUrl);
           this.representanteNombre = lote.representanteNombre ?? '';
           if (lote.latitudEntrega != null) this.latitud.set(lote.latitudEntrega);
           if (lote.longitudEntrega != null) this.longitud.set(lote.longitudEntrega);
@@ -91,6 +108,7 @@ export class HojaRutaPageComponent implements OnInit {
       .subscribe({
         next: (actualizado) => {
           this.lote.set(actualizado);
+          this.cargarFotoProtegida(actualizado.fotoEvidenciaUrl);
           this.mostrarToast(`Lote ${actualizado.codigoLote} despachado.`, 'exito');
         },
         error: (err) => {
@@ -262,6 +280,7 @@ export class HojaRutaPageComponent implements OnInit {
         next: (actualizado) => {
           this.lote.set(actualizado);
           this.mostrarToast('Entrega confirmada y registrada correctamente.', 'exito');
+          this.cargarFotoProtegida(actualizado.fotoEvidenciaUrl);
         },
         error: (err) => {
           this.entregaError.set(
@@ -272,10 +291,7 @@ export class HojaRutaPageComponent implements OnInit {
   }
 
   fotoAbsoluta(url?: string | null): string | null {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    const base = this.imagenService.storageUrl.replace(/\/$/, '');
-    return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+    return url ? this.fotoProtegida() : null;
   }
 
   firmaVisible(): string | null {

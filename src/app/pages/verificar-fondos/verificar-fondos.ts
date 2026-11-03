@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -23,7 +23,7 @@ const LIMITE_OBSERVACION = 500;
   imports: [DatePipe, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './verificar-fondos.html',
 })
-export class VerificarFondosComponent implements OnInit {
+export class VerificarFondosComponent implements OnInit, OnDestroy {
   private monetariaService = inject(MonetariaService);
   private session = inject(SessionService);
 
@@ -63,6 +63,7 @@ export class VerificarFondosComponent implements OnInit {
 
   // ── Visor del voucher ────────────────────────────────────────────────────
   voucherVisible = signal<DonacionMonetaria | null>(null);
+  voucherUrl = signal('');
 
   hayFiltros = computed(
     () => !!(this.filtroEstado || this.filtroMetodo || this.filtroMoneda || this.busqueda.trim()),
@@ -71,6 +72,10 @@ export class VerificarFondosComponent implements OnInit {
   ngOnInit() {
     this.cargar();
     this.cargarPanel();
+  }
+
+  ngOnDestroy() {
+    if (this.voucherUrl()) URL.revokeObjectURL(this.voucherUrl());
   }
 
   get totalRecaudadoTexto(): string {
@@ -223,10 +228,12 @@ export class VerificarFondosComponent implements OnInit {
 
   verVoucher(aporte: DonacionMonetaria) {
     this.voucherVisible.set(aporte);
-  }
-
-  urlVoucher(aporte: DonacionMonetaria): string {
-    return this.monetariaService.urlComprobante(aporte.comprobanteUrl);
+    if (this.voucherUrl()) URL.revokeObjectURL(this.voucherUrl());
+    this.voucherUrl.set('');
+    this.monetariaService.descargarComprobante(aporte.idDonacionMonetaria).subscribe({
+      next: (blob) => this.voucherUrl.set(URL.createObjectURL(blob)),
+      error: () => this.error.set('No se pudo cargar el comprobante.'),
+    });
   }
 
   claseEstado(estado: string): string {

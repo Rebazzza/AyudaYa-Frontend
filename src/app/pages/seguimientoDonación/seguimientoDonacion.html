@@ -196,6 +196,7 @@
               <p class="text-xs uppercase tracking-wider text-on-surface-variant">Código de seguimiento</p>
               <p class="font-mono text-2xl font-bold text-on-surface mt-1 inline-flex items-center gap-2">
                 {{ tracking()!.codigoSeguimiento }}
+                @if (donacion()) {
                 <button
                   type="button"
                   id="btnDescargarComprobante"
@@ -206,6 +207,7 @@
                   <span class="material-symbols-outlined">{{ generandoComprobante() ? 'progress_activity' : 'picture_as_pdf' }}</span>
                   {{ generandoComprobante() ? 'Generando...' : 'Descargar Comprobante PDF' }}
                 </button>
+                }
                 <button
                   type="button"
                   (click)="copiarCodigo()"
@@ -239,7 +241,6 @@
               <div>
                 <p class="text-xs text-on-surface-variant">Local de recepción</p>
                 <p class="text-sm text-on-surface font-medium">{{ tracking()!.nombreLocal }}</p>
-                <p class="text-xs text-on-surface-variant">{{ tracking()!.direccionLocal }}</p>
               </div>
             </div>
           </div>

@@ -70,6 +70,7 @@ export class AuditoriaComponent implements OnInit {
       idUsuario: null,
       accion: '',
       entidad: '',
+      ipCliente: '',
       fechaDesde: '',
       fechaHasta: '',
     };

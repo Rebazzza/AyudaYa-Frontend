@@ -1,21 +1,26 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
 import { SessionService } from '../services/session.service';
+import { environment } from '../../environments/environment';
 
-/**
- * RF45: identifica al usuario autenticado en cada peticion para que el backend
- * pueda registrar el audit trail incluso cuando la operacion no recibe el id
- * como parametro explicito.
- */
 export const usuarioIdInterceptor: HttpInterceptorFn = (request, next) => {
-  const usuario = inject(SessionService).getUser();
-  if (!usuario?.idUsuario) {
-    return next(request);
-  }
-
-  return next(
-    request.clone({
-      setHeaders: { 'X-Usuario-Id': String(usuario.idUsuario) },
-    }),
-  );
+  const session = inject(SessionService);
+  const router = inject(Router);
+  const token = session.getUser()?.token;
+  const backend = new URL(environment.storageUrl);
+  const destino = new URL(request.url, backend);
+  const esBackend = destino.origin === backend.origin
+    && (destino.pathname.startsWith('/api/v1/') || destino.pathname.startsWith('/uploads/'));
+  const authenticated = token && esBackend && !request.headers.has('Authorization')
+    ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+    : request;
+  return next(authenticated).pipe(catchError((error) => {
+    if (error.status === 401 && token && !request.url.includes('/auth/login')) {
+      session.clearUser();
+      router.navigate(['/login']);
+    }
+    return throwError(() => error);
+  }));
 };

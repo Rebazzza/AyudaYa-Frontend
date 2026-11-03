@@ -47,6 +47,7 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   estadoError = signal('');
 
   imagenes = signal<ImagenEvidencia[]>([]);
+  private urlsImagen = new Map<number, string>();
   seleccionadas = signal<File[]>([]);
   subiendo = signal(false);
   imagenError = signal('');
@@ -90,7 +91,7 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
       codigoSeguimiento: track?.codigoSeguimiento ?? d?.codigoSeguimiento ?? '',
       estadoActual: track?.estadoActual ?? d?.estadoActual ?? '',
       nombreLocal,
-      direccionLocal: track?.direccionLocal ?? d?.direccionLocal ?? '',
+      direccionLocal: d?.direccionLocal ?? '',
       latitudGPS: null,
       longitudGPS: null,
       fechaUltimoEscaneo: null,
@@ -219,7 +220,14 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   huecosLibres = computed(() => 3 - this.imagenes().length);
 
   historialOrdenado = computed(() => {
-    const historial = this.tracking()?.historial ?? [];
+    const historial = this.donacion() && this.historial().length
+      ? this.historial().map((h) => ({
+          estado: h.estado,
+          fechaCambio: h.fechaCambio,
+          observacion: h.observacionHistorial,
+          nombreLocal: this.tracking()?.historial.find((t) => t.fechaCambio === h.fechaCambio)?.nombreLocal ?? null,
+        }))
+      : this.tracking()?.historial ?? [];
     return [...historial].sort(
       (a, b) => new Date(b.fechaCambio).getTime() - new Date(a.fechaCambio).getTime(),
     );
@@ -230,7 +238,7 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   }
 
   urlImagen(img: ImagenEvidencia): string {
-    return this.imagenService.storageUrl + img.rutaUrl;
+    return img.idImagen == null ? '' : this.urlsImagen.get(img.idImagen) ?? '';
   }
 
   claseEstado(estado: string): string {
@@ -250,7 +258,7 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('id');
     const codigo = this.route.snapshot.queryParamMap.get('codigo');
 
-    if (this.usuario) {
+    if (this.usuario && id) {
       this.trabajadorService.obtenerTrabajadorPorUsuario(this.usuario.idUsuario).subscribe({
         next: (t) => this.idTrabajadorActual.set(t?.idTrabajador ?? null),
         error: () => {},
@@ -270,12 +278,13 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     // escaneado en otro centro mientras el donante tiene la página abierta.
     this.timerUbicacion = setInterval(() => {
       const codigoActual = this.codigoSeguimientoActual();
-      if (codigoActual) this.cargarUbicacion(codigoActual);
+      if (this.donacion() && codigoActual) this.cargarUbicacion(codigoActual);
     }, 30_000);
   }
 
   ngOnDestroy() {
     if (this.timerUbicacion) clearInterval(this.timerUbicacion);
+    this.urlsImagen.forEach((url) => URL.revokeObjectURL(url));
   }
 
   cargarPorId(id: number) {
@@ -325,8 +334,25 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
 
   cargarImagenes(id: number) {
     this.imagenService.listarPorDonacion(id).subscribe({
-      next: (data) => this.imagenes.set(data),
+      next: (data) => {
+        this.imagenes.set(data);
+        data.forEach((img) => this.cargarImagen(img));
+      },
       error: () => {},
+    });
+  }
+
+  private cargarImagen(img: ImagenEvidencia) {
+    if (img.idImagen == null) return;
+    const idImagen = img.idImagen;
+    this.imagenService.cargarArchivo(img.rutaUrl).subscribe({
+      next: (blob) => {
+        const anterior = this.urlsImagen.get(idImagen);
+        if (anterior) URL.revokeObjectURL(anterior);
+        this.urlsImagen.set(idImagen, URL.createObjectURL(blob));
+        this.imagenes.update((actuales) => [...actuales]);
+      },
+      error: () => this.imagenError.set('No se pudo cargar una imagen de evidencia.'),
     });
   }
 
@@ -401,6 +427,7 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     this.imagenService.subirEvidencias(d.idDonacion, this.seleccionadas()).subscribe({
       next: (data) => {
         this.imagenes.update((prev) => [...prev, ...data]);
+        data.forEach((img) => this.cargarImagen(img));
         this.seleccionadas.set([]);
         this.subiendo.set(false);
       },
@@ -415,6 +442,9 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     if (!img.idImagen) return;
     if (!confirm('¿Eliminar esta imagen de evidencia?')) return;
     this.imagenes.update((prev) => prev.filter((i) => i.idImagen !== img.idImagen));
+    const url = this.urlsImagen.get(img.idImagen);
+    if (url) URL.revokeObjectURL(url);
+    this.urlsImagen.delete(img.idImagen);
     this.imagenError.set('');
     this.imagenService.eliminar(img.idImagen).subscribe({
       error: (err) => this.imagenError.set(err.error?.message || 'Error al eliminar la imagen.'),
@@ -436,7 +466,6 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     this.donacionService.tracking(codigo).subscribe({
       next: (data) => {
         this.tracking.set(data);
-        this.cargarUbicacion(data.codigoSeguimiento);
         this.loading.set(false);
       },
       error: (err) => {

@@ -1,7 +1,10 @@
 # Matriz Completa de Requerimientos de Software - Proyecto "AyudaYa"
 
+> Copia histórica de consulta. La fuente única vigente de numeración y alcance es [`../requerimientos.md`](../requerimientos.md). En particular, RF42–RF44 aquí no deben reutilizarse para funciones monetarias: corresponden a logística/caducidad; las funciones monetarias son RF59–RF61 en la matriz vigente.
+
 **Proyecto:** Sistema Web de Gestión, Trazabilidad e Inteligencia Artificial para Donaciones y Asistencia Social "AyudaYa"  
-**Organización Beneficiaria:** Asociación Incawasi (Cajamarca, Perú)  
+**Organización Beneficiaria:** Misión Caritas Felices
+
 **Stack Tecnológico:** Angular 17+ (Frontend) | Spring Boot 3 + Python/Flask (Backend) | MySQL  
 
 ---
@@ -147,9 +150,9 @@
 * **Entregable:** Historial de estados | **Estado:** Documentado | **FURPS+:** F (Funcionalidad)
 
 #### RF25 - Privacidad y Aislamiento de Tracking por Cuenta
-* **Descripción:** El sistema asegurará que cada donante pueda consultar únicamente el seguimiento de los paquetes asociados directamente a su cuenta autenticada.
-* **Responsable:** Favio Canevaro | **Prioridad:** Alta | **Versión:** 1.0
-* **Entregable:** Seguimiento de donación | **Estado:** Documentado | **FURPS+:** F (Funcionalidad)
+* **Descripción:** Cada donante autenticado solo podrá consultar el detalle, historial, evidencias y ubicación GPS exacta de sus propias donaciones. El personal autorizado podrá consultar estos datos según su rol. El rastreo público por código mostrará únicamente estado, fechas y nombre del centro de acopio, sin coordenadas GPS, dirección exacta, datos personales ni observaciones libres.
+* **Responsable:** Favio Canevaro | **Prioridad:** Alta | **Versión:** 1.1
+* **Entregable:** Seguimiento de donación | **Estado:** Implementado; pendiente validación integral con BD | **FURPS+:** F (Funcionalidad)
 
 ---
 
@@ -338,8 +341,8 @@
 ## ⚙️ 2. Requerimientos No Funcionales (RFN01 - RFN12)
 
 #### RFN01 - Control de Acceso Autenticado
-* **Descripción:** El sistema requerirá credenciales válidas (correo y contraseña encriptada) y validará tokens JWT antes de conceder acceso a los módulos internos.
-* **Prioridad:** Alta | **Versión:** 1.0 | **Entregable:** Login | **FURPS+:** U (Usabilidad)
+* **Descripción:** La API interna exigirá un JWT válido y verificará rol y propiedad del recurso en el backend. El registro público creará solo donantes; el administrador gestionará las cuentas de personal. Las rutas públicas serán login, registro, salud, comprobación previa de legibilidad del DNI y rastreo resumido por código. La API no aceptará IDs de usuario enviados en cabeceras como prueba de identidad. Los archivos privados requerirán autenticación.
+* **Prioridad:** Alta | **Versión:** 1.1 | **Entregable:** Login y autorización de API | **Estado:** Implementado; pendiente validación integral con BD | **FURPS+:** U (Usabilidad)
 
 #### RFN02 - Interfaz Intuitiva
 * **Descripción:** La interfaz de usuario debe estar diseñada de manera limpia y clara para que los trabajadores de almacén puedan operar las funciones sin requerir capacitaciones extensas.

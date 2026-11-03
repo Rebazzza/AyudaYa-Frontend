@@ -3,7 +3,6 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { IaService } from '../../services/ia.service';
-import { RolRegistrable } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-register',
@@ -25,7 +24,6 @@ export class RegisterComponent {
   };
   contrasena = '';
   contrasenaConfirm = '';
-  rolSeleccionado: RolRegistrable = 'DONANTE';
 
   loading = signal(false);
   error = signal('');
@@ -146,7 +144,7 @@ export class RegisterComponent {
 
     const anverso = this.dniFrontal();
     const reverso = this.dniPosterior();
-    const hayDni = this.rolSeleccionado === 'DONANTE' && (anverso !== null || reverso !== null);
+    const hayDni = anverso !== null || reverso !== null;
 
     if (hayDni && (!anverso || !reverso || !this.identidadVerificada())) {
       this.dniError.set('Adjunta y valida el anverso y reverso del DNI antes de registrarte.');
@@ -160,7 +158,7 @@ export class RegisterComponent {
     const body = {
       ...this.form,
       'contraseña': this.contrasena,
-      tipoRegistro: this.rolSeleccionado,
+      tipoRegistro: 'DONANTE' as const,
       // El teléfono es opcional (TC-FUNC-01): no se envía vacío.
       telefonoUsuario: this.form.telefonoUsuario.trim() || undefined,
     };
@@ -175,7 +173,7 @@ export class RegisterComponent {
         // RF18: no se suben fotos del DNI como evidencia. Se revalidan ambas caras
         // y el backend solo persiste la bandera dniVerificado, purgando cualquier
         // archivo o registro biométrico que hubiera quedado de versiones anteriores.
-        this.iaService.verificarDniCompleto(anverso!, reverso!, user.idUsuario).subscribe({
+        this.iaService.verificarDniCompleto(anverso!, reverso!, user.idUsuario, user.token).subscribe({
           next: () => this.finalizarRegistro(),
           error: () => this.finalizarRegistro(),
         });

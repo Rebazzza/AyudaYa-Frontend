@@ -14,7 +14,7 @@
   </div>
 
   <div class="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 sm:p-5 mb-5 shadow-sm">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
       <div>
         <label for="idUsuario" class="block text-xs font-medium text-on-surface-variant mb-1">ID de usuario</label>
         <input
@@ -44,6 +44,16 @@
           name="entidad"
           [(ngModel)]="filtros.entidad"
           placeholder="Ej. DONACION"
+          class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
+      </div>
+      <div>
+        <label for="ipCliente" class="block text-xs font-medium text-on-surface-variant mb-1">IP cliente</label>
+        <input
+          id="ipCliente"
+          type="text"
+          name="ipCliente"
+          [(ngModel)]="filtros.ipCliente"
+          placeholder="Ej. 192.168.1.10"
           class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
       </div>
       <div>
@@ -115,6 +125,7 @@
               <th class="px-4 py-3 font-semibold whitespace-nowrap">IP cliente</th>
               <th class="px-4 py-3 font-semibold">Origen</th>
               <th class="px-4 py-3 font-semibold">Detalle</th>
+              <th class="px-4 py-3 font-semibold">Valores anteriores / nuevos</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/50">
@@ -148,7 +159,20 @@
                   <div class="text-xs text-on-surface-variant break-all">{{ registro.rutaPeticion || '-' }}</div>
                 </td>
                 <td class="px-4 py-3 text-xs text-on-surface-variant min-w-56">
-                  {{ registro.detalle || '-' }}
+                  <div>{{ registro.detalle || '-' }}</div>
+                  @if (registro.alerta) {
+                    <span class="mt-1 inline-flex rounded-full bg-error-container px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-on-error-container">
+                      {{ registro.alerta }}
+                    </span>
+                  }
+                </td>
+                <td class="px-4 py-3 text-xs text-on-surface-variant min-w-72">
+                  @if (registro.valoresAnteriores || registro.valoresNuevos) {
+                    <div><span class="font-semibold text-on-surface">Antes:</span> {{ registro.valoresAnteriores || '-' }}</div>
+                    <div class="mt-1"><span class="font-semibold text-on-surface">Despu&eacute;s:</span> {{ registro.valoresNuevos || '-' }}</div>
+                  } @else {
+                    -
+                  }
                 </td>
               </tr>
             }

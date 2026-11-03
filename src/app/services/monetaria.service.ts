@@ -17,6 +17,10 @@ export class MonetariaService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/donaciones-monetarias`;
 
+  descargarComprobante(id: number): Observable<Blob> {
+    return this.http.get(`${this.base}/${id}/comprobante`, { responseType: 'blob' });
+  }
+
   // ── RF42 · Registro de donación monetaria ────────────────────────────────
 
   /** POST /donaciones-monetarias — registro en JSON (sin foto o con comprobanteUrl). */
@@ -113,14 +117,4 @@ export class MonetariaService {
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Convierte `comprobanteUrl` en una URL absoluta: el backend devuelve rutas
-   * públicas tipo `/uploads/comprobantes/xxx.png` que deben resolverse contra
-   * el host del almacenamiento para poder usarlas en un `<img [src]>`.
-   */
-  urlComprobante(url?: string | null): string {
-    if (!url) return '';
-    if (/^https?:\/\//i.test(url)) return url;
-    return `${environment.storageUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-  }
 }

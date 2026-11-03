@@ -6,6 +6,9 @@ export interface Auditoria {
   entidad: string;
   idEntidad: string | null;
   detalle: string | null;
+  valoresAnteriores: string | null;
+  valoresNuevos: string | null;
+  alerta: string | null;
   fechaHora: string;
   ipCliente: string;
   metodoHttp: string | null;
@@ -16,6 +19,7 @@ export interface FiltrosAuditoria {
   idUsuario: number | null;
   accion: string;
   entidad: string;
+  ipCliente: string;
   fechaDesde: string;
   fechaHasta: string;
 }

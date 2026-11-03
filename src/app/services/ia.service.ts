@@ -31,13 +31,14 @@ export class IaService {
    * (a través del backend). Las imágenes se procesan en memoria y se purgan
    * inmediatamente: no quedan archivos temporales en el servidor (RF18).
    */
-  verificarDniCompleto(anverso: File, reverso: File, idUsuario?: number): Observable<ValidacionDni> {
+  verificarDniCompleto(anverso: File, reverso: File, idUsuario?: number, token?: string): Observable<ValidacionDni> {
     const form = new FormData();
     form.append('anverso', anverso, anverso.name);
     form.append('reverso', reverso, reverso.name);
     if (idUsuario != null) form.append('idUsuario', String(idUsuario));
     return this.http
-      .post<ApiResponseDTO<ValidacionDni>>(`${this.base}/verificar-dni-completo`, form)
+      .post<ApiResponseDTO<ValidacionDni>>(`${this.base}/verificar-dni-completo`, form,
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {})
       .pipe(map((res) => res.data));
   }
 

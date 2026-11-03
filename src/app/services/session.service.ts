@@ -24,7 +24,7 @@ export class SessionService {
   }
 
   isLoggedIn(): boolean {
-    return this.usuario() !== null;
+    return !!this.usuario()?.token;
   }
 
   esAdmin(): boolean {
