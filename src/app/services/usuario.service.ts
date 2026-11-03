@@ -5,6 +5,13 @@ import { environment } from '../../environments/environment';
 import { ApiResponseDTO } from '../models/api-response.model';
 import { Usuario } from '../models/usuario.model';
 
+export interface DonanteResumen {
+  idUsuario: number;
+  nombreUsuario: string;
+  apellidosUsuario: string;
+  dniUsuario: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private http = inject(HttpClient);
@@ -13,6 +20,12 @@ export class UsuarioService {
   listar(): Observable<Usuario[]> {
     return this.http
       .get<ApiResponseDTO<Usuario[]>>(this.base)
+      .pipe(map((res) => res.data));
+  }
+
+  listarDonantes(): Observable<DonanteResumen[]> {
+    return this.http
+      .get<ApiResponseDTO<DonanteResumen[]>>(`${this.base}/donantes`)
       .pipe(map((res) => res.data));
   }
 

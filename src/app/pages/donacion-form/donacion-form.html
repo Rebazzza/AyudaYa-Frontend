@@ -104,6 +104,9 @@
                     Nuevo donante
                   </button>
                 </div>
+                @if (donantesError()) {
+                  <p class="text-xs text-error mt-1">{{ donantesError() }}</p>
+                }
               }
             </div>
 

@@ -8,12 +8,11 @@ import { CategoriaService } from '../../services/categoria.service';
 import { CampanaService } from '../../services/campana.service';
 import { LocalService } from '../../services/local.service';
 import { SessionService } from '../../services/session.service';
-import { UsuarioService } from '../../services/usuario.service';
+import { DonanteResumen, UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
 import { Campana } from '../../models/campana.model';
 import { Categoria } from '../../models/categoria.model';
 import { Local, CapacidadLocal } from '../../models/local.model';
-import { Usuario } from '../../models/usuario.model';
 import { DetalleDonacionRegistroRequest } from '../../models/donacion.model';
 import { environment } from '../../../environments/environment';
 
@@ -51,7 +50,8 @@ export class DonacionFormComponent implements OnInit {
   categorias = signal<Categoria[]>([]);
   campanas = signal<Campana[]>([]);
   locales = signal<Local[]>([]);
-  donantes = signal<Usuario[]>([]);
+  donantes = signal<DonanteResumen[]>([]);
+  donantesError = signal('');
   capacidades = signal<Record<number, CapacidadLocal>>({});
 
   form = {
@@ -93,7 +93,7 @@ export class DonacionFormComponent implements OnInit {
       error: () => this.campanas.set([]),
     });
     this.cargarLocales();
-    this.recargarDonantes();
+    if (!this.esDonante) this.recargarDonantes();
   }
 
   cargarLocales() {
@@ -124,9 +124,13 @@ export class DonacionFormComponent implements OnInit {
   }
 
   recargarDonantes() {
+    this.donantesError.set('');
     this.usuarioService
-      .listar()
-      .subscribe((data) => this.donantes.set(data.filter((u) => u.nombreRol === 'Donante')));
+      .listarDonantes()
+      .subscribe({
+        next: (data) => this.donantes.set(data),
+        error: () => this.donantesError.set('No se pudo cargar la lista de donantes.'),
+      });
   }
 
   abrirDialogoDonante() {

@@ -2,6 +2,7 @@ export interface Auditoria {
   idAuditoria: number;
   idUsuario: number;
   nombreUsuario: string | null;
+  rolUsuario: string | null;
   accion: string;
   entidad: string;
   idEntidad: string | null;

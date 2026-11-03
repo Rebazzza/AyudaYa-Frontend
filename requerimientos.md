@@ -70,9 +70,9 @@
 ### Módulo 2: Registro e Intención de Donación Material
 
 #### RF11 - Ingreso de Nueva Donación
-* **Descripción:** El usuario donante contará con la función de agregar una nueva donación material donde podrá especificar e ingresar los productos que desea aportar.
-* **Responsable:** Brigitte Vasquez | **Prioridad:** Alta | **Versión:** 1.0
-* **Entregable:** Registro de donación | **Estado:** Documentado
+* **Descripción:** El donante podrá registrar una donación material para su propia cuenta. El personal autenticado podrá registrar una donación en nombre de un donante seleccionado, consultando una lista limitada a identificador, nombre y DNI. La donación siempre pertenecerá a una cuenta de donante y la auditoría identificará al trabajador que realizó el registro.
+* **Responsable:** Brigitte Vasquez | **Prioridad:** Alta | **Versión:** 1.1
+* **Entregable:** Registro de donación | **Estado:** Implementado; pendiente validación integral con BD
 * **ODS:** ODS 12 (Producción y Consumo Responsables) | **FURPS+:** F (Funcionalidad)
 
 #### RF12 - Visualización de Donaciones Ingresadas
@@ -277,9 +277,9 @@
 * **ODS:** ODS 2 (Hambre Cero) | **FURPS+:** F (Funcionalidad)
 
 #### RF45 - Registro Inmutable de Auditoría (Audit Trail)
-* **Descripción:** El sistema registrará de forma inalterable todas las modificaciones críticas (cambios de stock, anulaciones, incidencias), guardando el ID de usuario, fecha, hora e IP de la petición.
-* **Responsable:** Mauricio Rebaza | **Prioridad:** Media | **Versión:** 1.0
-* **Entregable:** Historial de auditoría | **Estado:** Documentado
+* **Descripción:** El sistema registrará de forma inalterable las modificaciones críticas (cambios de stock, anulaciones, incidencias y registro de donaciones), guardando el actor autenticado, fecha, hora, IP y valores relevantes del cambio. La consulta administrativa mostrará los eventos recientes y conservará los registros de la tabla histórica anterior.
+* **Responsable:** Mauricio Rebaza | **Prioridad:** Media | **Versión:** 1.1
+* **Entregable:** Historial de auditoría | **Estado:** Implementado; pendiente validación integral con BD
 * **ODS:** ODS 16 (Paz, Justicia e Instituciones Sólidas) | **FURPS+:** F (Funcionalidad)
 
 #### RF46 - Registro de Atributos Críticos de Productos
