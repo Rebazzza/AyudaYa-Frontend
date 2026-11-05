@@ -80,19 +80,13 @@
       </div>
 
       <div class="mt-6">
-        <iframe
-          [src]="mapUrl() | safeUrl"
-          class="w-full h-72 lg:h-96 rounded-xl border border-gray-200"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          allowfullscreen></iframe>
         <a
           [href]="mapsLink()"
           target="_blank"
           rel="noopener"
-          class="inline-flex items-center gap-2 mt-3 text-brand-orange hover:underline text-sm font-medium">
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-brand-orange hover:underline text-sm font-medium">
           <span class="material-symbols-outlined text-lg">location_on</span>
-          Ver en Google Maps
+          Abrir ubicación en Google Maps
         </a>
       </div>
     </div>

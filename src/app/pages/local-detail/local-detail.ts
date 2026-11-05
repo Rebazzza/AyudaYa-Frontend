@@ -3,12 +3,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocalService } from '../../services/local.service';
 import { SessionService } from '../../services/session.service';
 import { Local, CapacidadLocal } from '../../models/local.model';
-import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 
 @Component({
   selector: 'app-local-detail',
   standalone: true,
-  imports: [RouterLink, SafeUrlPipe],
+  imports: [RouterLink],
   templateUrl: './local-detail.html',
 })
 export class LocalDetailComponent implements OnInit {
@@ -28,15 +27,9 @@ export class LocalDetailComponent implements OnInit {
   accionError = signal('');
   aviso = signal('');
 
-  mapUrl = computed(() => {
-    const loc = this.local();
-    return loc
-      ? `https://maps.google.com/maps?q=${loc.latitud},${loc.longitud}&z=16&output=embed`
-      : '';
-  });
-
   mapsLink = computed(() => {
     const loc = this.local();
+    if (loc?.latitud == null || loc.longitud == null) return '';
     return `https://www.google.com/maps/search/?api=1&query=${loc?.latitud},${loc?.longitud}`;
   });
 

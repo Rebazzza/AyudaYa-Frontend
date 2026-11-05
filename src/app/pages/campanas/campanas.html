@@ -113,8 +113,9 @@
             @for (meta of form.metas; track $index) {
               <div class="grid grid-cols-12 gap-3 items-end">
                 <div class="col-span-12 md:col-span-5">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Categoría *</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'metaCat' + $index">Categoría *</label>
                   <select
+                    [id]="'metaCat' + $index"
                     [(ngModel)]="meta.idCategoria"
                     [name]="'metaCat' + $index"
                     required
@@ -126,9 +127,10 @@
                   </select>
                 </div>
                 <div class="col-span-6 md:col-span-3">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Objetivo *</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'metaObjetivo' + $index">Objetivo *</label>
                   <div class="relative">
                     <input
+                      [id]="'metaObjetivo' + $index"
                       type="number"
                       [(ngModel)]="meta.cantidadObjetivo"
                       [name]="'metaObjetivo' + $index"
@@ -142,9 +144,10 @@
                   </div>
                 </div>
                 <div class="col-span-6 md:col-span-3">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Mínimo crítico</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'metaMinimo' + $index">Mínimo crítico</label>
                   <div class="relative">
                     <input
+                      [id]="'metaMinimo' + $index"
                       type="number"
                       [(ngModel)]="meta.cantidadMinima"
                       [name]="'metaMinimo' + $index"

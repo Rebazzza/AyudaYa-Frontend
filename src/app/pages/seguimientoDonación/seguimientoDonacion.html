@@ -23,6 +23,7 @@
         <label class="flex-1 relative">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">pin</span>
           <input
+            aria-label="Código de seguimiento de la donación"
             name="codigo"
             [(ngModel)]="codigoInput"
             placeholder="Ingresa el código de seguimiento de tu donación"
@@ -315,21 +316,15 @@
             </div>
           </div>
 
-          @if (mapUrl()) {
+          @if (mapsLink()) {
             <div>
-              <iframe
-                [src]="mapUrl() | safeUrl"
-                class="w-full h-72 lg:h-96 rounded-xl border border-outline-variant"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                allowfullscreen></iframe>
               <a
                 [href]="mapsLink()"
                 target="_blank"
                 rel="noopener"
-                class="inline-flex items-center gap-2 mt-3 text-brand-orange hover:underline text-sm font-medium">
+                class="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-brand-orange hover:underline text-sm font-medium">
                 <span class="material-symbols-outlined text-lg">location_on</span>
-                Ver en Google Maps
+                Abrir ubicación en Google Maps
               </a>
             </div>
           } @else {

@@ -77,9 +77,10 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-on-surface-variant mb-1">Donante *</label>
+              <label class="block text-xs font-medium text-on-surface-variant mb-1" for="donante">Donante *</label>
               @if (esDonante) {
                 <input
+                  id="donante"
                   type="text"
                   [value]="user?.nombreUsuario + ' ' + (user?.apellidosUsuario ?? '')"
                   disabled
@@ -87,6 +88,7 @@
               } @else {
                 <div class="flex gap-2">
                   <select
+                    id="donante"
                     [(ngModel)]="form.idUsuario"
                     name="donante"
                     required
@@ -148,8 +150,9 @@
             @for (fila of detalles(); track $index) {
               <div class="grid grid-cols-12 gap-3 items-end">
                 <div class="col-span-12 md:col-span-4">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Categoría *</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'cat' + $index">Categoría *</label>
                   <select
+                    [id]="'cat' + $index"
                     [(ngModel)]="fila.idCategoria"
                     [name]="'cat' + $index"
                     required
@@ -161,8 +164,9 @@
                   </select>
                 </div>
                 <div class="col-span-12 md:col-span-3">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Descripción</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'desc' + $index">Descripción</label>
                   <input
+                    [id]="'desc' + $index"
                     type="text"
                     [(ngModel)]="fila.descripcionDetalle"
                     [name]="'desc' + $index"
@@ -171,9 +175,10 @@
                     class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-brand-orange" />
                 </div>
                 <div class="col-span-6 md:col-span-3">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Cantidad declarada *</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'cant' + $index">Cantidad declarada *</label>
                   <div class="relative">
                     <input
+                      [id]="'cant' + $index"
                       type="number"
                       [(ngModel)]="fila.cantidadDeclarada"
                       [name]="'cant' + $index"
@@ -187,8 +192,9 @@
                   </div>
                 </div>
                 <div class="col-span-4 md:col-span-1">
-                  <label class="block text-xs font-medium text-on-surface-variant mb-1">Vence</label>
+                  <label class="block text-xs font-medium text-on-surface-variant mb-1" [attr.for]="'venc' + $index">Vence</label>
                   <input
+                    [id]="'venc' + $index"
                     type="date"
                     [(ngModel)]="fila.fechaVencimiento"
                     [name]="'venc' + $index"

@@ -12,7 +12,6 @@ import { Donacion, TrackingResponse } from '../../models/donacion.model';
 import { HistorialEstado } from '../../models/historial.model';
 import { ImagenEvidencia } from '../../models/imagen.model';
 import { UbicacionActual } from '../../models/ubicacion.model';
-import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 
 interface Paso {
   estado: string;
@@ -23,7 +22,7 @@ interface Paso {
 @Component({
   selector: 'app-seguimiento-donacion',
   standalone: true,
-  imports: [FormsModule, DatePipe, RouterLink, SafeUrlPipe],
+  imports: [FormsModule, DatePipe, RouterLink],
   templateUrl: './seguimientoDonacion.html',
 })
 export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
@@ -65,13 +64,6 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
   comprobanteError = signal('');
   correoAviso = signal('');
   bajandoDetalle = signal<number | null>(null);
-
-  mapUrl = computed(() => {
-    const u = this.ubicacion();
-    return u?.latitudGPS != null && u.longitudGPS != null
-      ? `https://maps.google.com/maps?q=${u.latitudGPS},${u.longitudGPS}&z=16&output=embed`
-      : '';
-  });
 
   /**
    * RF40 · Ubicación actual del paquete: el centro donde se escaneó por última

@@ -18,6 +18,7 @@
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">qr_code_2</span>
       <input
         id="inputCodigoBusqueda"
+        aria-label="Código de seguimiento"
         type="text"
         [(ngModel)]="codigoBusqueda"
         (keyup.enter)="buscarPorCodigo()"
@@ -44,6 +45,7 @@
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
       <input
         id="inputBusquedaDonaciones"
+        aria-label="Buscar donaciones"
         type="text"
         [(ngModel)]="busqueda"
         (ngModelChange)="reiniciarPagina()"
