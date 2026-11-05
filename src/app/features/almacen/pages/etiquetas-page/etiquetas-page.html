@@ -55,7 +55,9 @@
           <thead>
             <tr class="bg-surface-container text-on-surface-variant text-left">
               <th class="px-4 py-3 font-semibold w-10">
+                <label class="sr-only" for="seleccionarTodasEtiquetas">Seleccionar todas las donaciones</label>
                 <input
+                  id="seleccionarTodasEtiquetas"
                   type="checkbox"
                   [checked]="todasSeleccionadas()"
                   (change)="toggleTodas($event)"
@@ -73,7 +75,11 @@
             @for (d of paginaDonaciones.items(); track d.idDonacion) {
               <tr class="{{ seleccionadas().includes(d.idDonacion) ? 'bg-brand-orange/5' : '' }}">
                 <td class="px-4 py-3">
+                  <label class="sr-only" [attr.for]="'etiquetaDonacion' + d.idDonacion">
+                    Seleccionar donación {{ d.codigoSeguimiento }}
+                  </label>
                   <input
+                    [id]="'etiquetaDonacion' + d.idDonacion"
                     type="checkbox"
                     [checked]="seleccionadas().includes(d.idDonacion)"
                     (change)="toggle(d)"

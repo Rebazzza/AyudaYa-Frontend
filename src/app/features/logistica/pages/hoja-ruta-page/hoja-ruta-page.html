@@ -165,8 +165,8 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-on-surface-variant mb-1">Método de confirmación</label>
-              <div class="inline-flex rounded-lg border border-outline-variant overflow-hidden">
+              <p class="block text-xs font-medium text-on-surface-variant mb-1">Método de confirmación</p>
+              <div class="inline-flex rounded-lg border border-outline-variant overflow-hidden" role="group" aria-label="Método de confirmación">
                 <button
                   type="button"
                   (click)="modoCodigo.set(false)"
@@ -192,7 +192,7 @@
           <div class="mt-5">
             @if (!modoCodigo()) {
               <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-medium text-on-surface-variant">Firma del representante</label>
+                <p class="text-xs font-medium text-on-surface-variant">Firma del representante</p>
                 <button type="button" (click)="limpiarFirma()" class="inline-flex items-center gap-1 text-xs font-semibold text-error hover:underline">
                   <span class="material-symbols-outlined text-sm">ink_eraser</span>
                   Limpiar
@@ -207,6 +207,8 @@
                   (pointermove)="dibujarFirma($event)"
                   (pointerup)="terminarFirma()"
                   (pointerleave)="terminarFirma()"
+                  aria-label="Área para la firma del representante"
+                  tabindex="0"
                   class="w-full h-48 rounded-xl border-2 border-dashed border-outline-variant bg-white touch-none cursor-crosshair"></canvas>
                 @if (!firmaCapturada()) {
                   <span class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-on-surface-variant/60">
@@ -258,7 +260,7 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-on-surface-variant mb-1">Coordenadas GPS</label>
+              <p class="block text-xs font-medium text-on-surface-variant mb-1">Coordenadas GPS</p>
               <button
                 type="button"
                 (click)="obtenerUbicacion()"
