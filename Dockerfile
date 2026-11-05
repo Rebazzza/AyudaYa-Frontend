@@ -19,8 +19,8 @@ WORKDIR /app
 # mientras package.json/package-lock.json no cambien, no se reinstalan deps.
 COPY package.json package-lock.json ./
 
-# Instalar dependencias del proyecto.
-RUN npm install
+# Instalación reproducible desde el lockfile, sin ejecutar scripts de dependencias.
+RUN npm ci --ignore-scripts
 
 # Copiar el resto del código fuente (src/, public/, angular.json, tsconfig, etc.)
 COPY . .
