@@ -18,7 +18,7 @@
           <input
             id="codigoSeguimiento"
             type="text"
-            placeholder="Ej. AYU-8F3K2M1Q9X7C4A"
+            placeholder="Ej. DON-2026-A1B2C3"
             [value]="codigoInput()"
             (input)="onCodigoChange($event)"
             (keydown.enter)="buscarPorCodigo()"
@@ -61,7 +61,7 @@
   @if (seleccion()) {
     <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <article class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-5">
-        <p class="text-xs font-medium text-on-surface-variant uppercase">Total Items</p>
+        <p class="text-xs font-medium text-on-surface-variant uppercase">Total declarado</p>
         <p class="text-3xl font-bold text-on-surface mt-1">{{ totalItems() }}</p>
         <p class="text-xs text-on-surface-variant mt-1">{{ filas().length }} insumos declarados</p>
       </article>
@@ -152,6 +152,42 @@
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 space-y-4">
+      <div>
+        <h2 class="font-semibold text-on-surface">Ítems adicionales recibidos</h2>
+        <p class="text-xs text-on-surface-variant">Registra productos entregados que no estaban en la declaración. Quedarán como excedentes en el historial.</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-3">
+        <label class="text-xs text-on-surface-variant">Categoría
+          <select [(ngModel)]="adicionalForm.idCategoria" class="block w-full mt-1 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface">
+            <option [ngValue]="0">Selecciona una categoría</option>
+            @for (categoria of categorias(); track categoria.idCategoria) {
+              <option [ngValue]="categoria.idCategoria">{{ categoria.nombreCategoria }} ({{ categoria.unidadMedCate }})</option>
+            }
+          </select>
+        </label>
+        <label class="text-xs text-on-surface-variant">Descripción
+          <input type="text" maxlength="200" [(ngModel)]="adicionalForm.descripcionDetalle" class="block w-full mt-1 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface" />
+        </label>
+        <label class="text-xs text-on-surface-variant">Cantidad recibida
+          <input type="number" min="0.01" max="99999999.99" step="0.01" [(ngModel)]="adicionalForm.cantidadVerificada" class="block w-full mt-1 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest text-on-surface" />
+        </label>
+      </div>
+      <button type="button" (click)="agregarAdicional()" class="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold hover:bg-surface-container">
+        <span class="material-symbols-outlined text-base">add</span> Agregar ítem
+      </button>
+      @if (adicionales().length > 0) {
+        <ul class="space-y-2">
+          @for (item of adicionales(); track $index; let i = $index) {
+            <li class="flex items-center justify-between gap-3 rounded-lg bg-surface-container p-3 text-sm">
+              <span class="break-words">{{ item.categoria }} · {{ item.descripcionDetalle || 'Sin descripción' }} · {{ item.cantidadVerificada }} recibidos</span>
+              <button type="button" (click)="quitarAdicional(i)" class="text-error" aria-label="Quitar ítem adicional"><span class="material-symbols-outlined">close</span></button>
+            </li>
+          }
+        </ul>
+      }
     </section>
 
     <!-- Evidencia fotográfica (RF32 / RF34) -->

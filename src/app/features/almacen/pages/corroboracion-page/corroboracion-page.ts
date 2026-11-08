@@ -4,6 +4,8 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { DonacionService } from '../../../../services/donacion.service';
+import { CategoriaService } from '../../../../services/categoria.service';
+import { Categoria } from '../../../../models/categoria.model';
 import { ImagenService } from '../../../../services/imagen.service';
 import { AlmacenService } from '../../../../services/almacen.service';
 import { TrabajadorService } from '../../../../services/trabajador.service';
@@ -19,6 +21,13 @@ interface FilaCorroboracion {
   fechaVencimiento: string | null;
 }
 
+interface ItemAdicional {
+  idCategoria: number;
+  categoria: string;
+  descripcionDetalle: string;
+  cantidadVerificada: number;
+}
+
 type Incidencia = 'EXCEDENTE' | 'FALTANTE';
 
 @Component({
@@ -29,6 +38,7 @@ type Incidencia = 'EXCEDENTE' | 'FALTANTE';
 })
 export class CorroboracionPageComponent implements OnInit {
   private donacionService = inject(DonacionService);
+  private categoriaService = inject(CategoriaService);
   private imagenService = inject(ImagenService);
   private almacenService = inject(AlmacenService);
   private trabajadorService = inject(TrabajadorService);
@@ -39,6 +49,11 @@ export class CorroboracionPageComponent implements OnInit {
   codigoInput = signal('');
   seleccion = signal<Donacion | null>(null);
   filas = signal<FilaCorroboracion[]>([]);
+  categorias = signal<Categoria[]>([]);
+  adicionales = signal<ItemAdicional[]>([]);
+  adicionalForm: { idCategoria: number; descripcionDetalle: string; cantidadVerificada: number | null } = {
+    idCategoria: 0, descripcionDetalle: '', cantidadVerificada: null,
+  };
 
   cargandoPendientes = signal(true);
   codigoError = signal('');
@@ -68,7 +83,8 @@ export class CorroboracionPageComponent implements OnInit {
   );
 
   conIncidencias = computed(
-    () => this.filas().filter((f) => f.recibido != null && f.recibido !== f.prometido).length,
+    () => this.filas().filter((f) => f.recibido != null && f.recibido !== f.prometido).length
+      + this.adicionales().length,
   );
 
   incidenciaOf(fila: FilaCorroboracion): Incidencia | null {
@@ -88,6 +104,10 @@ export class CorroboracionPageComponent implements OnInit {
   huecosEvidencia = computed(() => this.maxEvidencias - this.evidencias().length);
 
   ngOnInit() {
+    this.categoriaService.listarActivas().subscribe({
+      next: data => this.categorias.set(data),
+      error: () => this.error.set('No se pudieron cargar las categorías para ítems adicionales.'),
+    });
     // Atajo desde el alta de donación: /almacen/verificar?codigo=AYU-XXX
     // precarga el código y selecciona la donación sin buscarla a mano.
     const codigo = this.route.snapshot.queryParamMap.get('codigo')?.trim().toUpperCase();
@@ -163,6 +183,7 @@ export class CorroboracionPageComponent implements OnInit {
   cargarDonacion(d: Donacion) {
     this.limpiar();
     this.seleccion.set(d);
+    this.adicionales.set([]);
     this.filas.set(
       d.detalles.map((det) => ({
         idDetalle: det.idDetalle,
@@ -183,6 +204,29 @@ export class CorroboracionPageComponent implements OnInit {
       rows.map((r) => (r.idDetalle === fila.idDetalle ? { ...r, recibido: limpio } : r)),
     );
     this.error.set('');
+  }
+
+  agregarAdicional() {
+    const f = this.adicionalForm;
+    const categoria = this.categorias().find(c => c.idCategoria === Number(f.idCategoria));
+    if (!categoria || f.cantidadVerificada == null || !Number.isFinite(f.cantidadVerificada)
+        || f.cantidadVerificada <= 0 || f.cantidadVerificada > 99999999.99
+        || Math.abs(Math.round(f.cantidadVerificada * 100) - f.cantidadVerificada * 100) > 1e-7) {
+      this.error.set('Selecciona una categoría y una cantidad mayor a cero con hasta dos decimales.');
+      return;
+    }
+    this.adicionales.update(items => [...items, {
+      idCategoria: categoria.idCategoria,
+      categoria: categoria.nombreCategoria,
+      descripcionDetalle: f.descripcionDetalle.trim().slice(0, 200),
+      cantidadVerificada: f.cantidadVerificada!,
+    }]);
+    this.adicionalForm = { idCategoria: 0, descripcionDetalle: '', cantidadVerificada: null };
+    this.error.set('');
+  }
+
+  quitarAdicional(index: number) {
+    this.adicionales.update(items => items.filter((_, i) => i !== index));
   }
 
   onSeleccionarEvidencias(event: Event) {
@@ -296,6 +340,8 @@ export class CorroboracionPageComponent implements OnInit {
         latitud: this.lat() ?? undefined,
         longitud: this.lon() ?? undefined,
         detalles,
+        adicionales: this.adicionales().map(({ idCategoria, descripcionDetalle, cantidadVerificada }) =>
+          ({ idCategoria, descripcionDetalle, cantidadVerificada })),
       })
       .subscribe({
         next: () => {
@@ -331,6 +377,7 @@ export class CorroboracionPageComponent implements OnInit {
     this.pendientes.update((list) => list.filter((x) => x.idDonacion !== d.idDonacion));
     this.seleccion.set(null);
     this.filas.set([]);
+    this.adicionales.set([]);
     this.previews().forEach((p) => URL.revokeObjectURL(p));
     this.evidencias.set([]);
     this.previews.set([]);

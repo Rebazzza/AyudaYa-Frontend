@@ -10,6 +10,11 @@ export interface CorroboracionRequest {
   latitud?: number;
   longitud?: number;
   detalles: DetalleCorroboracionRequest[];
+  adicionales?: {
+    idCategoria: number;
+    descripcionDetalle: string;
+    cantidadVerificada: number;
+  }[];
 }
 
 export interface ResumenInventario {
