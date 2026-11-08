@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponseDTO } from '../models/api-response.model';
-import { Usuario } from '../models/usuario.model';
+import { Usuario, RegisterRequest } from '../models/usuario.model';
 
 export interface DonanteResumen {
   idUsuario: number;
@@ -20,6 +20,12 @@ export class UsuarioService {
   listar(): Observable<Usuario[]> {
     return this.http
       .get<ApiResponseDTO<Usuario[]>>(this.base)
+      .pipe(map((res) => res.data));
+  }
+
+  crear(data: RegisterRequest): Observable<Usuario> {
+    return this.http
+      .post<ApiResponseDTO<Usuario>>(this.base, data)
       .pipe(map((res) => res.data));
   }
 

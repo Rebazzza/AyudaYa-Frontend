@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TrabajadorService } from '../../services/trabajador.service';
 import { LocalService } from '../../services/local.service';
 import { UsuarioService } from '../../services/usuario.service';
-import { AuthService } from '../../services/auth.service';
+import { Auditoria } from '../../models/auditoria.model';
 import { Trabajador, TrabajadorRequest } from '../../models/trabajador.model';
 import { Local } from '../../models/local.model';
 import { Usuario } from '../../models/usuario.model';
@@ -20,7 +20,6 @@ export class TrabajadoresComponent implements OnInit {
   private trabajadorService = inject(TrabajadorService);
   private localService = inject(LocalService);
   private usuarioService = inject(UsuarioService);
-  private auth = inject(AuthService);
 
   trabajadores = signal<Trabajador[]>([]);
   locales = signal<Local[]>([]);
@@ -28,14 +27,20 @@ export class TrabajadoresComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
   desactivandoId = signal<number | null>(null);
-  eliminandoId = signal<number | null>(null);
+  reactivandoId = signal<number | null>(null);
+  mostrarInactivos = signal(false);
+  historial = signal<Auditoria[]>([]);
+  historialTrabajador = signal<Trabajador | null>(null);
+  cargandoHistorial = signal(false);
   error = signal('');
   success = signal('');
   showForm = signal(false);
   editandoId = signal<number | null>(null);
 
   pagina = signal(0);
-  paginaTrabajadores = paginar(this.trabajadores, this.pagina, 10);
+  trabajadoresVisibles = computed(() => this.trabajadores().filter(t =>
+    this.mostrarInactivos() ? t.estadoActivo === false : t.estadoActivo !== false));
+  paginaTrabajadores = paginar(this.trabajadoresVisibles, this.pagina, 10);
 
   dialogoUsuario = signal(false);
   creandoUsuario = signal(false);
@@ -62,7 +67,8 @@ export class TrabajadoresComponent implements OnInit {
   usuariosDisponibles = computed(() =>
     this.usuarios().filter((u) => {
       const editado = this.trabajadores().find((t) => t.idTrabajador === this.editandoId());
-      return u.idUsuario === editado?.idUsuario || !this.usuariosAsignados().has(u.idUsuario);
+      return u.nombreRol !== 'Donante' &&
+        (u.idUsuario === editado?.idUsuario || !this.usuariosAsignados().has(u.idUsuario));
     }),
   );
 
@@ -143,17 +149,10 @@ export class TrabajadoresComponent implements OnInit {
     });
   }
 
-  /**
-   * RF10 — baja lógica del trabajador. El backend marca `estadoActivo = false`
-   * sin borrar el registro físico. No existe endpoint de reactivación todavía,
-   * por lo que la confirmación advierte que la acción no se puede deshacer.
-   */
   desactivar(t: Trabajador) {
     if (this.desactivandoId() !== null) return;
 
-    const mensaje =
-      `¿Desactivar a ${t.nombreCompletoUsuario}? Dejará de figurar como personal activo del local. ` +
-      'El registro NO se elimina, pero por ahora no existe forma de reactivarlo desde la aplicación.';
+    const mensaje = `¿Desactivar a ${t.nombreCompletoUsuario}? Se ocultará de la lista de personal activo y se conservará su historial.`;
     if (!confirm(mensaje)) return;
 
     this.error.set('');
@@ -173,33 +172,36 @@ export class TrabajadoresComponent implements OnInit {
     });
   }
 
-  /**
-   * Borrado físico del vínculo de trabajador (DELETE /trabajadores/{id}).
-   * El backend desvincula historial de estados y donaciones antes de borrar
-   * (antes el 500 por clave foránea salía sin cabeceras CORS y el navegador
-   * lo reportaba como error de CORS). La cuenta del usuario NO se elimina.
-   */
-  eliminar(t: Trabajador) {
-    if (this.desactivandoId() !== null || this.eliminandoId() !== null) return;
-
-    const mensaje =
-      `¿Eliminar el registro de trabajador de ${t.nombreCompletoUsuario}? ` +
-      'Se borrará su vínculo con el local. La cuenta de usuario NO se elimina.';
-    if (!confirm(mensaje)) return;
-
+  reactivar(t: Trabajador) {
+    if (this.reactivandoId() !== null) return;
     this.error.set('');
     this.success.set('');
-    this.eliminandoId.set(t.idTrabajador);
-
-    this.trabajadorService.eliminar(t.idTrabajador).subscribe({
+    this.reactivandoId.set(t.idTrabajador);
+    this.trabajadorService.reactivar(t.idTrabajador).subscribe({
       next: () => {
-        this.eliminandoId.set(null);
-        this.success.set('Trabajador eliminado correctamente. La cuenta de usuario se conserva.');
+        this.reactivandoId.set(null);
+        this.success.set('Trabajador reactivado correctamente.');
         this.cargar();
       },
       error: (err) => {
-        this.eliminandoId.set(null);
-        this.error.set(err.error?.message || 'Error al eliminar el trabajador');
+        this.reactivandoId.set(null);
+        this.error.set(err.error?.message || 'Error al reactivar el trabajador');
+      },
+    });
+  }
+
+  verHistorial(t: Trabajador) {
+    this.historialTrabajador.set(t);
+    this.historial.set([]);
+    this.cargandoHistorial.set(true);
+    this.trabajadorService.historial(t.idTrabajador).subscribe({
+      next: eventos => {
+        this.historial.set(eventos);
+        this.cargandoHistorial.set(false);
+      },
+      error: err => {
+        this.cargandoHistorial.set(false);
+        this.error.set(err.error?.message || 'Error al consultar el historial');
       },
     });
   }
@@ -246,7 +248,7 @@ export class TrabajadoresComponent implements OnInit {
 
     this.creandoUsuario.set(true);
     const body = { ...f, 'contraseña': this.usuarioContrasena, tipoRegistro: 'PERSONAL_APOYO' as const };
-    this.auth.register(body).subscribe({
+    this.usuarioService.crear(body).subscribe({
       next: (usuario) => {
         this.creandoUsuario.set(false);
         this.dialogoUsuario.set(false);

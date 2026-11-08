@@ -190,7 +190,7 @@ export class DashboardComponent implements OnInit {
 
     this.localService.listar().subscribe((data) => this.totalLocales.set(data.length));
     this.categoriaService.listar().subscribe((data) => this.totalCategorias.set(data.length));
-    this.trabajadorService.listar().subscribe((data) => this.totalTrabajadores.set(data.length));
+    this.trabajadorService.listar().subscribe((data) => this.totalTrabajadores.set(data.filter(t => t.estadoActivo !== false).length));
 
     if (this.esTrabajador) {
       this.campanaService.alertasStock().subscribe({

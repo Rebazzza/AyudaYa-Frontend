@@ -21,6 +21,17 @@
     <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">{{ error() }}</div>
   }
 
+  <div class="flex gap-2 mb-4" role="group" aria-label="Estado de trabajadores">
+    <button type="button" (click)="mostrarInactivos.set(false); pagina.set(0)"
+      [attr.aria-pressed]="!mostrarInactivos()"
+      class="px-4 py-2 rounded-lg text-sm border border-outline-variant"
+      [class.bg-primary-fixed]="!mostrarInactivos()">Activos</button>
+    <button type="button" (click)="mostrarInactivos.set(true); pagina.set(0)"
+      [attr.aria-pressed]="mostrarInactivos()"
+      class="px-4 py-2 rounded-lg text-sm border border-outline-variant"
+      [class.bg-primary-fixed]="mostrarInactivos()">Inactivos</button>
+  </div>
+
   <!-- Formulario crear/editar -->
   @if (showForm()) {
     <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6 mb-6">
@@ -51,7 +62,7 @@
               Nuevo usuario
             </button>
           </div>
-          <p class="text-xs text-on-surface-variant mt-1">Solo se muestran usuarios que aún no son trabajadores.</p>
+          <p class="text-xs text-on-surface-variant mt-1">Solo se muestran cuentas de personal que aún no son trabajadores.</p>
         </div>
         <div>
           <label class="block text-xs font-medium text-on-surface-variant mb-1" for="localTrab">Local *</label>
@@ -130,8 +141,8 @@
         }
       </div>
     </div>
-  } @else if (trabajadores().length === 0) {
-    <div class="text-center py-16 text-on-surface-variant">No hay trabajadores registrados.</div>
+  } @else if (trabajadoresVisibles().length === 0) {
+    <div class="text-center py-16 text-on-surface-variant">No hay trabajadores {{ mostrarInactivos() ? 'inactivos' : 'activos' }}.</div>
   } @else {
     <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
@@ -163,19 +174,22 @@
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button
-                      (click)="eliminar(t)"
-                      [disabled]="eliminandoId() !== null || desactivandoId() !== null"
-                      class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition disabled:opacity-50"
-                      title="Eliminar trabajador (borra solo el registro; la cuenta de usuario se conserva)">
-                      <span class="material-symbols-outlined text-lg">{{ eliminandoId() === t.idTrabajador ? 'progress_activity' : 'delete' }}</span>
-                    </button>
-                    <button
-                      (click)="desactivar(t)"
-                      [disabled]="desactivandoId() !== null || eliminandoId() !== null"
-                      class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition disabled:opacity-50"
-                      title="Desactivar trabajador (baja lógica, no elimina el registro)">
-                      <span class="material-symbols-outlined text-lg">{{ desactivandoId() === t.idTrabajador ? 'progress_activity' : 'person_off' }}</span>
+                    @if (t.estadoActivo !== false) {
+                      <button (click)="desactivar(t)" [disabled]="desactivandoId() !== null"
+                        class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition disabled:opacity-50"
+                        title="Desactivar trabajador" aria-label="Desactivar trabajador">
+                        <span class="material-symbols-outlined text-lg">{{ desactivandoId() === t.idTrabajador ? 'progress_activity' : 'person_off' }}</span>
+                      </button>
+                    } @else {
+                      <button (click)="reactivar(t)" [disabled]="reactivandoId() !== null"
+                        class="p-2 rounded-lg text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition disabled:opacity-50"
+                        title="Reactivar trabajador" aria-label="Reactivar trabajador">
+                        <span class="material-symbols-outlined text-lg">{{ reactivandoId() === t.idTrabajador ? 'progress_activity' : 'person_check' }}</span>
+                      </button>
+                    }
+                    <button (click)="verHistorial(t)" class="p-2 rounded-lg text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition"
+                      title="Ver historial" aria-label="Ver historial del trabajador">
+                      <span class="material-symbols-outlined text-lg">history</span>
                     </button>
                     <button (click)="abrirEdicion(t)" class="p-2 rounded-lg text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition" title="Editar">
                       <span class="material-symbols-outlined text-lg">edit</span>
@@ -189,13 +203,40 @@
       </div>
       <div class="border-t border-outline-variant/60">
         <app-pagination
-          [total]="trabajadores().length"
+          [total]="trabajadoresVisibles().length"
           [(pagina)]="pagina"
           unidad="trabajadores" />
       </div>
     </div>
   }
 </div>
+
+@if (historialTrabajador(); as trabajador) {
+  <div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" (click)="historialTrabajador.set(null)">
+    <div class="w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl bg-surface-container-lowest p-6" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">Historial de {{ trabajador.nombreCompletoUsuario }}</h2>
+        <button type="button" (click)="historialTrabajador.set(null)" aria-label="Cerrar historial"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      @if (cargandoHistorial()) {
+        <p class="text-sm text-on-surface-variant">Cargando historial...</p>
+      } @else if (historial().length === 0) {
+        <p class="text-sm text-on-surface-variant">No hay cambios registrados en la auditoría.</p>
+      } @else {
+        <ol class="space-y-3">
+          @for (evento of historial(); track evento.idAuditoria) {
+            <li class="border border-outline-variant rounded-xl p-3 text-sm">
+              <div class="font-semibold">{{ evento.accion.replaceAll('_', ' ') }} · {{ evento.fechaHora | date:'dd/MM/yyyy HH:mm' }}</div>
+              <div class="text-on-surface-variant">Por {{ evento.nombreUsuario || 'Sistema' }}</div>
+              @if (evento.valoresAnteriores) { <div class="mt-2 break-words">Antes: {{ evento.valoresAnteriores }}</div> }
+              @if (evento.valoresNuevos) { <div class="break-words">Después: {{ evento.valoresNuevos }}</div> }
+            </li>
+          }
+        </ol>
+      }
+    </div>
+  </div>
+}
 
 <!-- Dialog: nuevo usuario -->
 @if (dialogoUsuario()) {
