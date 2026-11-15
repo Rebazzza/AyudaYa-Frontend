@@ -7,12 +7,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/dashboard/dashboard').then((m) => m.DashboardComponent),
     canActivate: [authGuard],
+    data: { preload: true },
   },
   {
     path: 'login',
     loadComponent: () =>
       import('./pages/login/login').then((m) => m.LoginComponent),
     canActivate: [guestGuard],
+    data: { preload: true },
   },
   {
     path: 'registro',
@@ -25,6 +27,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/home/home').then((m) => m.HomeComponent),
     canActivate: [authGuard],
+    data: { preload: true },
   },
   {
     path: 'locales/nuevo',
@@ -49,6 +52,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/donaciones/donaciones').then((m) => m.DonacionesComponent),
     canActivate: [authGuard],
+    data: { preload: true },
   },
   {
     path: 'donaciones/mis-donaciones',
