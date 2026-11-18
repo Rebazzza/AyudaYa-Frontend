@@ -61,11 +61,16 @@
           <p>
             <span class="font-medium text-gray-700">Donaciones en almacén:</span>
             {{ cap.donacionesEnAlmacen }}
-            @if (porcentajeOcupacion() != null) { ({{ porcentajeOcupacion() }}%) }
           </p>
+          <p><span class="font-medium text-gray-700">Volumen medido en almacén:</span> {{ cap.volumenOcupadoM3 }} m³
+            @if (porcentajeOcupacion() != null) { ({{ porcentajeOcupacion() }}% de la capacidad) }
+          </p>
+          @if (cap.donacionesSinVolumen > 0) {
+            <p class="text-amber-700">{{ cap.donacionesSinVolumen }} donación(es) antigua(s) carecen de medición. La ocupación total aún es desconocida y se requiere medirlas antes de recibir nuevas donaciones.</p>
+          }
           @if (cap.lleno) {
             <div class="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3">
-              El local {{ cap.nombreLocal }} alcanzó su capacidad máxima y no puede recibir nuevas donaciones.
+              El local {{ cap.nombreLocal }} alcanzó su capacidad medida y no puede recibir nuevas donaciones.
             </div>
           }
         }
@@ -90,5 +95,26 @@
         </a>
       </div>
     </div>
+
+    @if (esAdmin && pendientesMedicion().length > 0) {
+      <section class="mt-6 bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-lg font-bold text-gray-800">Mediciones históricas pendientes</h2>
+        <p class="text-sm text-gray-600 mt-1">Mide físicamente cada donación antigua almacenada para habilitar nuevas recepciones.</p>
+        @if (medicionError()) { <p class="text-sm text-red-600 mt-3">{{ medicionError() }}</p> }
+        <div class="mt-4 space-y-3">
+          @for (donacion of pendientesMedicion(); track donacion.idDonacion) {
+            <div class="flex flex-wrap items-center gap-3 border border-gray-200 rounded-lg p-3">
+              <span class="font-medium text-sm">{{ donacion.codigoSeguimiento }}</span>
+              <label class="text-sm">Volumen (m³)
+                <input type="number" min="0.001" step="0.001" max="999999999.999"
+                  [(ngModel)]="volumenes[donacion.idDonacion]" class="ml-2 w-32 border rounded px-2 py-1" />
+              </label>
+              <button type="button" (click)="registrarVolumen(donacion)" [disabled]="midiendo() != null"
+                class="bg-brand-orange text-white text-sm rounded px-3 py-2 disabled:opacity-50">Guardar medición</button>
+            </div>
+          }
+        </div>
+      </section>
+    }
   }
 </div>

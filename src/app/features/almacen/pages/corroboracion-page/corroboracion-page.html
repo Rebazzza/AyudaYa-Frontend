@@ -190,6 +190,14 @@
       }
     </section>
 
+    <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
+      <label for="volumenRecibido" class="block font-semibold text-on-surface">Volumen físico recibido (m³)</label>
+      <p class="text-xs text-on-surface-variant mt-1">Mide el espacio que ocupa la donación completa. Admite hasta tres decimales.</p>
+      <input id="volumenRecibido" type="number" min="0.001" step="0.001" max="999999999.999"
+             [ngModel]="volumenVerificadoM3()" (ngModelChange)="volumenVerificadoM3.set($event)"
+             class="mt-3 w-40 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-lowest" />
+    </section>
+
     <!-- Evidencia fotográfica (RF32 / RF34) -->
     <section class="rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-sm p-6">
       <h2 class="font-semibold text-on-surface mb-3 flex items-center gap-2">
@@ -254,7 +262,7 @@
         }
       </button>
       @if (!puedeValidar() && filas().length > 0) {
-        <span class="text-xs text-on-surface-variant">Ingresa el monto "Recibido (Real)" en todos los insumos para habilitar la confirmación.</span>
+        <span class="text-xs text-on-surface-variant">Ingresa las cantidades recibidas y el volumen medido en m³.</span>
       }
     </div>
   }

@@ -6,7 +6,7 @@ import { ApiResponseDTO } from '../models/api-response.model';
 
 /** Respuesta del backend para la validación biométrica de las dos caras del DNI (TC-FUNC-03). */
 export interface ValidacionDni {
-  estado: string;
+  estado: 'PROCESADO' | 'NO_DISPONIBLE';
   anversoValido: boolean;
   reversoValido: boolean;
   dniVerificado: boolean;
@@ -35,9 +35,11 @@ export class IaService {
     const form = new FormData();
     form.append('anverso', anverso, anverso.name);
     form.append('reverso', reverso, reverso.name);
-    if (idUsuario != null) form.append('idUsuario', String(idUsuario));
+    const url = idUsuario != null
+      ? `${this.base}/verificar-dni-completo?idUsuario=${idUsuario}`
+      : `${this.base}/verificar-dni-completo`;
     return this.http
-      .post<ApiResponseDTO<ValidacionDni>>(`${this.base}/verificar-dni-completo`, form,
+      .post<ApiResponseDTO<ValidacionDni>>(url, form,
         token ? { headers: { Authorization: `Bearer ${token}` } } : {})
       .pipe(map((res) => res.data));
   }

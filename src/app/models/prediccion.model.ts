@@ -11,6 +11,7 @@ export interface PrediccionEscasez {
   diasAutonomia: number | null;
   nivelRiesgo: NivelRiesgo;
   critico: boolean;
+  origenEstimacion?: 'MODELO_SINTETICO' | 'CALCULO_DIRECTO' | 'SIN_CONSUMO' | 'SIN_STOCK' | 'NO_ESPECIFICADO';
   mensaje: string;
 }
 

@@ -1,0 +1,28 @@
+<main class="max-w-xl mx-auto px-4 py-10">
+  <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+    <a routerLink="/dashboard" class="text-sm text-primary-container font-semibold">← Volver al panel</a>
+    <h1 class="text-2xl font-semibold text-on-surface mt-5">Evaluar fotos del DNI</h1>
+    <p class="text-sm text-on-surface-variant mt-2">Esta evaluación revisa la legibilidad de las fotos. No confirma la autenticidad del documento ni la identidad de su titular. Las imágenes no se conservan.</p>
+
+    @if (verificado()) {
+      <p role="status" class="mt-6 rounded-lg bg-emerald-50 text-emerald-900 p-4">Tus fotos ya superaron la evaluación de legibilidad.</p>
+    } @else {
+      <div class="grid gap-4 mt-6">
+        <label class="text-sm font-medium text-on-surface">Frente del DNI
+          <input type="file" accept="image/jpeg,image/png,image/webp" (change)="seleccionar($event, 'anverso')" class="block w-full mt-2 text-sm" />
+          @if (anverso()) { <span class="text-xs text-on-surface-variant">{{ anverso()!.name }}</span> }
+        </label>
+        <label class="text-sm font-medium text-on-surface">Reverso del DNI
+          <input type="file" accept="image/jpeg,image/png,image/webp" (change)="seleccionar($event, 'reverso')" class="block w-full mt-2 text-sm" />
+          @if (reverso()) { <span class="text-xs text-on-surface-variant">{{ reverso()!.name }}</span> }
+        </label>
+        <button type="button" (click)="evaluar()" [disabled]="procesando() || !anverso() || !reverso()"
+          class="bg-primary-container text-white rounded-lg px-4 py-2 font-semibold disabled:opacity-50">
+          {{ procesando() ? 'Evaluando...' : 'Evaluar fotos' }}
+        </button>
+      </div>
+    }
+    @if (error()) { <p role="alert" class="mt-4 rounded-lg bg-error-container text-on-error-container p-3 text-sm">{{ error() }}</p> }
+    @if (mensaje()) { <p role="status" class="mt-4 rounded-lg bg-emerald-50 text-emerald-900 p-3 text-sm">{{ mensaje() }}</p> }
+  </section>
+</main>

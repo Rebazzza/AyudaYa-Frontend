@@ -23,6 +23,12 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
+    path: 'cuenta/evaluar-dni',
+    loadComponent: () =>
+      import('./pages/evaluar-dni/evaluar-dni').then((m) => m.EvaluarDniComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'locales',
     loadComponent: () =>
       import('./pages/home/home').then((m) => m.HomeComponent),

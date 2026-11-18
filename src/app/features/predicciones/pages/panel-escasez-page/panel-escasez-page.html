@@ -6,7 +6,7 @@
         Panel de escasez
       </h1>
       <p class="text-sm text-on-surface-variant">
-        Proyección de autonomía y riesgo de desabastecimiento por categoría (RF26 - RF29).
+        Estimación de autonomía a partir del stock y las salidas registradas. El modelo actual usa datos sintéticos; estas cifras no son una predicción de demanda validada.
       </p>
     </div>
     <button
@@ -129,6 +129,11 @@
           {{ nivel.texto }}: {{ conteoRiesgos()[nivel.valor] }}
         </span>
       }
+      @if (sinConsumo().length > 0) {
+        <span class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant">
+          Sin datos de consumo: {{ sinConsumo().length }}
+        </span>
+      }
       <span class="sm:ml-auto text-sm text-on-surface-variant">
         {{ predicciones().length }} {{ predicciones().length === 1 ? 'categoría' : 'categorías' }} ·
         {{ stockTotal() }} unidades en stock
@@ -139,7 +144,7 @@
     @if (predicciones().length > 0) {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (prediccion of predicciones(); track prediccion.idCategoria) {
-          <article class="rounded-2xl border shadow-sm p-5 transition hover:shadow-md {{ claseTarjeta(prediccion.nivelRiesgo) }}">
+          <article class="rounded-2xl border shadow-sm p-5 transition hover:shadow-md {{ prediccion.origenEstimacion === 'SIN_CONSUMO' ? 'border-outline-variant bg-surface-container-lowest' : claseTarjeta(prediccion.nivelRiesgo) }}">
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ claseIcono(prediccion.nivelRiesgo) }}">
@@ -150,8 +155,8 @@
                   <p class="text-xs text-on-surface-variant truncate">{{ prediccion.nombreZona }}</p>
                 </div>
               </div>
-              <span class="inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 {{ claseBadge(prediccion.nivelRiesgo) }}">
-                {{ etiquetaRiesgo(prediccion.nivelRiesgo) }}
+              <span class="inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 {{ prediccion.origenEstimacion === 'SIN_CONSUMO' ? 'bg-surface-container-high text-on-surface-variant' : claseBadge(prediccion.nivelRiesgo) }}">
+                {{ prediccion.origenEstimacion === 'SIN_CONSUMO' ? 'Sin datos' : etiquetaRiesgo(prediccion.nivelRiesgo) }}
               </span>
             </div>
 
@@ -178,7 +183,7 @@
               </div>
             </dl>
 
-            <p class="mt-3 text-[11px] text-on-surface-variant">{{ prediccion.mensaje }}</p>
+            <p class="mt-3 text-[11px] text-on-surface-variant">{{ origenTexto(prediccion) }} · {{ prediccion.mensaje }}</p>
           </article>
         }
       </div>

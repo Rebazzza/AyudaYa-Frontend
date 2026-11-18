@@ -44,6 +44,20 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
+## Runtime configuration in Docker
+
+The production image reads the backend endpoints when the container starts, so the same
+Angular build can be deployed to different environments. Define both variables:
+
+```bash
+docker run -p 8080:80 \
+  -e API_URL=https://api.example.com/api/v1 \
+  -e STORAGE_URL=https://api.example.com \
+  ayudaya-frontend
+```
+
+For `ng serve`, `public/runtime-config.js` keeps the local defaults.
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:

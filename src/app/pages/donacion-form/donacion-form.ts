@@ -116,11 +116,19 @@ export class DonacionFormComponent implements OnInit {
   }
 
   localLleno(idLocal: number): boolean {
-    return this.capacidades()[idLocal]?.lleno ?? false;
+    return this.capacidades()[idLocal]?.lleno === true;
+  }
+
+  localSinVolumen(idLocal: number): boolean {
+    return (this.capacidades()[idLocal]?.donacionesSinVolumen ?? 0) > 0;
+  }
+
+  localNoDisponible(idLocal: number): boolean {
+    return this.localLleno(idLocal) || this.localSinVolumen(idLocal);
   }
 
   get localSeleccionadoLleno(): boolean {
-    return this.form.idLocalRecepcion > 0 && this.localLleno(this.form.idLocalRecepcion);
+    return this.form.idLocalRecepcion > 0 && this.localNoDisponible(this.form.idLocalRecepcion);
   }
 
   recargarDonantes() {
@@ -243,7 +251,7 @@ export class DonacionFormComponent implements OnInit {
     this.error.set('');
 
     if (this.localSeleccionadoLleno) {
-      this.error.set('El centro de acopio ha alcanzado su capacidad volumétrica máxima');
+      this.error.set('El centro de acopio está lleno o tiene donaciones antiguas sin volumen medido.');
       return;
     }
 

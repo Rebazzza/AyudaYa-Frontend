@@ -35,10 +35,12 @@ export class PanelEscasezPageComponent implements OnInit {
   error = signal('');
 
   criticas = computed(() => this.predicciones().filter((p) => p.nivelRiesgo === 'CRITICO'));
+  sinConsumo = computed(() => this.predicciones().filter((p) => p.origenEstimacion === 'SIN_CONSUMO'));
 
   conteoRiesgos = computed(() => {
     const conteo: Record<NivelRiesgo, number> = { CRITICO: 0, ALTO: 0, MEDIO: 0, BAJO: 0 };
     for (const prediccion of this.predicciones()) {
+      if (prediccion.origenEstimacion === 'SIN_CONSUMO') continue;
       conteo[prediccion.nivelRiesgo] = (conteo[prediccion.nivelRiesgo] ?? 0) + 1;
     }
     return conteo;
@@ -180,6 +182,16 @@ export class PanelEscasezPageComponent implements OnInit {
     }
     const dias = Math.round(prediccion.diasAutonomia);
     return dias === 1 ? '1 día de autonomía' : `${dias} días de autonomía`;
+  }
+
+  origenTexto(prediccion: PrediccionEscasez): string {
+    switch (prediccion.origenEstimacion) {
+      case 'MODELO_SINTETICO': return 'Modelo entrenado con datos sintéticos';
+      case 'CALCULO_DIRECTO': return 'Cálculo directo de stock ÷ consumo';
+      case 'SIN_CONSUMO': return 'Sin consumo registrado: riesgo indeterminado';
+      case 'SIN_STOCK': return 'Sin stock disponible';
+      default: return 'Origen de la estimación no especificado';
+    }
   }
 
   porcentajeBarra(prediccion: PrediccionEscasez): number {

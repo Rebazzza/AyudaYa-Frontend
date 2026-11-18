@@ -66,6 +66,12 @@ export class DonacionService {
       .pipe(map((res) => res.data));
   }
 
+  registrarVolumenHistorico(id: number, volumenVerificadoM3: number): Observable<Donacion> {
+    return this.http
+      .put<ApiResponseDTO<Donacion>>(`${this.base}/${id}/volumen`, { volumenVerificadoM3 })
+      .pipe(map((res) => res.data));
+  }
+
   cambiarEstado(id: number, data: CambioEstadoRequest, idUsuario: number): Observable<Donacion> {
     const params = new HttpParams().set('idUsuario', idUsuario);
     return this.http

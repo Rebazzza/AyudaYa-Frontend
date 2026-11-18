@@ -11,6 +11,7 @@ import { AlmacenService } from '../../../../services/almacen.service';
 import { TrabajadorService } from '../../../../services/trabajador.service';
 import { SessionService } from '../../../../services/session.service';
 import { Donacion } from '../../../../models/donacion.model';
+import { IMAGE_ALLOWED_TYPES, MAX_EVIDENCES_PER_DONATION, MAX_IMAGE_SIZE_BYTES } from '../../../../shared/config/file-upload.config';
 
 interface FilaCorroboracion {
   idDetalle: number;
@@ -69,14 +70,15 @@ export class CorroboracionPageComponent implements OnInit {
 
   lat = signal<number | null>(null);
   lon = signal<number | null>(null);
+  volumenVerificadoM3 = signal<number | null>(null);
   gpsNavegando = signal(false);
   gpsError = signal('');
 
   usuario = this.session.getUser();
 
-  formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-  maxTamanoBytes = 10 * 1024 * 1024;
-  maxEvidencias = 3;
+  formatosPermitidos = IMAGE_ALLOWED_TYPES;
+  maxTamanoBytes = MAX_IMAGE_SIZE_BYTES;
+  maxEvidencias = MAX_EVIDENCES_PER_DONATION;
 
   totalItems = computed(() =>
     this.filas().reduce((acc, f) => acc + (f.prometido ?? 0), 0),
@@ -96,6 +98,8 @@ export class CorroboracionPageComponent implements OnInit {
   puedeValidar = computed(
     () =>
       this.filas().length > 0 &&
+      this.volumenVerificadoM3() != null && this.volumenVerificadoM3()! >= 0.001 &&
+      Math.abs(Math.round(this.volumenVerificadoM3()! * 1000) - this.volumenVerificadoM3()! * 1000) < 1e-7 &&
       this.filas().every(
         (f) => f.recibido != null && Number.isFinite(f.recibido) && f.recibido >= 0,
       ),
@@ -336,6 +340,7 @@ export class CorroboracionPageComponent implements OnInit {
       .corroborarRecepcion({
         idDonacion: d.idDonacion,
         idLocal: d.idLocalRecepcion,
+        volumenVerificadoM3: this.volumenVerificadoM3()!,
         idTrabajador,
         latitud: this.lat() ?? undefined,
         longitud: this.lon() ?? undefined,
@@ -377,6 +382,7 @@ export class CorroboracionPageComponent implements OnInit {
     this.pendientes.update((list) => list.filter((x) => x.idDonacion !== d.idDonacion));
     this.seleccion.set(null);
     this.filas.set([]);
+    this.volumenVerificadoM3.set(null);
     this.adicionales.set([]);
     this.previews().forEach((p) => URL.revokeObjectURL(p));
     this.evidencias.set([]);
@@ -394,6 +400,7 @@ export class CorroboracionPageComponent implements OnInit {
     this.evidenciaError.set('');
     this.gpsError.set('');
     this.lat.set(null);
+    this.volumenVerificadoM3.set(null);
     this.lon.set(null);
   }
 }

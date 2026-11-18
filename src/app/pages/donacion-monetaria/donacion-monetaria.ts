@@ -14,9 +14,7 @@ import {
   formatearMonto,
 } from '../../models/monetaria.model';
 import { PaginationComponent, paginar } from '../../components/pagination/pagination';
-
-const LIMITE_5MB = 5 * 1024 * 1024;
-const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
+import { IMAGE_ALLOWED_TYPES, MAX_PAYMENT_PROOF_SIZE_BYTES } from '../../shared/config/file-upload.config';
 
 @Component({
   selector: 'app-donacion-monetaria',
@@ -124,12 +122,12 @@ export class DonacionMonetariaComponent implements OnDestroy {
   private validarCaptura(file: File) {
     this.error.set('');
 
-    if (!TIPOS_PERMITIDOS.includes(file.type)) {
+    if (!IMAGE_ALLOWED_TYPES.includes(file.type)) {
       this.error.set('La evidencia debe ser una imagen JPG, PNG o WebP.');
       return;
     }
     // El backend limita el comprobante a 5 MB (aunque el resto de la app permita 10 MB).
-    if (file.size > LIMITE_5MB) {
+    if (file.size > MAX_PAYMENT_PROOF_SIZE_BYTES) {
       this.error.set('La imagen supera los 5 MB permitidos para el comprobante. Recorta o comprime la captura.');
       return;
     }

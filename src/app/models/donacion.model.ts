@@ -16,6 +16,7 @@ export interface Donacion {
   fechaExpiracion: string | null;
   fechaVerificacion: string | null;
   estadoActual: string;
+  volumenVerificadoM3?: number | null;
   /** Verificación de la organización (PENDIENTE, VERIFICADO, RECHAZADO). */
   estadoVerificacion?: string | null;
   verificadoPor?: number | null;

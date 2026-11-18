@@ -8,6 +8,7 @@ export interface Usuario {
   correoUsuario: string;
   telefonoUsuario: string;
   nombreRol: string;
+  dniVerificado?: boolean;
   token?: string;
   fechaRegistro: string;
 }

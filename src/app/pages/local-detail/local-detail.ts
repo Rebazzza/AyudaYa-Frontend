@@ -3,16 +3,20 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocalService } from '../../services/local.service';
 import { SessionService } from '../../services/session.service';
 import { Local, CapacidadLocal } from '../../models/local.model';
+import { DonacionService } from '../../services/donacion.service';
+import { Donacion } from '../../models/donacion.model';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-local-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './local-detail.html',
 })
 export class LocalDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private localService = inject(LocalService);
+  private donacionService = inject(DonacionService);
   private session = inject(SessionService);
 
   /** Editar la información y el estado de un local es exclusivo del administrador. */
@@ -26,6 +30,10 @@ export class LocalDetailComponent implements OnInit {
   cambiandoEstado = signal(false);
   accionError = signal('');
   aviso = signal('');
+  pendientesMedicion = signal<Donacion[]>([]);
+  volumenes: Record<number, number | null> = {};
+  midiendo = signal<number | null>(null);
+  medicionError = signal('');
 
   mapsLink = computed(() => {
     const loc = this.local();
@@ -35,8 +43,8 @@ export class LocalDetailComponent implements OnInit {
 
   porcentajeOcupacion = computed(() => {
     const cap = this.capacidad();
-    if (!cap || cap.capacidadLocalM3 == null || cap.capacidadLocalM3 <= 0) return null;
-    return Math.min(100, Math.round((cap.donacionesEnAlmacen / cap.capacidadLocalM3) * 100));
+    if (!cap || cap.capacidadLocalM3 == null || cap.capacidadLocalM3 <= 0 || cap.donacionesSinVolumen > 0) return null;
+    return Math.min(100, Math.round((cap.volumenOcupadoM3 / cap.capacidadLocalM3) * 100));
   });
 
   ngOnInit() {
@@ -54,6 +62,36 @@ export class LocalDetailComponent implements OnInit {
     this.localService.capacidad(id).subscribe({
       next: (data) => this.capacidad.set(data),
       error: () => this.capacidad.set(null),
+    });
+    if (this.esAdmin) this.cargarPendientesMedicion(id);
+  }
+
+  private cargarPendientesMedicion(idLocal: number) {
+    this.donacionService.listar().subscribe({
+      next: (donaciones) => this.pendientesMedicion.set(donaciones.filter(d =>
+        d.idLocalRecepcion === idLocal && d.estadoActual === 'EN_ALMACEN' && d.volumenVerificadoM3 == null)),
+      error: () => this.medicionError.set('No se pudieron cargar las donaciones pendientes de medición.'),
+    });
+  }
+
+  registrarVolumen(donacion: Donacion) {
+    const texto = String(this.volumenes[donacion.idDonacion] ?? '');
+    if (!/^\d{1,9}(\.\d{1,3})?$/.test(texto) || Number(texto) < 0.001) {
+      this.medicionError.set('Ingresa un volumen positivo en m³ con hasta tres decimales.');
+      return;
+    }
+    this.medicionError.set('');
+    this.midiendo.set(donacion.idDonacion);
+    this.donacionService.registrarVolumenHistorico(donacion.idDonacion, Number(texto)).subscribe({
+      next: () => {
+        this.pendientesMedicion.update(lista => lista.filter(d => d.idDonacion !== donacion.idDonacion));
+        this.midiendo.set(null);
+        this.localService.capacidad(this.local()!.idLocal).subscribe({ next: capacidad => this.capacidad.set(capacidad) });
+      },
+      error: (err) => {
+        this.midiendo.set(null);
+        this.medicionError.set(err.error?.message || 'No se pudo guardar la medición.');
+      },
     });
   }
 

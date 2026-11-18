@@ -17,6 +17,15 @@ export class SessionService {
     this.usuario.set(user);
   }
 
+  updateUser(changes: Partial<Usuario>) {
+    const current = this.usuario();
+    if (!current) return;
+    const updated = { ...current, ...changes };
+    const target = localStorage.getItem(SESSION_KEY) ? localStorage : sessionStorage;
+    target.setItem(SESSION_KEY, JSON.stringify(updated));
+    this.usuario.set(updated);
+  }
+
   clearUser() {
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_KEY);

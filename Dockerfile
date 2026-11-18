@@ -41,6 +41,10 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copiamos los artefactos compilados al directorio público de Nginx
 COPY --from=build /app/dist/AyudaYa-Frontend/browser /usr/share/nginx/html
 
+# Genera las URLs de servicios al iniciar el contenedor, sin recompilar Angular.
+COPY docker-entrypoint.d/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
+RUN chmod +x /docker-entrypoint.d/40-runtime-config.sh
+
 # Nginx escucha en el puerto 80
 EXPOSE 80
 

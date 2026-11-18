@@ -6,6 +6,7 @@ export interface DetalleCorroboracionRequest {
 export interface CorroboracionRequest {
   idDonacion: number;
   idLocal: number;
+  volumenVerificadoM3: number;
   idTrabajador?: number;
   latitud?: number;
   longitud?: number;

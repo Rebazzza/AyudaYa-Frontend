@@ -3,6 +3,8 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { IaService } from '../../services/ia.service';
+import { IMAGE_ALLOWED_TYPES, MAX_IMAGE_SIZE_BYTES } from '../../shared/config/file-upload.config';
+import { Usuario } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-register',
@@ -29,6 +31,8 @@ export class RegisterComponent {
   error = signal('');
   /** TC-FUNC-01: alerta/toast de confirmación visible tras un registro exitoso. */
   exito = signal(false);
+  cuentaCreada = signal<Usuario | null>(null);
+  verificacionPendiente = signal(false);
   showPassword = signal(false);
   showPasswordConfirm = signal(false);
 
@@ -38,14 +42,14 @@ export class RegisterComponent {
   dniPosteriorPreview = signal<string | null>(null);
   dniError = signal('');
 
-  /** TC-FUNC-03: estado de la verificación biométrica de las dos caras del DNI. */
+  /** Estado de la evaluación de legibilidad de las dos caras del DNI. */
   validandoIdentidad = signal(false);
   identidadVerificada = signal(false);
   identidadResultado = signal('');
   identidadError = signal('');
 
-  formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-  maxTamanoBytes = 10 * 1024 * 1024;
+  formatosPermitidos = IMAGE_ALLOWED_TYPES;
+  maxTamanoBytes = MAX_IMAGE_SIZE_BYTES;
 
   get passwordsMatch(): boolean {
     return this.contrasena === this.contrasenaConfirm;
@@ -122,12 +126,13 @@ export class RegisterComponent {
     this.iaService.verificarDniCompleto(anverso, reverso).subscribe({
       next: (res) => {
         this.validandoIdentidad.set(false);
-        const isValido = res.anversoValido && res.reversoValido;
+        const isValido = res.estado === 'PROCESADO' && res.dniVerificado;
         this.identidadVerificada.set(isValido);
-        this.identidadResultado.set(
-          `isValido: ${isValido} · ${res.mensajeResultado}` +
-            (res.confianza != null ? ` (confianza ${(res.confianza * 100).toFixed(0)}%)` : ''),
-        );
+        if (res.estado === 'NO_DISPONIBLE') {
+          this.identidadError.set(res.mensajeResultado);
+        } else {
+          this.identidadResultado.set(res.mensajeResultado);
+        }
       },
       error: (err) => {
         this.validandoIdentidad.set(false);
@@ -137,6 +142,7 @@ export class RegisterComponent {
   }
 
   onSubmit() {
+    if (this.cuentaCreada()) return;
     if (!this.passwordsMatch) {
       this.error.set('Las contraseñas no coinciden');
       return;
@@ -165,6 +171,7 @@ export class RegisterComponent {
 
     this.auth.register(body).subscribe({
       next: (user) => {
+        this.cuentaCreada.set(user);
         if (!hayDni) {
           this.finalizarRegistro();
           return;
@@ -174,8 +181,14 @@ export class RegisterComponent {
         // y el backend solo persiste la bandera dniVerificado, purgando cualquier
         // archivo o registro biométrico que hubiera quedado de versiones anteriores.
         this.iaService.verificarDniCompleto(anverso!, reverso!, user.idUsuario, user.token).subscribe({
-          next: () => this.finalizarRegistro(),
-          error: () => this.finalizarRegistro(),
+          next: (res) => {
+            if (res.dniVerificado) {
+              this.finalizarRegistro();
+            } else {
+              this.registroConDniPendiente(res.mensajeResultado);
+            }
+          },
+          error: () => this.registroConDniPendiente('La evaluación de legibilidad no pudo completarse.'),
         });
       },
       error: (err) => {
@@ -185,15 +198,34 @@ export class RegisterComponent {
     });
   }
 
+  private registroConDniPendiente(detalle: string) {
+    this.limpiarFotosDni();
+    this.loading.set(false);
+    this.exito.set(true);
+    this.verificacionPendiente.set(true);
+    this.identidadResultado.set('');
+    this.identidadError.set(`${detalle} Tu cuenta se creó sin DNI verificado. Inicia sesión para reintentar.`);
+  }
+
   /**
    * TC-FUNC-01: muestra el toast "Usuario registrado exitosamente" y redirige a la
    * vista de inicio de sesión, donde la alerta permanece visible para el usuario.
    */
   private finalizarRegistro() {
+    this.limpiarFotosDni();
     this.loading.set(false);
     this.exito.set(true);
     setTimeout(() => {
       this.router.navigate(['/login'], { queryParams: { registro: 'exito' } });
     }, 1500);
+  }
+
+  private limpiarFotosDni() {
+    if (this.dniFrontalPreview()) URL.revokeObjectURL(this.dniFrontalPreview()!);
+    if (this.dniPosteriorPreview()) URL.revokeObjectURL(this.dniPosteriorPreview()!);
+    this.dniFrontal.set(null);
+    this.dniPosterior.set(null);
+    this.dniFrontalPreview.set(null);
+    this.dniPosteriorPreview.set(null);
   }
 }

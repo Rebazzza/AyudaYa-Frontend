@@ -23,5 +23,7 @@ export interface CapacidadLocal {
   nombreLocal: string;
   capacidadLocalM3: number | null;
   donacionesEnAlmacen: number;
-  lleno: boolean;
+  volumenOcupadoM3: number;
+  donacionesSinVolumen: number;
+  lleno: boolean | null;
 }

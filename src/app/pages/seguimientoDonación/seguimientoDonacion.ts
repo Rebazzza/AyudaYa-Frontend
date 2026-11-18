@@ -5,6 +5,7 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { DonacionService } from '../../services/donacion.service';
 import { SessionService } from '../../services/session.service';
 import { ImagenService } from '../../services/imagen.service';
+import { IMAGE_ALLOWED_TYPES, MAX_IMAGE_SIZE_BYTES } from '../../shared/config/file-upload.config';
 import { UbicacionService } from '../../services/ubicacion.service';
 import { TrabajadorService } from '../../services/trabajador.service';
 import { DocumentoService, descargarBlob } from '../../services/documento.service';
@@ -155,8 +156,8 @@ export class SeguimientoDonacionComponent implements OnInit, OnDestroy {
     RECHAZADA: 'Rechazada',
   };
 
-  formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-  maxTamanoBytes = 10 * 1024 * 1024;
+  formatosPermitidos = IMAGE_ALLOWED_TYPES;
+  maxTamanoBytes = MAX_IMAGE_SIZE_BYTES;
 
   estadosSiguientes = computed(() => {
     const d = this.donacion();
