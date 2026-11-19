@@ -16,8 +16,8 @@
   padding: 0.3rem 1rem 0.3rem 0.3rem;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, #9d4400, #783200);
-  color: #fff;
+  background: linear-gradient(180deg, #ff9e4a, #ff7717);
+  color: #331100;
   font: inherit;
   font-size: 0.92rem;
   font-weight: 600;
@@ -30,7 +30,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: #783200;
+  background: #ffca95;
   font-size: 1.3rem;
 }
 
@@ -40,7 +40,7 @@
 .acc-btn:focus-visible,
 .acc-fuente__btn:focus-visible,
 .acc-reset:focus-visible {
-  outline: 3px solid #0b57d0;
+  outline: 3px solid #331100;
   outline-offset: 3px;
 }
 

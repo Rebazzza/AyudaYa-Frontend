@@ -1,7 +1,7 @@
-<nav class="bg-primary text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
+<nav class="bg-brand-orange text-brand-ink shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
     <a routerLink="/" class="flex items-center gap-2 shrink-0" aria-label="AyudaYa, inicio">
-      <span class="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">AyudaYa</span>
+      <span class="text-lg sm:text-xl font-bold tracking-tight text-brand-ink whitespace-nowrap">AyudaYa</span>
       <img src="icono2.ico" alt="" width="48" height="48" class="h-10 sm:h-12 w-auto shrink-0" />
     </a>
 
@@ -23,10 +23,10 @@
             @if (desplegableActivo() === 'almacen') {
               <div class="absolute left-0 top-full pt-2">
                 <div class="min-w-56 rounded-xl bg-white p-2 text-gray-700 shadow-xl ring-1 ring-black/5">
-                  <a routerLink="/almacen/verificar" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Verificar</a>
-                  <a routerLink="/almacen/inventario" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Inventario</a>
-                  <a routerLink="/almacen/etiquetas" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Etiquetas</a>
-                  <a routerLink="/almacen/kits" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Armar kits</a>
+                  <a routerLink="/almacen/verificar" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Verificar</a>
+                  <a routerLink="/almacen/inventario" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Inventario</a>
+                  <a routerLink="/almacen/etiquetas" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Etiquetas</a>
+                  <a routerLink="/almacen/kits" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Armar kits</a>
                 </div>
               </div>
             }
@@ -47,8 +47,8 @@
             @if (desplegableActivo() === 'fondos') {
               <div class="absolute left-0 top-full pt-2">
                 <div class="min-w-56 rounded-xl bg-white p-2 text-gray-700 shadow-xl ring-1 ring-black/5">
-                  <a routerLink="/fondos/panel" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Recaudación</a>
-                  <a routerLink="/verificar-fondos" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Verificar fondos</a>
+                  <a routerLink="/fondos/panel" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Recaudación</a>
+                  <a routerLink="/verificar-fondos" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Verificar fondos</a>
                 </div>
               </div>
             }
@@ -63,10 +63,10 @@
             @if (desplegableActivo() === 'administracion') {
               <div class="absolute left-0 top-full pt-2">
                 <div class="min-w-56 rounded-xl bg-white p-2 text-gray-700 shadow-xl ring-1 ring-black/5">
-                  <a routerLink="/campanas" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Campañas</a>
-                  <a routerLink="/categorias" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Categorías</a>
-                  <a routerLink="/trabajadores" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Trabajadores</a>
-                  <a routerLink="/auditoria" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-[#FF7717]">Auditor&iacute;a</a>
+                  <a routerLink="/campanas" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Campañas</a>
+                  <a routerLink="/categorias" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Categorías</a>
+                  <a routerLink="/trabajadores" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Trabajadores</a>
+                  <a routerLink="/auditoria" (click)="cerrarDesplegables()" [routerLinkActive]="claseEnlaceMenuActivo" class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-[#FF7717]/10 hover:text-primary">Auditor&iacute;a</a>
                 </div>
               </div>
             }
@@ -82,7 +82,7 @@
 
     <div class="flex items-center gap-4 text-sm ml-auto">
       @if (session.isLoggedIn()) {
-        <span class="opacity-80 truncate max-w-[80px] sm:max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
+        <span class="truncate max-w-[80px] sm:max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
         <button (click)="logout()" class="hidden sm:inline-block bg-white text-primary px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
           Salir
         </button>
@@ -104,7 +104,7 @@
 
   <!-- Menú móvil -->
   @if (session.isLoggedIn()) {
-    <div class="md:hidden bg-primary text-white shadow-inner border-t border-white/15 {{ menuAbierto() ? 'block' : 'hidden' }}">
+    <div class="md:hidden bg-brand-orange text-brand-ink shadow-inner border-t border-brand-ink/20 {{ menuAbierto() ? 'block' : 'hidden' }}">
       <nav class="px-4 py-3 flex flex-col gap-1 text-sm">
         <a routerLink="/locales" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Locales</a>
         <a routerLink="/donaciones" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donaciones</a>
