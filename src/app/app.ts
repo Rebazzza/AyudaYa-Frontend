@@ -24,14 +24,10 @@ import { NavigationTimingService } from './routing/navigation-timing.service';
       <div class="flex-1">
         <router-outlet />
       </div>
-<<<<<<< HEAD
       @if (initialNavigationComplete()) {
         <app-footer />
       }
-=======
-      <app-footer />
       <app-barra-accesibilidad />
->>>>>>> f37297192dfe40ddae9995e8935b988c234b09cf
     </div>
   `,
 })
