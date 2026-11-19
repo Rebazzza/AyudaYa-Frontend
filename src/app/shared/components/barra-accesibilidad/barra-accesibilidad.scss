@@ -1,0 +1,52 @@
+:host {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  display: block;
+  color: #1f2937;
+}
+
+/* Botón flotante: pastilla naranja, sin borde ni sombra */
+.acc-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.6rem;
+  padding: 0.3rem 1rem 0.3rem 0.3rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f5891d, #ec6e00);
+  color: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+.acc-fab .material-symbols-outlined {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #df5a00;
+  font-size: 1.3rem;
+}
+
+.acc-fab:focus-visible,
+.acc-cerrar:focus-visible,
+.acc-toggle:focus-visible,
+.acc-btn:focus-visible,
+.acc-fuente__btn:focus-visible,
+.acc-reset:focus-visible {
+  outline: 3px solid #0b57d0;
+  outline-offset: 3px;
+}
+
+@media (max-width: 420px) {
+  :host {
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}

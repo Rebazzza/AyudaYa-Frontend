@@ -2,11 +2,12 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { BarraAccesibilidadComponent } from './shared/components/barra-accesibilidad/barra-accesibilidad';
 import { ApiTimeoutNoticeService } from './services/api-timeout-notice.service';
 import { NavigationTimingService } from './routing/navigation-timing.service';
 
 @Component({
-  imports: [RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, BarraAccesibilidadComponent],
   selector: 'app-root',
   styleUrl: './app.css',
   template: `
@@ -22,6 +23,7 @@ import { NavigationTimingService } from './routing/navigation-timing.service';
         <router-outlet />
       </div>
       <app-footer />
+      <app-barra-accesibilidad />
     </div>
   `,
 })

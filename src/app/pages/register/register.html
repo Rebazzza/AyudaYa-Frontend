@@ -31,7 +31,7 @@
 
       <!-- Mensaje de error global -->
       @if (error()) {
-        <div class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">
+        <div role="alert" class="bg-error-container text-on-error-container text-sm rounded-lg px-4 py-3 mb-4">
           {{ error() }}
         </div>
       }
@@ -182,7 +182,9 @@
               required
               minlength="8"
               class="w-full pl-10 pr-10 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-base text-on-surface placeholder:text-outline-variant input-focus-ring transition-all"
-              [class.border-error]="contrasenaConfirm.length > 0 && !passwordsMatch" />
+              [class.border-error]="contrasenaConfirm.length > 0 && !passwordsMatch"
+              [attr.aria-invalid]="contrasenaConfirm.length > 0 && !passwordsMatch ? 'true' : null"
+              [attr.aria-describedby]="contrasenaConfirm.length > 0 && !passwordsMatch ? 'errorContrasenaConfirm' : null" />
             <button
               type="button"
               (click)="toggleShowPasswordConfirm()"
@@ -191,7 +193,7 @@
             </button>
           </div>
           @if (contrasenaConfirm.length > 0 && !passwordsMatch) {
-            <p class="text-xs text-error mt-1">Las contraseñas no coinciden</p>
+            <p id="errorContrasenaConfirm" class="text-xs text-error mt-1">Las contraseñas no coinciden</p>
           }
         </div>
 
