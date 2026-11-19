@@ -15,7 +15,7 @@ export class NavbarComponent {
   readonly claseEnlaceActivo = 'font-bold underline decoration-2 underline-offset-4';
 
   /** Clases del enlace activo dentro de los desplegables. */
-  readonly claseEnlaceMenuActivo = 'bg-brand-orange/10 font-semibold text-primary';
+  readonly claseEnlaceMenuActivo = 'bg-[#FF7717]/10 font-semibold text-[#FF7717]';
 
   oculto = signal(false);
   menuAbierto = signal(false);

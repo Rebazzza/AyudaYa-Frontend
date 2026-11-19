@@ -9,12 +9,6 @@ module.exports = {
         brand: {
           orange: '#FF7717',
           hover: '#e0630d',
-          sunshine: '#ff9e4a',
-          cream: '#fff2e6',
-          ink: '#331100',
-          body: '#4a1e00',
-          muted: '#6b350f',
-          border: '#d78950',
         },
         primary: {
           DEFAULT: '#9d4400',
