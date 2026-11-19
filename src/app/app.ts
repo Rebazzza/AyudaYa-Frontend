@@ -4,11 +4,12 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavbarComponent } from './components/navbar/navbar';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { BarraAccesibilidadComponent } from './shared/components/barra-accesibilidad/barra-accesibilidad';
 import { ApiTimeoutNoticeService } from './services/api-timeout-notice.service';
 import { NavigationTimingService } from './routing/navigation-timing.service';
 
 @Component({
-  imports: [RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, BarraAccesibilidadComponent],
   selector: 'app-root',
   styleUrl: './app.css',
   template: `
@@ -23,9 +24,14 @@ import { NavigationTimingService } from './routing/navigation-timing.service';
       <div class="flex-1">
         <router-outlet />
       </div>
+<<<<<<< HEAD
       @if (initialNavigationComplete()) {
         <app-footer />
       }
+=======
+      <app-footer />
+      <app-barra-accesibilidad />
+>>>>>>> f37297192dfe40ddae9995e8935b988c234b09cf
     </div>
   `,
 })

@@ -1,0 +1,283 @@
+<button
+  type="button"
+  class="acc-fab"
+  [attr.aria-expanded]="panelAbierto()"
+  [attr.aria-controls]="panelAbierto() ? 'acc-panel' : null"
+  [attr.aria-label]="panelAbierto() ? 'Cerrar panel de accesibilidad' : 'Abrir panel de accesibilidad'"
+  (click)="alternarPanel()"
+>
+  <span class="material-symbols-outlined" aria-hidden="true">accessibility_new</span>
+  <span class="acc-fab__texto">Accesibilidad</span>
+</button>
+
+@if (panelAbierto()) {
+  <section
+    id="acc-panel"
+    class="acc-panel"
+    role="region"
+    aria-label="Panel de accesibilidad e inclusión"
+  >
+    <!-- WCAG 2.2 · 4.1.3: anuncia cambios de preferencia que no mueven el foco. -->
+    <p class="acc-sr-only" role="status" aria-live="polite" aria-atomic="true">
+      {{ aviso() }}
+    </p>
+
+    <header class="acc-panel__cabecera">
+      <span class="acc-panel__icono" aria-hidden="true">
+        <span class="material-symbols-outlined">accessibility_new</span>
+      </span>
+      <div class="acc-panel__cabecera-texto">
+        <h2 class="acc-panel__titulo">Accesibilidad e inclusión</h2>
+        <p class="acc-panel__subtitulo">
+          Adapta la interfaz a tus necesidades.
+        </p>
+      </div>
+      <button
+        type="button"
+        data-acc-primer
+        class="acc-cerrar"
+        aria-label="Cerrar panel de accesibilidad"
+        (click)="cerrarPanel(true)"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <div class="acc-panel__cuerpo">
+      <!-- Daltonismo -->
+      <div class="acc-fila">
+        <div class="acc-fila__info">
+          <span id="acc-lbl-daltonismo" class="acc-fila__titulo">
+            <span class="material-symbols-outlined">palette</span>
+            Modo daltonismo
+          </span>
+          <span id="acc-ayuda-daltonismo" class="acc-fila__ayuda"
+            >Bordes e iconos de estado, sin depender solo del color.</span
+          >
+        </div>
+        <button
+          type="button"
+          class="acc-toggle"
+          role="switch"
+          [attr.aria-checked]="config().daltonismo"
+          [class.acc-toggle--on]="config().daltonismo"
+          aria-labelledby="acc-lbl-daltonismo"
+          aria-describedby="acc-ayuda-daltonismo"
+          (click)="alternar('daltonismo')"
+        >
+          <span class="acc-toggle__estado">{{
+            config().daltonismo ? 'Activado' : 'Desactivado'
+          }}</span>
+          <span class="acc-toggle__track" aria-hidden="true">
+            <span class="acc-toggle__thumb"></span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Narración de voz -->
+      <div class="acc-fila acc-fila--bloque">
+        <div class="acc-fila__info">
+          <span id="acc-lbl-narracion" class="acc-fila__titulo">
+            <span class="material-symbols-outlined">record_voice_over</span>
+            Narración de voz
+          </span>
+          <span id="acc-ayuda-narracion" class="acc-fila__ayuda">Lee el contenido clave al enfocarlo o seleccionarlo.</span>
+        </div>
+
+        <div class="acc-fila__controles">
+          <button
+            type="button"
+            class="acc-toggle"
+            role="switch"
+            [attr.aria-checked]="config().narracionActiva"
+            [class.acc-toggle--on]="config().narracionActiva"
+            aria-labelledby="acc-lbl-narracion"
+            aria-describedby="acc-ayuda-narracion"
+            [disabled]="!soportaNarracion"
+            (click)="alternar('narracionActiva')"
+          >
+            <span class="acc-toggle__estado">{{
+              config().narracionActiva ? 'Activado' : 'Desactivado'
+            }}</span>
+            <span class="acc-toggle__track" aria-hidden="true">
+              <span class="acc-toggle__thumb"></span>
+            </span>
+          </button>
+        </div>
+
+        <div class="acc-acciones">
+          <button type="button" class="acc-btn" [disabled]="!soportaNarracion" (click)="leerPagina()">
+            <span class="material-symbols-outlined" aria-hidden="true">play_circle</span>
+            Leer página o selección
+          </button>
+          <button
+            type="button"
+            class="acc-btn acc-btn--detener"
+            [disabled]="!soportaNarracion"
+            (click)="detenerLectura()"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">stop_circle</span>
+            Detener
+          </button>
+        </div>
+
+        <p class="acc-estado-voz" role="status" aria-live="polite" aria-atomic="true">
+          @if (!soportaNarracion) {
+            Tu navegador no permite la narración de voz.
+          } @else if (leyendo()) {
+            Leyendo contenido…
+          } @else {
+            Narración lista.
+          }
+        </p>
+      </div>
+
+      <!-- Dislexia -->
+      <div class="acc-fila">
+        <div class="acc-fila__info">
+          <span id="acc-lbl-dislexia" class="acc-fila__titulo">
+            <span class="material-symbols-outlined">menu_book</span>
+            Modo dislexia
+          </span>
+          <span id="acc-ayuda-dislexia" class="acc-fila__ayuda"
+            >Más interlineado, espaciado entre letras y texto alineado a la izquierda.</span
+          >
+        </div>
+        <button
+          type="button"
+          class="acc-toggle"
+          role="switch"
+          [attr.aria-checked]="config().dislexia"
+          [class.acc-toggle--on]="config().dislexia"
+          aria-labelledby="acc-lbl-dislexia"
+          aria-describedby="acc-ayuda-dislexia"
+          (click)="alternar('dislexia')"
+        >
+          <span class="acc-toggle__estado">{{
+            config().dislexia ? 'Activado' : 'Desactivado'
+          }}</span>
+          <span class="acc-toggle__track" aria-hidden="true">
+            <span class="acc-toggle__thumb"></span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Transparencias -->
+      <div class="acc-fila">
+        <div class="acc-fila__info">
+          <span id="acc-lbl-transparencias" class="acc-fila__titulo">
+            <span class="material-symbols-outlined">blur_off</span>
+            Eliminar transparencias
+          </span>
+          <span id="acc-ayuda-transparencias" class="acc-fila__ayuda"
+            >Activo: fondos opacos y sin desenfoque. Al desactivarlo vuelven las transparencias originales.</span
+          >
+        </div>
+        <button
+          type="button"
+          class="acc-toggle"
+          role="switch"
+          [attr.aria-checked]="config().sinTransparencias"
+          [class.acc-toggle--on]="config().sinTransparencias"
+          aria-labelledby="acc-lbl-transparencias"
+          aria-describedby="acc-ayuda-transparencias"
+          (click)="alternar('sinTransparencias')"
+        >
+          <span class="acc-toggle__estado">{{
+            config().sinTransparencias ? 'Activado' : 'Desactivado'
+          }}</span>
+          <span class="acc-toggle__track" aria-hidden="true">
+            <span class="acc-toggle__thumb"></span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Contrastes visuales equilibrados (antes del tamaño de texto) -->
+      <div class="acc-fila">
+        <div class="acc-fila__info">
+          <span id="acc-lbl-contraste" class="acc-fila__titulo">
+            <span class="material-symbols-outlined">contrast</span>
+            Contrastes visuales equilibrados
+          </span>
+          <span id="acc-ayuda-contraste" class="acc-fila__ayuda"
+            >Colores y degradados más intensos en rojo anaranjado: estados, botones y enlaces muy marcados frente al fondo.</span
+          >
+        </div>
+        <button
+          type="button"
+          class="acc-toggle"
+          role="switch"
+          [attr.aria-checked]="config().contrasteEquilibrado"
+          [class.acc-toggle--on]="config().contrasteEquilibrado"
+          aria-labelledby="acc-lbl-contraste"
+          aria-describedby="acc-ayuda-contraste"
+          (click)="alternar('contrasteEquilibrado')"
+        >
+          <span class="acc-toggle__estado">{{
+            config().contrasteEquilibrado ? 'Activado' : 'Desactivado'
+          }}</span>
+          <span class="acc-toggle__track" aria-hidden="true">
+            <span class="acc-toggle__thumb"></span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Tamaño de texto -->
+      <div class="acc-fila acc-fila--bloque">
+        <div class="acc-fila__info">
+          <span id="acc-lbl-fuente" class="acc-fila__titulo">
+            <span class="material-symbols-outlined">format_size</span>
+            Tamaño del texto
+          </span>
+          <span id="acc-ayuda-fuente" class="acc-fila__ayuda">Escala proporcional sin cortar el contenido.</span>
+        </div>
+
+        <div
+          class="acc-fuente"
+          role="group"
+          aria-labelledby="acc-lbl-fuente"
+          aria-describedby="acc-ayuda-fuente"
+        >
+          <button
+            type="button"
+            class="acc-fuente__btn"
+            [attr.aria-pressed]="config().tamanoFuente === 'normal'"
+            aria-label="Tamaño de texto normal, 100 por ciento"
+            (click)="cambiarFuente('normal')"
+          >
+            A−
+          </button>
+          <button
+            type="button"
+            class="acc-fuente__btn"
+            [attr.aria-pressed]="config().tamanoFuente === 'grande'"
+            aria-label="Tamaño de texto grande, 112 por ciento"
+            (click)="cambiarFuente('grande')"
+          >
+            A
+          </button>
+          <button
+            type="button"
+            class="acc-fuente__btn"
+            [attr.aria-pressed]="config().tamanoFuente === 'extra'"
+            aria-label="Tamaño de texto extra, 125 por ciento"
+            (click)="cambiarFuente('extra')"
+          >
+            A+
+          </button>
+          <span class="acc-fuente__actual">{{ etiquetaFuente() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="acc-panel__pie">
+      <button type="button" class="acc-reset" (click)="restablecer()">
+        <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
+        Restablecer valores
+      </button>
+      <p class="acc-panel__nota">
+        Preferencias guardadas solo en este navegador.
+      </p>
+    </footer>
+  </section>
+}

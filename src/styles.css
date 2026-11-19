@@ -134,4 +134,982 @@ body {
   header {
     break-inside: avoid;
   }
+
+  app-barra-accesibilidad {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   MÓDULO DE ACCESIBILIDAD E INCLUSIÓN · AYUDA YA
+   Las clases .acc-* se aplican dinámicamente al <body> desde
+   AccesibilidadService. No modifican la lógica ni los servicios existentes.
+
+   Base: WCAG 2.2 (Recomendación del W3C, 05/10/2023). Criterios por modo:
+   - Contraste eq.. 1.4.3 Contraste (mínimo), 1.4.11 Contraste no textual.
+   - Daltonismo .... 1.4.1 Uso del color, 1.4.3 Contraste (mínimo),
+                     1.4.11 Contraste no textual, 2.4.7 Foco visible,
+                     2.4.11 Foco no oculto (mínimo; nuevo en 2.2).
+   - Narración ..... 1.1.1 Contenido no textual, 4.1.2 Nombre, rol, valor,
+                     4.1.3 Mensajes de estado.
+   - Dislexia ...... 1.4.12 Espaciado del texto, 1.4.8 Presentación visual.
+   - Transparencias  1.4.3 Contraste (mínimo), 1.4.11 Contraste no textual.
+   - Tamaño texto .. 1.4.4 Redimensionar texto, 1.4.10 Reflujo, 1.4.12.
+   - Panel ......... 2.1.1 Teclado, 2.1.2 Sin trampa de teclado, 2.4.3 Orden
+                     de foco, 2.4.7, 2.4.11, 2.5.8 Tamaño de objetivo (mínimo).
+   ========================================================================== */
+
+/* Reserva inferior para que el FAB/panel fijo no oculte el elemento con foco
+   al desplazarse (WCAG 2.2 · 2.4.11 Foco no oculto - mínimo). */
+html {
+  scroll-padding-bottom: 6rem;
+}
+
+/* --------------------------------------------------------------------------
+   0. CONTRASTES VISUALES EQUILIBRADOS (se aplica ANTES de la escala tipográfica)
+   WCAG 2.2 · 1.4.3 Contraste (mínimo) y 1.4.11 Contraste no textual.
+   A diferencia de DALTONISMO (bordes sobrios + símbolos), aquí se INTENSIFICAN
+   los colores: rojo anaranjado (#C0480D) como acento, rojos/verdes/azules
+   saturados y fondos claros. Modo opcional; la paleta por defecto no cambia.
+   -------------------------------------------------------------------------- */
+
+/* Texto: gris pizarra oscuro en vez de grises apagados (≈ 10:1 sobre blanco). */
+body.acc-contraste-equilibrado
+  :where(
+    [class*='text-gray-400'],
+    [class*='text-gray-500'],
+    [class*='text-outline-variant'],
+    [class*='text-on-surface-variant'],
+    [class*='text-on-background'],
+    .acc-fila__ayuda,
+    .acc-panel__subtitulo,
+    .acc-estado-voz,
+    .acc-fuente__actual
+  ) {
+  color: #334155 !important;
+}
+
+/* Rojo anaranjado #C0480D: texto blanco sobre el acento (5.03:1, WCAG 1.4.3). */
+body.acc-contraste-equilibrado
+  :where(
+    [class*='bg-brand-orange'],
+    [class*='bg-primary-container'],
+    [class*='bg-secondary-container']
+  ) {
+  background-color: #c0480d !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado
+  :where(
+    [class*='text-brand-orange'],
+    [class*='text-primary-container'],
+    [class*='text-secondary-container']
+  ) {
+  color: #a33a0c !important;
+}
+body.acc-contraste-equilibrado :where([class*='text-primary'], [class*='text-secondary']) {
+  color: #7c2d12 !important;
+}
+body.acc-contraste-equilibrado :where([class*='border-brand-orange'], [class*='border-primary']) {
+  border-color: #c0480d !important;
+}
+body.acc-contraste-equilibrado :where([class*='bg-primary-fixed']) {
+  background-color: #ffedd5 !important;
+}
+
+/* Degradados de marca (portada de login/inicio y tarjetas). Tailwind los pinta
+   con background-image, no con background-color, así que se intensifican aquí
+   con el mismo acento rojo anaranjado. Texto blanco ≥ 5:1 en todo el degradado. */
+body.acc-contraste-equilibrado
+  :where(
+    [class*='bg-gradient'][class*='from-primary-container'],
+    [class*='bg-gradient'][class*='via-secondary-container'],
+    [class*='bg-gradient'][class*='from-brand-orange']
+  ) {
+  background-image: linear-gradient(135deg, #c0480d 0%, #a33a0c 55%, #7c2d12 100%) !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado
+  :where([class*='bg-gradient'][class*='from-tertiary']) {
+  background-image: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #fff !important;
+}
+
+/* Errores: rojo intenso y fondo claro separado (≥ 6:1). */
+body.acc-contraste-equilibrado :where([class*='bg-error-container']) {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+body.acc-contraste-equilibrado
+  :where([class*='text-on-error-container'], [class*='text-error']) {
+  color: #b91c1c !important;
+}
+body.acc-contraste-equilibrado :where([class*='bg-error']) {
+  background-color: #c02626 !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado :where([class*='border-error']) {
+  border-color: #c02626 !important;
+}
+
+/* Éxito, aviso e información: verdes, ámbares y azules saturados. */
+body.acc-contraste-equilibrado :where([class*='bg-green'], [class*='bg-emerald']) {
+  background-color: #15803d !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado :where([class*='text-green'], [class*='text-emerald']) {
+  color: #166534 !important;
+}
+body.acc-contraste-equilibrado :where([class*='bg-amber'], [class*='bg-yellow']) {
+  background-color: #b45309 !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado :where([class*='text-amber'], [class*='text-yellow']) {
+  color: #92400e !important;
+}
+body.acc-contraste-equilibrado :where([class*='bg-blue'], [class*='bg-tertiary']) {
+  background-color: #2563eb !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado :where([class*='text-blue'], [class*='text-tertiary']) {
+  color: #1d4ed8 !important;
+}
+
+/* Enlaces del contenido: naranja oscuro + subrayado intenso (se excluyen
+   navegación, pie y zonas con texto claro sobre fondo de color). */
+body.acc-contraste-equilibrado
+  :where(main a):not([class*='text-white']):not([class*='text-on-primary']):not(
+    [class*='text-surface-bright']
+  ) {
+  color: #a33a0c !important;
+  text-decoration-line: underline !important;
+  text-decoration-color: #c0480d !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  font-weight: 600;
+}
+
+/* Foco: anillo naranja con halo blanco (distinto del azul de daltonismo). */
+body.acc-contraste-equilibrado :focus-visible {
+  outline: 3px solid #c0480d !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgb(255 255 255 / 95%) !important;
+}
+
+/* Panel del modo: acentos intensos conservando forma y disposición. */
+body.acc-contraste-equilibrado .acc-fab {
+  background: linear-gradient(180deg, #c0480d, #a33a0c) !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado .acc-fab .material-symbols-outlined {
+  background: #7c2d12 !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado
+  :where(.acc-panel__icono, .acc-fila__titulo .material-symbols-outlined) {
+  background: #c0480d !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado
+  :where(.acc-toggle--on .acc-toggle__track, .acc-fuente__btn[aria-pressed='true']) {
+  background: #c0480d !important;
+  border-color: #a33a0c !important;
+  color: #fff !important;
+}
+body.acc-contraste-equilibrado :where(.acc-btn, .acc-reset) {
+  color: #a33a0c !important;
+  border-color: #c0480d !important;
+}
+
+/* El blanco se respeta como fondo: se intensifican los colores, no el lienzo
+   blanco (ni sus variantes translúcidas, que el modo de transparencias aparte). */
+body.acc-contraste-equilibrado
+  :where([class*='bg-white'], [class*='bg-surface-container-lowest']):not(
+    [class*='bg-white/'],
+    [class*='bg-surface-container-lowest/']
+  ) {
+  background-color: #fff !important;
+}
+
+/* --------------------------------------------------------------------------
+   Escala tipográfica global (unidades relativas, sin cortes de texto)
+   WCAG 2.2 · 1.4.4 (redimensionar hasta 200 % con zoom del navegador),
+   1.4.10 (reflujo sin desplazamiento horizontal) y 1.4.12 (espaciado).
+   -------------------------------------------------------------------------- */
+html:has(body.acc-fuente-normal) {
+  font-size: 100%;
+}
+
+html:has(body.acc-fuente-grande) {
+  font-size: 112%;
+}
+
+html:has(body.acc-fuente-extra) {
+  font-size: 125%;
+}
+
+/* Navegadores antiguos sin :has(): la escala afecta al texto heredado. */
+@supports not selector(:has(*)) {
+  body.acc-fuente-normal {
+    font-size: 100%;
+  }
+
+  body.acc-fuente-grande {
+    font-size: 112%;
+  }
+
+  body.acc-fuente-extra {
+    font-size: 125%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   1. DALTONISMO: información sin depender únicamente del color
+   (WCAG 2.2 · 1.4.1 Uso del color, 1.4.3 Contraste mínimo, 1.4.11 Contraste
+   no textual, 2.4.7 Foco visible, 2.4.11 Foco no oculto - mínimo)
+   Se conservan los colores originales y se añaden forma, símbolos y texto.
+   -------------------------------------------------------------------------- */
+body.acc-daltonismo :focus-visible,
+body.acc-dislexia :focus-visible,
+body.acc-sin-transparencias :focus-visible {
+  outline: 3px solid #0b57d0 !important;
+  outline-offset: 3px !important;
+}
+
+/* Halo blanco bajo el anillo azul: el foco se ve sobre fondos claros y oscuros. */
+body.acc-daltonismo :focus-visible {
+  box-shadow: 0 0 0 6px rgb(255 255 255 / 95%) !important;
+}
+
+body.acc-daltonismo :where(a) {
+  text-decoration-line: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+/* Botones: contorno sobrio en vez de cajas negras; estados normal, hover,
+   active y disabled diferenciados. Se excluyen los controles del panel. */
+body.acc-daltonismo
+  :where(button, [role='button']):not(
+    .acc-fab,
+    .acc-cerrar,
+    .acc-toggle,
+    .acc-btn,
+    .acc-fuente__btn,
+    .acc-reset
+  ) {
+  outline: 1px solid #334155;
+  outline-offset: 1px;
+  font-weight: 600;
+}
+body.acc-daltonismo
+  :where(button, [role='button']):not(
+    .acc-fab,
+    .acc-cerrar,
+    .acc-toggle,
+    .acc-btn,
+    .acc-fuente__btn,
+    .acc-reset
+  ):hover:not(:disabled) {
+  outline-width: 2px;
+}
+body.acc-daltonismo
+  :where(button, [role='button']):not(
+    .acc-fab,
+    .acc-cerrar,
+    .acc-toggle,
+    .acc-btn,
+    .acc-fuente__btn,
+    .acc-reset
+  ):active:not(:disabled) {
+  box-shadow: inset 0 2px 5px rgb(15 23 42 / 25%);
+}
+body.acc-daltonismo :where(button, [role='button']):disabled,
+body.acc-daltonismo :where(button, [role='button'])[aria-disabled='true'] {
+  outline: 1px dashed #64748b !important;
+  outline-offset: 1px !important;
+  cursor: not-allowed;
+}
+
+/* Campos: borde sobrio de 1 px y estados normal / hover / foco / disabled.
+   No se fuerza un borde negro de 2 px que deforma los componentes. */
+body.acc-daltonismo
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='file']),
+    select,
+    textarea
+  ):not([disabled]):not([readonly]):not([class*='border-error']) {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #64748b !important;
+}
+body.acc-daltonismo
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='file']),
+    select,
+    textarea
+  ):not([disabled]):not([readonly]):hover {
+  border-color: #334155 !important;
+}
+body.acc-daltonismo
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='file']),
+    select,
+    textarea
+  ):not([disabled]):not([readonly]):focus {
+  border-color: #0b57d0 !important;
+}
+body.acc-daltonismo :where(input, select, textarea):disabled,
+body.acc-daltonismo :where(input, select, textarea)[readonly] {
+  border-color: #64748b !important;
+  border-style: dashed !important;
+  cursor: not-allowed;
+}
+
+/* Campos inválidos: borde rojo reforzado y anillo, además de aria-invalid. */
+body.acc-daltonismo
+  :where(input, select, textarea)[class*='border-error'],
+body.acc-daltonismo
+  :where(input, select, textarea)[aria-invalid='true'] {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 0 0 2px rgb(185 28 28 / 18%) !important;
+}
+
+/* Mensajes: símbolo textual solo cuando el componente no trae un icono.
+   El orden determina la prioridad: éxito < aviso < error. */
+body.acc-daltonismo
+  :where(.bg-primary-fixed, .bg-tertiary-fixed, .bg-emerald-50):not(
+    [class*='rounded-full'],
+    :has(.material-symbols-outlined)
+  )::before {
+  content: '✓';
+  display: inline-block;
+  margin-inline-end: 0.4em;
+  font-weight: 900;
+  line-height: 1;
+}
+body.acc-daltonismo
+  :where(.bg-amber-50, .bg-amber-100, .text-amber-950):not(
+    [class*='rounded-full'],
+    :has(.material-symbols-outlined)
+  )::before {
+  content: '⚠';
+  display: inline-block;
+  margin-inline-end: 0.4em;
+  font-weight: 900;
+  line-height: 1;
+}
+body.acc-daltonismo
+  :where(.bg-error-container, .text-error, .text-red-500, .text-red-600):not(
+    [class*='rounded-full'],
+    :has(.material-symbols-outlined)
+  )::before {
+  content: '✕';
+  display: inline-block;
+  margin-inline-end: 0.4em;
+  font-weight: 900;
+  line-height: 1;
+}
+
+body.acc-daltonismo :where(input[type='checkbox'], input[type='radio']) {
+  outline: 2px solid #334155;
+  outline-offset: 2px;
+  accent-color: #9d4400;
+}
+
+/* Opciones seleccionadas: doble contorno + marca de verificación. */
+body.acc-daltonismo
+  [aria-pressed='true']:where(button, [role='button']):not(.acc-fuente__btn) {
+  outline: 2px solid #334155 !important;
+  outline-offset: 1px;
+}
+body.acc-daltonismo
+  [aria-pressed='true']:where(button, [role='button']):not(.acc-fuente__btn)::after {
+  content: '✓';
+  margin-inline-start: 0.35em;
+  font-weight: 900;
+}
+/* El foco siempre gana sobre el contorno de selección. */
+body.acc-daltonismo
+  [aria-pressed='true']:where(button, [role='button']):focus-visible {
+  outline: 3px solid #0b57d0 !important;
+  outline-offset: 3px !important;
+}
+
+/* Interruptores: posición del botón + marca textual, sin bordes negros. */
+body.acc-daltonismo [role='switch'][aria-checked='true']:not(.acc-toggle) {
+  outline: 2px solid #334155;
+  outline-offset: 2px;
+}
+body.acc-daltonismo [role='switch'][aria-checked='false']:not(.acc-toggle) {
+  outline: 1px dashed #64748b;
+  outline-offset: 2px;
+}
+body.acc-daltonismo [role='switch'][aria-checked='true'] .acc-toggle__thumb::after,
+body.acc-daltonismo
+  [role='switch'][aria-checked='true']
+  > span:last-child:not(.acc-toggle__track)::after {
+  content: '✓';
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #9d4400;
+  font-size: 0.85em;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Las tablas conservan su estructura; solo se refuerza la separación visual. */
+body.acc-daltonismo table {
+  outline: 1px solid #64748b;
+  outline-offset: -1px;
+}
+
+body.acc-daltonismo :where(table) :where(th, td) {
+  box-shadow: inset 0 -1px 0 rgb(100 116 139 / 55%);
+}
+
+/* Badges/etiquetas de estado: borde sobrio + símbolo textual además del color.
+   Ahora también cubre font-bold y font-medium, que antes solo tenían borde. */
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-'][class*='font-'] {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-'][class*='font-']:not(
+    :has(.material-symbols-outlined)
+  )::before {
+  content: '◆';
+  display: inline-block;
+  margin-inline-end: 0.35em;
+  font-size: 0.82em;
+  font-weight: 900;
+  line-height: 1;
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-error'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: '✕';
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-green'][class*='font-']::before,
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-emerald'][class*='font-']::before,
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-tertiary'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: '✓';
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-amber'][class*='font-']::before,
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-yellow'][class*='font-']::before,
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-orange'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: '!';
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-blue'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: 'i';
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-secondary-fixed'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: '◔';
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-primary-fixed'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: '→';
+}
+
+body.acc-daltonismo
+  :where(span, p, div, a, button, td, th)[class*='rounded-full'][class*='bg-surface-container'][class*='font-']:not(:has(.material-symbols-outlined))::before {
+  content: '■';
+}
+
+/* Contraste de textos secundarios, etiquetas y textos de ayuda (≥ 10:1). */
+body.acc-daltonismo
+  :where(
+    [class*='text-gray-400'],
+    [class*='text-gray-500'],
+    [class*='text-outline-variant'],
+    [class*='text-on-surface-variant']
+  ) {
+  color: #374151 !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. DISLEXIA: espaciado seguro y alineación a la izquierda
+   WCAG 2.2 · 1.4.12 Espaciado del texto (umbrales de la propia norma:
+   interlineado ≥ 1.5 × tamaño, espacio entre párrafos ≥ 2 × tamaño,
+   interletras ≥ 0.12em y entre palabras ≥ 0.16em) y 1.4.8 Presentación
+   visual (texto no justificado).
+   -------------------------------------------------------------------------- */
+body.acc-dislexia {
+  letter-spacing: 0.12em;
+  word-spacing: 0.16em;
+}
+
+body.acc-dislexia
+  :where(p, li, dd, dt, blockquote, figcaption, label, .prose, .leading-relaxed, .text-justify) {
+  line-height: 1.75 !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+  text-align: left !important;
+}
+
+/* Espacio entre párrafos ≥ 2 × el tamaño de letra (1.4.12). Se limita al
+   contenido principal para no inflar los controles del panel. */
+body.acc-dislexia :where(main p, main li, main dd, main blockquote) {
+  margin-block-end: 2em !important;
+}
+
+body.acc-dislexia :where(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.5 !important;
+  letter-spacing: 0.06em !important;
+  word-spacing: 0.12em !important;
+}
+
+/* Barras, botones y controles: espaciado moderado para no romper el layout. */
+body.acc-dislexia :where(nav, nav *, button, a, summary, [role='button'], input, select, textarea) {
+  letter-spacing: 0.02em;
+  word-spacing: normal;
+}
+
+/* Los iconos de fuente NUNCA reciben letter-spacing: se deforman sus ligaduras. */
+body.acc-dislexia
+  :where(
+    .material-symbols-outlined,
+    .material-symbols-rounded,
+    .material-symbols-sharp,
+    .material-icons,
+    .material-icons-outlined,
+    .material-icons-round,
+    .material-icons-sharp,
+    .fa,
+    .fas,
+    .far,
+    .fab,
+    .bi,
+    [class^='fa-'],
+    [class*=' fa-'],
+    [class*='icon'],
+    svg,
+    svg *
+  ) {
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  line-height: 1 !important;
+  font-variant-ligatures: normal !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. TRANSPARENCIAS: fondos sólidos y sin desenfoque
+   WCAG 2.2 · 1.4.3 Contraste (mínimo) y 1.4.11 Contraste no textual: al
+   eliminar capas semitransparentes se conserva el contraste del texto y de
+   los límites de los componentes.
+   -------------------------------------------------------------------------- */
+body.acc-sin-transparencias :where([class*='backdrop-blur']) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Los velos de modal (bg-black/50, /60, /70) también son transparencias.
+   Naranja #E65C01 solicitado: fondo opaco y sin desenfoque. */
+body.acc-sin-transparencias :where([class*='bg-black/']) {
+  background-color: #e65c01 !important;
+}
+
+/* Paneles translúcidos con texto claro (p. ej. portada de login): pasan al
+   mismo naranja. El color del texto se deja como estaba en el diseño original. */
+body.acc-sin-transparencias
+  :where([class*='bg-surface-container-lowest/']):where(
+    [class*='text-on-primary'],
+    [class*='text-surface-bright']
+  ) {
+  background-color: #e65c01 !important;
+}
+
+body.acc-sin-transparencias :where(.modal-content, .modal, [role='dialog']) {
+  background-color: #fff !important;
+  border-color: #4b5563 !important;
+}
+
+body.acc-sin-transparencias
+  :where(.modal-content, .modal, [role='dialog'], [role='alert'], .alert, .nav-desplegable)
+  :where([class*='opacity-']):not(button):not([role='button']):not([disabled]) {
+  opacity: 1 !important;
+}
+
+body.acc-sin-transparencias :where(.nav-desplegable .absolute > div) {
+  background-color: #fff !important;
+}
+
+/* Solo superficies de contenido: se excluyen botones, enlaces, iconos y
+   paneles con texto claro sobre fondos de color (héroes, footer, etc.). */
+body.acc-sin-transparencias
+  :where(div, section, article, form):where(
+    .rounded-lg,
+    .rounded-xl,
+    .rounded-2xl,
+    .rounded-3xl
+  ):where([class*='bg-white/'], [class*='bg-surface-container-lowest/']):not(
+    :has(.material-symbols-outlined)
+  ):not([class*='text-white']):not([class*='text-on-primary']):not(
+    [class*='text-surface-bright']
+  ) {
+  background-color: #fff !important;
+}
+
+body.acc-sin-transparencias
+  :where(.modal-content, .modal, [role='dialog'], .fixed.inset-0 > div):where(
+    [class*='bg-white/'],
+    [class*='bg-surface-container-lowest/'],
+    [class*='bg-surface-container/'],
+    [class*='bg-surface/']
+  ) {
+  background-color: #fff !important;
+}
+
+body.acc-sin-transparencias :where([role='alert'], .alert) {
+  background-color: #fff !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: #4b5563 !important;
+}
+
+body.acc-sin-transparencias :where(.backdrop-blur-sm, .backdrop-blur, .backdrop-blur-md) {
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. PANEL FLOTANTE
+   WCAG 2.2 · 2.1.1 Teclado, 2.1.2 Sin trampa de teclado (Escape + foco
+   confinado), 2.4.3 Orden de foco, 2.4.7 Foco visible, 2.4.11 Foco no
+   oculto, 2.5.8 Tamaño de objetivo ≥ 24 × 24 px, 4.1.2 Nombre/rol/valor y
+   4.1.3 Mensajes de estado (región `role="status"`).
+   La paleta naranja/blanco/gris original se conserva; el modo opcional
+   «Contrastes visuales equilibrados» refuerza texto y bordes (1.4.3 / 1.4.11).
+   -------------------------------------------------------------------------- */
+.acc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.acc-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  width: min(22rem, calc(100vw - 2rem));
+  max-height: min(80vh, 46rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.35rem 1.25rem 1.1rem;
+  border-radius: 1.4rem;
+  background: #fff;
+  box-shadow: 0 14px 45px rgb(0 0 0 / 20%);
+}
+
+.acc-panel__cabecera {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.acc-panel__cabecera::before {
+  content: '';
+  position: absolute;
+  top: -1.6rem;
+  right: 1.2rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe0b2, transparent 68%);
+  pointer-events: none;
+}
+.acc-panel__icono {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.75rem;
+  background: #f57c00;
+  color: #fff;
+}
+.acc-panel__icono .material-symbols-outlined {
+  font-size: 1.5rem;
+}
+.acc-panel__cabecera-texto {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.acc-panel__titulo {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.acc-panel__subtitulo {
+  margin: 0.15rem 0 0;
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.acc-cerrar {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  cursor: pointer;
+}
+.acc-cerrar .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+.acc-fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.acc-fila:last-child {
+  border-bottom: 0;
+}
+.acc-fila--bloque {
+  flex-wrap: wrap;
+}
+.acc-fila__info {
+  position: relative;
+  display: flex;
+  flex: 1 1 11rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  padding-left: 3rem;
+}
+.acc-fila__titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.acc-fila__titulo .material-symbols-outlined {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.7rem;
+  background: #fff3e0;
+  color: #f57c00;
+  font-size: 1.3rem;
+  transform: translateY(-50%);
+}
+.acc-fila__ayuda {
+  color: #4b5563;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+/* Interruptores tipo pastilla */
+.acc-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.acc-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.acc-toggle__estado {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.acc-toggle__track {
+  position: relative;
+  display: block;
+  width: 3rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+.acc-toggle__thumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+.acc-toggle--on .acc-toggle__track {
+  background: #f57c00;
+}
+.acc-toggle--on .acc-toggle__thumb {
+  transform: translateX(1.3rem);
+}
+
+.acc-acciones {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+  padding-left: 3rem;
+}
+.acc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.3rem;
+  padding: 0.4rem 0.7rem;
+  border: 1.5px solid #f57c00;
+  border-radius: 0.6rem;
+  background: #fff;
+  color: #ef6c00;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.acc-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.acc-btn--detener {
+  border-color: transparent;
+  background: #f3f4f6;
+  color: #374151;
+}
+.acc-btn .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+.acc-estado-voz {
+  flex: 1 0 100%;
+  margin: 0.55rem 0 0 3rem;
+  color: #6b7280;
+  font-size: 0.73rem;
+  line-height: 1.35;
+}
+
+.acc-fuente {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+  padding-left: 3rem;
+}
+.acc-fuente__btn {
+  min-width: 2.4rem;
+  min-height: 2.35rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: #1f2937;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.acc-fuente__btn[aria-pressed='true'] {
+  border-color: #f57c00;
+  background: #f57c00;
+  color: #fff;
+}
+.acc-fuente__actual {
+  margin-left: auto;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.acc-panel__pie {
+  padding-top: 1rem;
+}
+.acc-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: #fff3e0;
+  color: #bf360c;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.acc-reset .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+.acc-panel__nota {
+  margin: 0.75rem 0 0;
+  color: #6b7280;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 420px) {
+  .acc-panel {
+    width: calc(100vw - 1.5rem);
+  }
 }

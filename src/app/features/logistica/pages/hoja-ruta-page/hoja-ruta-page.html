@@ -169,6 +169,7 @@
               <div class="inline-flex rounded-lg border border-outline-variant overflow-hidden" role="group" aria-label="Método de confirmación">
                 <button
                   type="button"
+                  [attr.aria-pressed]="!modoCodigo()"
                   (click)="modoCodigo.set(false)"
                   class="px-4 py-2 text-sm font-semibold transition"
                   [class.bg-brand-orange]="!modoCodigo()"
@@ -178,6 +179,7 @@
                 </button>
                 <button
                   type="button"
+                  [attr.aria-pressed]="modoCodigo()"
                   (click)="modoCodigo.set(true)"
                   class="px-4 py-2 text-sm font-semibold transition"
                   [class.bg-brand-orange]="modoCodigo()"
