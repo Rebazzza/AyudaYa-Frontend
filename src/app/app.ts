@@ -1,5 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { NavbarComponent } from './components/navbar/navbar';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { ApiTimeoutNoticeService } from './services/api-timeout-notice.service';
@@ -21,11 +23,22 @@ import { NavigationTimingService } from './routing/navigation-timing.service';
       <div class="flex-1">
         <router-outlet />
       </div>
-      <app-footer />
+      @if (initialNavigationComplete()) {
+        <app-footer />
+      }
     </div>
   `,
 })
 export class App {
   readonly timeoutNotice = inject(ApiTimeoutNoticeService);
   private readonly navigationTiming = inject(NavigationTimingService);
+  private readonly router = inject(Router);
+  readonly initialNavigationComplete = signal(this.router.navigated);
+
+  constructor() {
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      takeUntilDestroyed(),
+    ).subscribe(() => this.initialNavigationComplete.set(true));
+  }
 }

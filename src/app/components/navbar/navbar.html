@@ -1,8 +1,8 @@
-<nav class="bg-brand-orange text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
+<nav class="bg-primary text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
     <a routerLink="/" class="flex items-center gap-2 shrink-0" title="AyudaYa">
       <span class="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">AyudaYa</span>
-      <img src="icono2.ico" alt="AyudaYa" class="h-10 sm:h-12 w-auto shrink-0" />
+      <img src="icono2.jpg" alt="" width="48" height="48" class="h-10 sm:h-12 w-auto shrink-0" />
     </a>
 
     @if (session.isLoggedIn()) {
@@ -84,7 +84,7 @@
     <div class="flex items-center gap-4 text-sm ml-auto">
       @if (session.isLoggedIn()) {
         <span class="opacity-80 truncate max-w-[80px] sm:max-w-[120px]">{{ session.getUser()?.nombreUsuario }}</span>
-        <button (click)="logout()" class="hidden sm:inline-block bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
+        <button (click)="logout()" class="hidden sm:inline-block bg-white text-primary px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
           Salir
         </button>
         <button
@@ -97,7 +97,7 @@
         </button>
       } @else {
         <a routerLink="/login" class="hover:underline">Iniciar sesión</a>
-        <a routerLink="/registro" class="bg-white text-brand-orange px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
+        <a routerLink="/registro" class="bg-white text-primary px-3 py-1 rounded font-medium hover:bg-gray-100 transition">
           Registrarse
         </a>
       }
@@ -106,7 +106,7 @@
 
   <!-- Menú móvil -->
   @if (session.isLoggedIn()) {
-    <div class="md:hidden bg-brand-orange text-white shadow-inner border-t border-white/15 {{ menuAbierto() ? 'block' : 'hidden' }}">
+    <div class="md:hidden bg-primary text-white shadow-inner border-t border-white/15 {{ menuAbierto() ? 'block' : 'hidden' }}">
       <nav class="px-4 py-3 flex flex-col gap-1 text-sm">
         <a routerLink="/" (click)="cerrarMenu()" [routerLinkActiveOptions]="{ exact: true }" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inicio</a>
         <a routerLink="/locales" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Locales</a>
