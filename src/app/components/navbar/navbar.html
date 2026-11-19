@@ -1,13 +1,12 @@
 <nav class="bg-primary text-white shadow-md sticky top-0 z-50 transition-transform duration-300 {{ oculto() ? '-translate-y-full' : 'translate-y-0' }}">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-    <a routerLink="/" class="flex items-center gap-2 shrink-0" title="AyudaYa">
+    <a routerLink="/" class="flex items-center gap-2 shrink-0" aria-label="AyudaYa, inicio">
       <span class="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">AyudaYa</span>
       <img src="icono2.ico" alt="" width="48" height="48" class="h-10 sm:h-12 w-auto shrink-0" />
     </a>
 
     @if (session.isLoggedIn()) {
       <div class="hidden md:flex items-center gap-5 text-sm">
-        <a routerLink="/" [routerLinkActiveOptions]="{ exact: true }" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Inicio</a>
         <a routerLink="/locales" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Locales</a>
         <a routerLink="/donaciones" [routerLinkActive]="claseEnlaceActivo" class="hover:underline">Donaciones</a>
         @if (session.getUser()?.nombreRol === 'Donante') {
@@ -91,7 +90,6 @@
           type="button"
           (click)="toggleMenu()"
           class="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white/15 hover:bg-white/25 transition"
-          title="{{ menuAbierto() ? 'Cerrar menú' : 'Abrir menú' }}"
           aria-label="{{ menuAbierto() ? 'Cerrar menú' : 'Abrir menú' }}">
           <span class="material-symbols-outlined">{{ menuAbierto() ? 'close' : 'menu' }}</span>
         </button>
@@ -108,7 +106,6 @@
   @if (session.isLoggedIn()) {
     <div class="md:hidden bg-primary text-white shadow-inner border-t border-white/15 {{ menuAbierto() ? 'block' : 'hidden' }}">
       <nav class="px-4 py-3 flex flex-col gap-1 text-sm">
-        <a routerLink="/" (click)="cerrarMenu()" [routerLinkActiveOptions]="{ exact: true }" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Inicio</a>
         <a routerLink="/locales" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Locales</a>
         <a routerLink="/donaciones" (click)="cerrarMenu()" [routerLinkActive]="claseEnlaceActivo" class="px-3 py-2 rounded-lg hover:bg-white/15 transition">Donaciones</a>
         @if (session.getUser()?.nombreRol === 'Donante') {
